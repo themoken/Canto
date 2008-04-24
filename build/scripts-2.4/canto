@@ -1,6 +1,0 @@
-#!/usr/bin/python
-
-import canto.canto
-
-if __name__ == "__main__" : 
-    canto.canto.main()

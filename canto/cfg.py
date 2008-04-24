@@ -18,6 +18,7 @@ import gui
 import tag
 import signal
 import interface_draw
+import traceback
 
 class Cfg:
     """Cfg() is the class encompassing the configuration of Canto. It contains
@@ -77,7 +78,7 @@ class Cfg:
         self.key_handlers = []
         
         self.columns = 1
-            
+
         self.parse()
         self.gen_serverconf()
 
@@ -224,7 +225,11 @@ class Cfg:
             "colors" : self.colors}
 
         self.log("Parsing %s\n" % self.path)
-        execfile(self.path, {}, locals)
+        try :
+            execfile(self.path, {}, locals)
+        except :
+            traceback.print_exc()
+            raise StandardError
 
         # execfile cannot modify basic type
         # locals directly, so we do it by hand.

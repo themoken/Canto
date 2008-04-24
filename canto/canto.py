@@ -97,6 +97,9 @@ def main():
     except IndexError:
         print "You must update feeds, try `canto -u`"
         sys.exit(-1)
+    except StandardError:
+        print "Invalid line in config. Bailing."
+        sys.exit(-1)
 
     if only_conf:
         print "Server config generated."
