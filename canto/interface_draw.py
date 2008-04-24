@@ -24,7 +24,7 @@ class Renderer :
 
     def tag_foot(self, tag, width):
         s = u"─" * (width - 2)
-        return u"└" + s + u"┘\n"
+        return u"%B└" + s + u"┘%N\n"
 
     def firsts(self, story, width):
         base = "%N%B│%b "
@@ -53,7 +53,7 @@ class Renderer :
 
     def reader_foot(self, story, width):
         s = u"─" * (width - 2)
-        return u"└" + s + u"┘%N\n"
+        return u"%B└" + s + u"┘%N\n"
 
     def reader_link(self, idx, link):
         return "%4[" + str(idx) + "] " + link[1] + "- %1" + link[0]
