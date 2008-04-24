@@ -1,0 +1,13 @@
+==INSTALL==
+
+=REQUIREMENTS=
+- Python >=2.4 (tested mostly on 2.5.1)
+- NCursesw (yes, Unicode is a requirement)
+
+=BUILDING=
+- Python development headers
+- Ncurses development headers
+- GCC
+
+=INSTALL=
+- `python setup.py install` will install the files to your root.

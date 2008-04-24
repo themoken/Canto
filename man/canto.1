@@ -1,0 +1,200 @@
+.TH Canto 1 "10 April 2008" "Version 0.4.0" "Canto"
+
+.SH NAME
+Canto \- An ncurses RSS reader
+.SH DESCRIPTION
+Canto is an RSS reader built to be flexible and highly customizable on top of python.
+
+.SH GETTING STARTED
+Canto is the client, separate from the server CantoD. In order to update you must invoke cantod on a regular basis. Usually the way to do that is to add a line into your crontab like this:
+
+* * * * * canto-fetch
+
+That will keep your feeds up to date. For the first time, however
+you may want to fill in a config as listed at the bottom of this
+man page and run `canto -u` which will automatically attempt to
+update the feeds before running the client.
+
+.SH COMMAND LINE USAGE
+.TP
+-h
+Simple help
+
+.TP
+-v
+Print version
+
+.TP
+-c [num]
+Set number of columns
+
+.TP
+-g
+Only generate server configuration.
+
+.TP
+-u
+Update feeds before launching client.
+
+.TP
+-D [path]
+Set the configuration directory (default: ~/.canto/)
+
+.TP
+-C [path]
+Set the configuration file (default: ~/.canto/conf)
+
+.TP
+-L [path]
+Set the log file (default: ~/.canto/log)
+
+.TP
+-F [path]
+Set the feed directory (default: ~/.canto/feeds)
+
+.SH INTERNAL USAGE
+Within the program you can use the following (default) keys.
+These can be changed in your configuration file by using the
+"key" configuration option.
+
+.TP
+UP or DOWN
+Select previous or next item. (next_item) (prev_item)
+
+.TP
+PGUP or PGDOWN
+Goto previous or next tag. (next_tag) (prev_tag)
+
+.TP
+h
+Display this man page. (help)
+
+.TP
+Space
+Read a story (reader)
+
+.TP
+g
+Use the defined browser to goto the item's URL (goto)
+
+.TP
+C
+Toggle collapse all tags (toggle_collapse_all)
+
+.TP
+c
+Collapse current tag (toggle_collapse_tag)
+
+.TP
+f
+Inline search (inline_search)
+
+.TP
+n
+Goto next marked item (next_mark)
+
+.TP
+p
+Goto previous marked item (prev_mark)
+
+.TP
+F
+Collected search (search)
+
+.TP
+r
+Mark tag read (tag_read)
+
+.TP
+R
+Mark all read (all_read)
+
+.TP
+u
+Mark tag unread (tag_unread)
+
+.TP
+U
+Mark all unread (all_unread)
+
+.TP
+Ctrl+R
+Refresh feeds (force_update)
+
+.TP
+Ctrl+L
+Redraw screen (refresh)
+
+.TP
+q
+Quit Canto (quit)
+
+.SH READER USAGE
+Inside the reader, there are a number of different keys. These can be changed with the "reader_key" configuration option.
+
+.TP
+UP / DOWN
+Scroll up/down if content off screen (scroll_up) (scroll_down)
+
+.TP
+l
+Enumerate links (toggle_show_links)
+
+.TP
+g
+Choose a link to goto (goto)
+
+.SH CONFIGURATION
+The ~/.canto/conf file is where all of the configuration is. You can start by using the example config below.
+
+.SH EXAMPLE CONFIG
+.sp 1
+.nf
+default_rate "5"
+default_items "40"
+
+#Add some feeds
+add "http://rss.slashdot.org/Slashdot/slashdot" "Slashdot"
+add "http://www.digg.com/rss/index.xml" "Digg All"
+add "http://newsrss.bbc.co.uk/rss/newsonline_world_edition/front_page/rss.xml" "BBC"
+add "http://www.osnews.com/files/recent.xml" "OSNews"
+add "http://distrowatch.com/news/dw.xml" "DistroWatch"
+
+#Change rate for Slashdot
+rate "Slashdot" "30"
+
+#These aren't defaults, but examples
+browser "/usr/bin/elinks \"%u\""
+
+#Text browsers should enable this
+text_browser
+
+.SH FILES
+.TP
+.I ~/.canto/conf
+Main configuration file. For advanced usage, see the online configuration documentation: http://codezen.org/canto-config
+
+.TP
+.I ~/.canto/log
+Everyday log file.
+
+.TP
+.I ~/.canto/sconf
+Server configuration file.
+
+.TP
+.I ~/.canto/slog
+Server log file.
+
+.TP
+.I ~/.canto/feeds/
+This is the directory where the stories are recorded.
+
+.SH BUGS
+None known, but it's not outside of the realm of possibility =P.  
+
+.SH HOMEPAGE
+http://codezen.org/canto
+
+.SH AUTHOR
+Jack Miller <jack@codezen.org>
