@@ -79,6 +79,14 @@ class Cfg:
         
         self.columns = 1
 
+        # Start ncurses for two shakes, to get the term's
+        # height and width so that the config can 
+        # use the info.
+
+        self.stdscr = curses.initscr()
+        self.height, self.width = self.stdscr.getmaxyx()
+        curses.endwin()
+
         self.parse()
         self.gen_serverconf()
 
@@ -215,6 +223,8 @@ class Cfg:
         to the config which is executable code."""
 
         locals = {"addfeed":self.feedwrap,
+            "height" : self.height,
+            "width" : self.width,
             "browser" : self.browser_path,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
@@ -236,7 +246,8 @@ class Cfg:
 
         self.browser_path = locals["browser"]
         self.render = locals["render"]
-        self.columns = locals["columns"]
+        if locals["columns"] > 0:
+            self.columns = locals["columns"]
 
     def gen_serverconf(self):
         """This will output the server configuration corresponding
