@@ -2,7 +2,7 @@
 #include <py_curses.h>
 #include <ncursesw/ncurses.h>
 
-int theme_strlen(char *message, char end)
+static int theme_strlen(char *message, char end)
 {
     int len = 0;
     int i = 0;
@@ -14,14 +14,26 @@ int theme_strlen(char *message, char end)
             i++;
             len++;
         } else if ((unsigned char) message[i] > 0x7f) {
-            i += mbtowc(NULL, &message[i], 3) - 1;
-            len++;
+            wchar_t dest[2];
+            i += mbtowc(dest, &message[i], 3) - 1;
+            len += wcwidth(dest[0]);
         } else if (message[i] != '\n')
             len++;
         i++;
     }
 
     return len;
+}
+
+static PyObject *tlen(PyObject *self, PyObject *args)
+{
+    char *message;
+    char end = 0;
+
+    if(!PyArg_ParseTuple(args, "s|c", &message, &end))
+            return NULL;
+
+    return Py_BuildValue("i",theme_strlen(message, end));
 }
 
 static PyObject * mvw(PyObject *self, PyObject *args)
@@ -171,6 +183,7 @@ static PyObject * mvw(PyObject *self, PyObject *args)
 
 static PyMethodDef MvWMethods[] = {
     {"core", mvw, METH_VARARGS, "Wide char print."},
+    {"tlen", tlen, METH_VARARGS, "Len ignoring theme escpaes, and accounting for Unicode character width."},
     {NULL, NULL, 0, NULL}
 };
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from widecurse import core
+from widecurse import core, tlen
 import re
 
 class Renderer :
@@ -98,8 +98,8 @@ class Renderer :
             else :
                 start, slen, rep, rlen, end, elen = mid
 
-            if len(s) <= width - (slen + elen):
-                if len(s) <= width - (last[1] + last[3]):
+            if tlen(s) <= width - (slen + elen):
+                if tlen(s) <= width - (last[1] + last[3]):
                     if line == 0:
                         rep, rlen, end, elen = last[2:]
                     else :
@@ -151,7 +151,7 @@ class Renderer :
         return row
 
     def box(self, caption, width, window):
-        s = u"─" * (width - (2 + len(caption)))
+        s = u"─" * (width - (2 + tlen(caption)))
         row = self.simple_out(u"┌" + caption + s + u"┐\n", 0, -1, width, [window])
         row = self.simple_out(u"│" + " " * (width - 2) + u"│\n", row, -1, width, [window])
         row = self.simple_out(u"└" + u"─" * (width - 2) + u"┘", row, -1, width, [window])
