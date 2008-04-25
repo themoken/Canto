@@ -155,17 +155,16 @@ class Cfg:
 
     def convkey(self, s):
         """Convert a C-M-x style key to a (key,meta) tuple."""
-
         if len(s) == 1:
             return (ord(s),0)
         elif s.startswith("C-"):
-            k, m = self.__convkey(s[2:])
-
+            k, m = self.convkey(s[2:])
+            
             # & 0x1F indicates CTRL status.
             return (k & 0x1F, m) 
 
         elif s.startswith("M-"):
-            k, m = self.__convkey(s[2:])
+            k, m = self.convkey(s[2:])
             return (k, 1)
 
         #For some reason, RETURN isn't in curses
