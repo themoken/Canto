@@ -39,6 +39,7 @@ class Reader :
 
         self.height, self.width = min(self.lines, height),width
         self.window = curses.newpad(self.lines, width)
+        self.window.bkgdset(curses.color_pair(1))
 
         # Perform the write.
         self.cfg.render.reader(self.story, width, self.links, self.show_links, self.window)

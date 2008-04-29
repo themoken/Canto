@@ -49,7 +49,7 @@ class Renderer :
 
     def reader_head(self, story, width):
         s = u"─" * (width - 2)
-        return u"%B" + story["title"] + u"\n┌" + s + u"┐%N\n"
+        return u"%1%B" + story["title"] + u"\n┌" + s + u"┐%N\n"
 
     def reader_foot(self, story, width):
         s = u"─" * (width - 2)
