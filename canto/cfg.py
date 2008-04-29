@@ -235,6 +235,7 @@ class Cfg:
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
             "render" : self.render,
+            "renderer" : interface_draw.Renderer,
             "keys" : self.key_list,
             "reader_keys" : self.reader_key_list,
             "columns" : self.columns,

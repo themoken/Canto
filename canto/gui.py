@@ -76,6 +76,8 @@ class Gui :
                     self.width / self.cfg.columns, 0, \
                     (self.width / self.cfg.columns) * i) for i in range(0, self.cfg.columns)]
 
+        for window in self.window_list:
+            window.bkgdset(curses.color_pair(1))
         self.lines = self.cfg.columns * self.height
         self.__map_items()
 

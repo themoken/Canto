@@ -12,7 +12,7 @@ class Renderer :
             (re.compile("[\\\n]{3,}"), "\n\n")]
 
     def tag_head(self, tag, width):
-        t = tag.tag.encode("UTF-8") + " [%2" + str(tag.unread) + "%0]"
+        t = "%1" + tag.tag.encode("UTF-8") + " [%2" + str(tag.unread) + "%0]"
         if tag.collapsed:
             if tag[0].selected():
                 return "%B > " + t + "%N\n\n"
