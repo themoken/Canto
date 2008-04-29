@@ -1,4 +1,4 @@
-.TH Canto 1 "10 April 2008" "Version 0.4.0" "Canto"
+.TH Canto 1 "28 April 2008" "Version 0.4.0" "Canto"
 
 .SH NAME
 Canto \- An ncurses RSS reader
@@ -23,10 +23,6 @@ Simple help
 .TP
 -v
 Print version
-
-.TP
--c [num]
-Set number of columns
 
 .TP
 -g
@@ -150,24 +146,26 @@ The ~/.canto/conf file is where all of the configuration is. You can start by us
 .SH EXAMPLE CONFIG
 .sp 1
 .nf
-default_rate "5"
-default_items "40"
 
-#Add some feeds
-add "http://rss.slashdot.org/Slashdot/slashdot" "Slashdot"
-add "http://www.digg.com/rss/index.xml" "Digg All"
-add "http://newsrss.bbc.co.uk/rss/newsonline_world_edition/front_page/rss.xml" "BBC"
-add "http://www.osnews.com/files/recent.xml" "OSNews"
-add "http://distrowatch.com/news/dw.xml" "DistroWatch"
+# Setup browser
+browser="/usr/bin/elinks \"%u\""
+text_browser = 1
 
-#Change rate for Slashdot
-rate "Slashdot" "30"
+keys["z"] = "goto"
+columns = 2
 
-#These aren't defaults, but examples
-browser "/usr/bin/elinks \"%u\""
+# Set defaults
+default_rate(10)
+default_keep(40)
 
-#Text browsers should enable this
-text_browser
+# Add some feeds
+addfeed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot", rate=30)
+addfeed("OSNews", "http://osnews.com/files/recent.xml")
+addfeed("Damn Interesting", "http://www.damninteresting.com/?feed=rss2")
+addfeed("Reddit", "http://reddit.com/.rss/")
+addfeed("Proggit", "http://programming.reddit.com/.rss/")
+addfeed("KernelTrap", "http://kerneltrap.org/node/feed")
+addfeed("Canto", "http://codezen.org/canto/feeds/latest", keep=10)
 
 .SH FILES
 .TP

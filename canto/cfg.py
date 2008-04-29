@@ -225,6 +225,7 @@ class Cfg:
             "height" : self.height,
             "width" : self.width,
             "browser" : self.browser_path,
+            "text_browser" : self.text_browser,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
             "render" : self.render,
@@ -244,6 +245,7 @@ class Cfg:
         # locals directly, so we do it by hand.
 
         self.browser_path = locals["browser"]
+        self.text_browser = locals["text_browser"]
         self.render = locals["render"]
         if locals["columns"] > 0:
             self.columns = locals["columns"]
