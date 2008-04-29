@@ -20,6 +20,12 @@ import signal
 import interface_draw
 import traceback
 
+class ConfigError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 class Cfg:
     """Cfg() is the class encompassing the configuration of Canto. It contains
     all of the options and functions required to drive the actual GUI. Input
@@ -239,7 +245,7 @@ class Cfg:
             execfile(self.path, {}, locals)
         except :
             traceback.print_exc()
-            raise StandardError
+            raise ConfigError
 
         # execfile cannot modify basic type
         # locals directly, so we do it by hand.

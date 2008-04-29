@@ -15,6 +15,8 @@ import time
 import sys
 import getopt
 import codecs
+import curses
+import traceback
 
 def log(path, str, mode="a"):
     try :
@@ -97,8 +99,13 @@ def main():
     except IndexError:
         print "You must update feeds, try `canto -u`"
         sys.exit(-1)
-    except StandardError:
+    except cfg.ConfigError:
         print "Invalid line in config. Bailing."
+        sys.exit(-1)
+    except :
+        curses.endwin()
+        print "Caught exception."
+        traceback.print_exc()
         sys.exit(-1)
 
     if only_conf:
