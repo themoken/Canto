@@ -29,6 +29,7 @@ class Input :
     def refresh(self, height, width):
         self.height, self.width = height, width
         self.window = curses.newpad(3, self.width)
+        self.window.bkgdset(curses.color_pair(1))
         self.draw_elements()
 
     def draw_elements(self):

@@ -27,10 +27,10 @@ class Renderer :
         return u"%B└" + s + u"┘%N\n"
 
     def firsts(self, story, width):
-        base = "%N%B│%b "
+        base = "%N%1%B│%b "
     
         if story.selected() :
-            base += "> "
+            base += "%B>%b "
         else :
             base += "  "
 
@@ -152,7 +152,7 @@ class Renderer :
 
     def box(self, caption, width, window):
         s = u"─" * (width - (2 + tlen(caption)))
-        row = self.simple_out(u"┌" + caption + s + u"┐\n", 0, -1, width, [window])
+        row = self.simple_out(u"%B┌" + caption + s + u"┐\n", 0, -1, width, [window])
         row = self.simple_out(u"│" + " " * (width - 2) + u"│\n", row, -1, width, [window])
-        row = self.simple_out(u"└" + u"─" * (width - 2) + u"┘", row, -1, width, [window])
+        row = self.simple_out(u"└" + u"─" * (width - 2) + u"┘%N", row, -1, width, [window])
         return row
