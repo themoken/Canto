@@ -15,19 +15,19 @@ class Renderer :
         t = "%1" + tag.tag.encode("UTF-8") + " [%2" + str(tag.unread) + "%0]"
         if tag.collapsed:
             if tag[0].selected():
-                return "%B > " + t + "%N\n\n"
+                return "%B > " + t + "%C\n\n"
             else :
-                return "%B   " + t + "%N\n\n"
+                return "%B   " + t + "%C\n\n"
         
         s = u"─" * (width - 2)
-        return "%B   " + t + u"\n┌" + s + u"┐%N"
+        return "%B   " + t + u"\n┌" + s + u"┐%C"
 
     def tag_foot(self, tag, width):
         s = u"─" * (width - 2)
-        return u"%B└" + s + u"┘%N\n"
+        return u"%B└" + s + u"┘%C\n"
 
     def firsts(self, story, width):
-        base = "%N%1%B│%b "
+        base = "%C%1%B│%b "
     
         if story.selected() :
             base += "%B>%b "
@@ -49,11 +49,11 @@ class Renderer :
 
     def reader_head(self, story, width):
         s = u"─" * (width - 2)
-        return u"%1%B" + story["title"] + u"\n┌" + s + u"┐%N\n"
+        return u"%1%B" + story["title"] + u"\n┌" + s + u"┐%C\n"
 
     def reader_foot(self, story, width):
         s = u"─" * (width - 2)
-        return u"%B└" + s + u"┘%N\n"
+        return u"%B└" + s + u"┘%C\n"
 
     def reader_link(self, idx, link):
         return "%4[" + str(idx) + "] " + link[1] + "- %1" + link[0]
@@ -154,5 +154,5 @@ class Renderer :
         s = u"─" * (width - (2 + tlen(caption)))
         row = self.simple_out(u"%B┌" + caption + s + u"┐\n", 0, -1, width, [window])
         row = self.simple_out(u"│" + " " * (width - 2) + u"│\n", row, -1, width, [window])
-        row = self.simple_out(u"└" + u"─" * (width - 2) + u"┘%N", row, -1, width, [window])
+        row = self.simple_out(u"└" + u"─" * (width - 2) + u"┘%C", row, -1, width, [window])
         return row
