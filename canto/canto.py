@@ -100,7 +100,6 @@ def main():
         print "You must update feeds, try `canto -u`"
         sys.exit(-1)
     except cfg.ConfigError:
-        print "Invalid line in config. Bailing."
         sys.exit(-1)
     except :
         curses.endwin()

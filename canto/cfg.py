@@ -225,6 +225,12 @@ class Cfg:
         """Parse the configuration, which exports a number of variables
         to the config which is executable code."""
 
+        try :
+            os.stat(self.path)
+        except :
+            print "Unable to find config file. Read `man canto` for an example config."
+            raise ConfigError
+
         locals = {"addfeed":self.feedwrap,
             "height" : self.height,
             "width" : self.width,
@@ -243,6 +249,7 @@ class Cfg:
         try :
             execfile(self.path, {}, locals)
         except :
+            print "Invalid line in config."
             traceback.print_exc()
             raise ConfigError
 
