@@ -178,6 +178,9 @@ static PyObject * mvw(PyObject *self, PyObject *args)
                    Andreas (newsbeuter) for that one. */
 
                 int rwidth = wcwidth(dest[0]);
+                if (rwidth > (width - i))
+                    break;
+
                 dest[1] = 0;
                 mvwaddwstr(win, y, x, dest);
                 x += rwidth;
@@ -185,7 +188,7 @@ static PyObject * mvw(PyObject *self, PyObject *args)
                 /* Move to the next character and kludge the width
                    to keep the for loop correct. */
                 i += bytes;
-                width += bytes;
+                width += (bytes - (rwidth - 1));
             }
         } else
             mvwaddch(win, y, x++, message[i]);
