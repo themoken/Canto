@@ -13,7 +13,7 @@ class Feed :
         self.pf = None
         self.log = log_func
         self.path = dir_path
-        self.idx = self.path + "/idx"
+        self.idx = self.path + "/../" + self.handle + ".idx"
 
     def search_entries(self, string):
         for s in self.pf:

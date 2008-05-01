@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 #Canto - ncurses RSS reader
 #   Copyright (C) 2007 Jack Miller <jack@codezen.org>
 #

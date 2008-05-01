@@ -38,7 +38,7 @@ class Feed(tag.Tag):
 
         newlist = []
         try:
-            fsock = codecs.open(self.path + "/idx", "r", "UTF-8", "ignore")
+            fsock = codecs.open(self.path + "/../" + self.handle + ".idx", "r", "UTF-8", "ignore")
             try:
                 data = fsock.read().split("\00")[:-1]
             finally:
