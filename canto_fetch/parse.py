@@ -114,6 +114,13 @@ class ParsedFeed(list):
             for k in ["title", "description", "link"]:
                 if not self.item.has_key(k):
                     self.item[k] = "None"
+
+            # To avoid malicious items escaping the directory.
+            # In addition, keeps items from being "hidden"
+
+            if self.item["title"].startswith("."):
+                self.item["title"] = " " + self.item["title"]
+
             self.append(self.item)
             self.clear()
 
