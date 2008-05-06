@@ -116,6 +116,7 @@ class Cfg:
         curses.noecho()
         curses.start_color()
         curses.halfdelay(1)
+        curses.use_default_colors()
 
         # Initialize colors.
         for i in range(8) :
@@ -134,7 +135,8 @@ class Cfg:
         self.refresh()
 
     def convcolor(self, c):
-        colordir = {"black" : 0, 
+        colordir = {"default" : -1, 
+                "black" : 0, 
                 "white" : 7, 
                 "red" : 1, 
                 "green" : 2, 
