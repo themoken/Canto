@@ -231,6 +231,16 @@ class Gui :
             self.offset = min(r2,max(0,self.map[-1][2] + self.map[-1][3] - self.lines))
             self.select()
 
+    def just_read(self):
+        # Added for binding
+        j,k,r,l,f = self.map[self.selected]
+        self.list[j].set_read(k)
+
+    def just_unread(self):
+        # Added for binding.
+        j,k,r,l,f = self.map[self.selected]
+        self.list[j].set_unread(k)
+
     def goto(self) :
         """Simple item wrapper around Cfg().goto()."""
         j,k,r,l,f = self.map[self.selected]

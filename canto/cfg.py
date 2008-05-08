@@ -39,6 +39,8 @@ class Cfg:
         self.key_list = {"q" : "quit",
                          "KEY_DOWN" : "next_item",
                          "KEY_UP" : "prev_item",
+                         "KEY_RIGHT" : "just_read",
+                         "KEY_LEFT" : "just_unread",
                          "KEY_NPAGE" : "next_tag",
                          "KEY_PPAGE" : "prev_tag",
                          "g" : "goto",
