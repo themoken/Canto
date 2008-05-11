@@ -1,4 +1,4 @@
-.TH Canto 1 "28 April 2008" "Version 0.4.0" "Canto"
+.TH Canto 1 "10 May 2008" "Version 0.4.0" "Canto"
 
 .SH NAME
 Canto \- An ncurses RSS reader
@@ -60,6 +60,10 @@ Select previous or next item. (next_item) (prev_item)
 .TP
 PGUP or PGDOWN
 Goto previous or next tag. (next_tag) (prev_tag)
+
+.TP
+RIGHT or LEFT
+Set item unread or read (just_unread) (just_read)
 
 .TP
 h
@@ -170,7 +174,7 @@ addfeed("Canto", "http://codezen.org/canto/feeds/latest", keep=10)
 .SH FILES
 .TP
 .I ~/.canto/conf
-Main configuration file. For advanced usage, see the online configuration documentation: http://codezen.org/canto-config
+Main configuration file. For advanced usage, see the online configuration documentation: http://codezen.org/canto/config
 
 .TP
 .I ~/.canto/log
