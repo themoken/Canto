@@ -34,10 +34,13 @@ class Renderer :
         else :
             base += "  "
 
-        if story.wasread():
-            base += "%3"
+        if story.marked():
+            base += "%1%B"
         else :
-            base += "%2%B"
+            if story.wasread():
+                base += "%3"
+            else :
+                base += "%2%B"
 
         return (base, 4, " ", 1, " %1%B│%b", 2)
 
