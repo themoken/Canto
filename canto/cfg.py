@@ -104,7 +104,15 @@ class Cfg:
 
         if update_first:
             print "Pausing to update feeds."
-            os.waitpid(utility.silentfork(self.bin_path + "/canto-fetch", 0), 0)
+            pid = utility.silentfork(self.bin_path + "/canto-fetch", 0)
+            while 1:
+                try:
+                    os.waitpid(pid, 0)
+                except OSError:
+                    print "Interrupted..."
+                    continue
+                break
+
             self.stories = []
             for f in self.feeds :
                 f.time = 1
