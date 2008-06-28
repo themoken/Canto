@@ -17,7 +17,7 @@ class ParsedFeed(list):
         self.clear()
         self.link_base = ""
 
-        p = xml.parsers.expat.ParserCreate("UTF-8")
+        p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = self.start
         p.EndElementHandler = self.end
         p.CharacterDataHandler = self.strings
