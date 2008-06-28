@@ -51,7 +51,7 @@ class Input :
             self.destroy()
             self.callfunc()
             return
-        elif t == (263, 0) and len(self.term) > 0 :
+        elif t == (curses.KEY_BACKSPACE, 0) and len(self.term) > 0 :
             self.term = self.term[:-1]
         elif t != (-1, 0) and t[0] < 256 and not t[1] : 
             self.term += chr(t[0])
