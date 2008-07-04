@@ -99,9 +99,6 @@ class Cfg:
         if only_conf:
             return
 
-        if len(self.feeds) == 0:
-            return
-
         if update_first:
             print "Pausing to update feeds."
             pid = utility.silentfork(self.bin_path + "/canto-fetch", 0)
@@ -118,6 +115,9 @@ class Cfg:
                 f.time = 1
                 f.tick()
                 self.stories.extend(f)
+
+        if len(self.feeds) == 0:
+            return
 
         self.key_list = self.conv_key_list(self.key_list)
         self.reader_key_list = self.conv_key_list(self.reader_key_list)
