@@ -69,12 +69,12 @@ class ParsedFeed(list):
         self.atom = 0
 
     def start(self, name, attrs):
-        if name in ["title", "content", "description"] :
+        if name in ["title", "content", "description", "summary"] :
             self.string = ""
             self.tag = name
             return
 
-        if self.tag == "content":
+        if self.tag in ["content", "summary"]:
             self.string += "<" + name
             for a in attrs.keys():
                 self.string += " %s=\"%s\"" % (a, attrs[a])
@@ -106,12 +106,16 @@ class ParsedFeed(list):
         self.string += data
 
     def end(self, name):
-        if self.tag == "content" and name != "content":
+        if self.tag in ["content", "summary"] and name != self.tag:
             self.string += "</%s>" % (name,)
             return
 
         if name in ["item", "entry"]:
-            for k in ["title", "description", "link"]:
+            if not self.item.has_key("description") and \
+                self.item.has_key("summary"):
+                self.item["description"] = self.item["summary"]
+                    
+            for k in ["title", "link", "description"]:
                 if not self.item.has_key(k):
                     self.item[k] = "None"
 
@@ -128,7 +132,7 @@ class ParsedFeed(list):
             self.string = self.entstrip(self.string.rstrip().lstrip())
             if not self.string : 
                 self.string = "None"
-            if name in ["title", "description"]:
+            if name in ["title", "description", "summary"]:
                 self.item[name] = self.string
             elif name == "link":
                 self.item["link"] = self.link_base + self.string
