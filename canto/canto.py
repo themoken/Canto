@@ -34,6 +34,7 @@ def print_usage():
     print "  -v        Print version info."
     print "  -g        Only generate server config."
     print "  -u        Fetch updates before running."
+    print "  -d [feed] Delete feed from filesystem."
     print "  -D [path] Set configuration directory. (~/.canto/)"
     print "  -C [path] Set configuration file. (~/.canto/conf)"
     print "  -L [path] Set client log file. (~/.canto/log)"
@@ -51,7 +52,7 @@ def main():
     locale.setlocale(locale.LC_ALL, "")
     conf_dir = None
     try :
-        optlist, arglist = getopt.getopt(sys.argv[1:], 'hvgD:C:L:S:O:F:u')
+        optlist, arglist = getopt.getopt(sys.argv[1:], 'hvgd:D:C:L:S:O:F:u')
     except getopt.GetoptError, e:
         print "Error: %s" % e.msg
         sys.exit(-1)
@@ -69,10 +70,13 @@ def main():
     feed_dir = conf_dir + "feeds/"
     only_conf = 0
     update_first = 0
+    del_feed = None
 
     for opt, arg in optlist :
         if opt == "-C" :
             conf_file = arg
+        elif opt == "-d":
+            del_feed = arg
         elif opt == "-L" :
             log_file = arg
         elif opt == "-F" :
@@ -95,7 +99,7 @@ def main():
     log_func = (lambda x : log(log_file, x, "a"))
 
     try :
-        i = cfg.Cfg(log_func, conf_file, serv_file, feed_dir, only_conf, update_first)
+        i = cfg.Cfg(log_func, conf_file, serv_file, feed_dir, del_feed, only_conf, update_first)
     except IndexError:
         print "You must update feeds, try `canto -u`"
         sys.exit(-1)

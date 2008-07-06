@@ -29,7 +29,7 @@ class Cfg:
     all of the options and functions required to drive the actual GUI. Input
     and signals are all routed to here and dispatched as necessary."""
 
-    def __init__(self, log, conf, sconf, feed_dir, only_conf, update_first):
+    def __init__(self, log, conf, sconf, feed_dir, del_feed, only_conf, update_first):
         self.browser_path = "/usr/bin/firefox \"%u\""
         self.text_browser = 0
         self.render = interface_draw.Renderer()
@@ -94,6 +94,20 @@ class Cfg:
         curses.endwin()
 
         self.parse()
+
+        if del_feed:
+            target = None
+            for feed in self.feeds:
+                if feed.handle == del_feed:
+                    feed.delete()
+                    self.feeds.remove(feed)
+                    self.gen_serverconf()
+                    print "Feed deleted from filesystem."
+                    return
+
+            print "Feed \"%s\" not found." % (del_feed,)
+            return
+                
         self.gen_serverconf()
 
         if only_conf:

@@ -14,6 +14,7 @@ import interface_draw
 import re
 import codecs
 import tag
+import os
 
 class Feed(tag.Tag):
     """Feed() encapsulates a feed directory and handles
@@ -62,9 +63,22 @@ class Feed(tag.Tag):
 
     def tick(self):
         self.time -= 1
-        if self.time <= 0 : 
+        if self.time <= 0:
             self.update()
             if len(self) == 0 :
                 self.time = 1
-            else :
+            else:
                 self.time = self.rate
+
+    def delete(self):
+        try:
+            os.unlink(self.path + "/../" + self.handle + ".idx")
+        except:
+            pass
+
+        try:
+            for i in os.listdir(self.path):
+                os.unlink(self.path + "/" + i)
+            os.rmdir(self.path)
+        except:
+            pass

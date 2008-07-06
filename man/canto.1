@@ -33,6 +33,10 @@ Only generate server configuration.
 Update feeds before launching client.
 
 .TP
+-d [feed]
+Delete feed from filesystem. Will remove from the server config (so that subsequent cron jobs don't continue to update a feed you don't want), but will not remove the feed from your ~/.canto/conf Python script.
+
+.TP
 -D [path]
 Set the configuration directory (default: ~/.canto/)
 
