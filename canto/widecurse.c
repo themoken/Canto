@@ -132,6 +132,41 @@ static void style_box(WINDOW *win, char code)
     }
 }
 
+static int putxy(WINDOW *win, int *width, int *i, int *y, int *x, char *str)
+{
+    if ((unsigned char) str[0] > 0x7F) {
+        wchar_t dest[2];
+        int bytes = mbtowc(dest, &str[0], 3) - 1;
+
+        if (bytes < 0)
+            mvwaddch(win, *y, (*x)++, str[0]);
+        else {
+            /* To deal with non-latin characters that can take
+               up more than one character's alotted width, 
+               with offset x by wcwidth(character) rather than 1 */
+
+            /* Took me forever to find that function, thanks
+               Andreas (newsbeuter) for that one. */
+
+            int rwidth = wcwidth(dest[0]);
+            if (rwidth > (width - *i))
+                return 0;
+
+            dest[1] = 0;
+            mvwaddwstr(win, *y, *x, dest);
+            *x += rwidth;
+
+            /* Move to the next character and kludge the width
+               to keep the for loop correct. */
+            *i += bytes;
+            *width += (bytes - (rwidth - 1));
+        }
+    } else
+        mvwaddch(win, *y, (*x)++, str[0]);
+
+    return 1;
+}
+
 static PyObject * mvw(PyObject *self, PyObject *args)
 {
     int y, x, width, wrap;
@@ -160,7 +195,7 @@ static PyObject * mvw(PyObject *self, PyObject *args)
         } else if (message[i] == '\\') {
             i++;
             width++;
-            mvwaddch(win, y, x++, message[i]);
+            putxy(win, &width, &i, &y, &x, &message[i]);
         } else if (message[i] == '%') {
             width += 2;
             i++;
@@ -168,45 +203,18 @@ static PyObject * mvw(PyObject *self, PyObject *args)
                 return Py_BuildValue("si", NULL, x);
             else
                 style_box(win, message[i]);
-          /* Handle printing unicode */
-        } else if ((unsigned char) message[i] > 0x7F) {
-            int bytes = 0;
-            wchar_t dest[2];
-            bytes = mbtowc(dest, &message[i], 3) - 1;
-            if (bytes < 0)
-                mvwaddch(win, y, x++, message[i]);
-            else {
-                /* To deal with non-latin characters that can take
-                   up more than one character's alotted width, 
-                   with offset x by wcwidth(character) rather than 1 */
+        } else { 
+            putxy(win, &width, &i, &y, &x, &message[i]);
 
-                /* Took me forever to find that function, thanks
-                   Andreas (newsbeuter) for that one. */
+            /* Handle intelligent wrapping on words by ensuring
+               that the next word can fit, or bail on the line. */
 
-                int rwidth = wcwidth(dest[0]);
-                if (rwidth > (width - i))
+            if ((wrap)&&(message[i] == ' ')) {
+                int tmp = theme_strlen(&message[i + 1], ' ');
+                if ((tmp >= (width - i)) && (tmp < width)) {
+                    i++;
                     break;
-
-                dest[1] = 0;
-                mvwaddwstr(win, y, x, dest);
-                x += rwidth;
-
-                /* Move to the next character and kludge the width
-                   to keep the for loop correct. */
-                i += bytes;
-                width += (bytes - (rwidth - 1));
-            }
-        } else
-            mvwaddch(win, y, x++, message[i]);
-
-        /* Handle intelligent wrapping on words by ensuring
-           that the next word can fit, or bail on the line. */
-
-        if ((wrap)&&(message[i] == ' ')) {
-            int tmp = theme_strlen(&message[i + 1], ' ');
-            if ((tmp >= (width - i)) && (tmp < width)) {
-                i++;
-                break;
+                }
             }
         }
     }
