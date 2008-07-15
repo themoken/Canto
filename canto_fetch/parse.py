@@ -51,7 +51,7 @@ class ParsedFeed(list):
         try :
             if num[0] in ['x','X']:
                 c = int(num[1:], 16)
-            else :
+            else:
                 c = int(num)
         except :
             return num
@@ -89,9 +89,9 @@ class ParsedFeed(list):
                 if attrs.has_key('rel') and attrs.has_key('href'):
                     if attrs['rel'] == "alternate":
                         self.string = attrs['href']
-                else :
+                else:
                     self.string = ""
-            else :
+            else:
                 self.string = ""
             self.tag = name
             return
@@ -130,7 +130,7 @@ class ParsedFeed(list):
 
         if self.tag == name :
             self.string = self.entstrip(self.string.rstrip().lstrip())
-            if not self.string : 
+            if not self.string:
                 self.string = "None"
             if name in ["title", "description", "summary"]:
                 self.item[name] = self.string

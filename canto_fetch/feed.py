@@ -34,7 +34,7 @@ class Feed :
 
         try:
             os.rename(self.idx, idxtmp)
-        except : 
+        except: 
             idxtmp = None
 
         try:
@@ -42,10 +42,13 @@ class Feed :
             try:
                 items = 0
                 for s in self.pf:
-                    if items >= self.keep :
+                    if items >= self.keep and s["title"] not in [x["title"] for x in self.pf[:items + 1]]:
                         str = self.sanitize_path(s["title"])
-                        os.unlink(self.path + "/" + str)
-                    else :
+                        try:
+                            os.unlink(self.path + "/" + str)
+                        except:
+                            pass
+                    else:
                         fsock.write(s["title"] + "\00")
                         items += 1
                 
@@ -59,7 +62,7 @@ class Feed :
                                     if items >= self.keep :
                                         str = self.sanitize_path(l)
                                         os.unlink(self.path + "/" + str)
-                                    else :
+                                    else:
                                         fsock.write(l + "\00")
                                         items += 1
                         finally :
