@@ -17,7 +17,7 @@ class Feed :
 
     def search_entries(self, string):
         for s in self.pf:
-            if s["title"] == string:
+            if s["title"] + " " + str(s["hash"]) == string:
                 return 1
         return 0
 
@@ -42,14 +42,14 @@ class Feed :
             try:
                 items = 0
                 for s in self.pf:
-                    if items >= self.keep and s["title"] not in [x["title"] for x in self.pf[:items + 1]]:
-                        str = self.sanitize_path(s["title"])
+                    if items >= self.keep:
+                        st = self.sanitize_path(s["title"] + " " + str(s["hash"]))
                         try:
-                            os.unlink(self.path + "/" + str)
+                            os.unlink(self.path + "/" + st)
                         except:
                             pass
                     else:
-                        fsock.write(s["title"] + "\00")
+                        fsock.write(s["title"] + " " + str(s["hash"]) + "\00")
                         items += 1
                 
                 if idxtmp :
@@ -60,8 +60,8 @@ class Feed :
                             for l in lines:
                                 if not self.search_entries(l):
                                     if items >= self.keep :
-                                        str = self.sanitize_path(l)
-                                        os.unlink(self.path + "/" + str)
+                                        st = self.sanitize_path(l)
+                                        os.unlink(self.path + "/" + st)
                                     else:
                                         fsock.write(l + "\00")
                                         items += 1
@@ -76,8 +76,8 @@ class Feed :
             raise
 
     def dump_to_files(self):
-        for s in self.pf :
-            sanpath = self.sanitize_path(s["title"])
+        for s in self.pf:
+            sanpath = self.sanitize_path(s["title"] + " " + str(s["hash"]))
             fullpath = self.path + "/" + sanpath
             fullpath = fullpath.encode("utf-8", "ignore")
 

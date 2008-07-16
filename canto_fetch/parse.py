@@ -111,6 +111,9 @@ class ParsedFeed(list):
             return
 
         if name in ["item", "entry"]:
+            # Default to summary, instead of description, if 
+            # necessary
+
             if not self.item.has_key("description") and \
                 self.item.has_key("summary"):
                 self.item["description"] = self.item["summary"]
@@ -124,6 +127,9 @@ class ParsedFeed(list):
 
             if self.item["title"].startswith("."):
                 self.item["title"] = " " + self.item["title"]
+
+            self.item["hash"] = abs((hash(self.item["link"]) / 8) + \
+                    (hash(self.item["description"])))
 
             self.append(self.item)
             self.clear()
