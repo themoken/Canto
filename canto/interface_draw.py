@@ -16,7 +16,7 @@ class Renderer :
         if tag.collapsed:
             if tag[0].selected():
                 return "%B > " + t + "%C\n\n"
-            else :
+            else:
                 return "%B   " + t + "%C\n\n"
         
         s = u"─" * (width - 2)
@@ -31,15 +31,15 @@ class Renderer :
     
         if story.selected() :
             base += "%B>%b "
-        else :
+        else:
             base += "  "
 
         if story.marked():
             base += "%1%B"
-        else :
+        else:
             if story.wasread():
                 base += "%3"
-            else :
+            else:
                 base += "%2%B"
 
         return (base, 4, " ", 1, " %1%B│%b", 2)
@@ -75,10 +75,10 @@ class Renderer :
             winidx, winrow = divmod(row, height)
             if winidx >= len(window_list):
                 window = None
-            else :
+            else:
                 window = window_list[winidx]
             return (window, winrow)
-        else :
+        else:
             return (window_list[0], row)
 
     def simple_out(self, s, row, height, width, window_list):
@@ -98,16 +98,16 @@ class Renderer :
 
             if line == 0:
                 start, slen, rep, rlen, end, elen = first
-            else :
+            else:
                 start, slen, rep, rlen, end, elen = mid
 
             if tlen(s) <= width - (slen + elen):
                 if tlen(s) <= width - (last[1] + last[3]):
                     if line == 0:
                         rep, rlen, end, elen = last[2:]
-                    else :
+                    else:
                         start, slen, rep, rlen, end, elen = last
-                else :
+                else:
                     s += '\n'
 
             x = core(window, winrow,x, slen, 0, start)[1]

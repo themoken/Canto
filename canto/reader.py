@@ -31,8 +31,9 @@ class Reader :
     def refresh(self, height, width):
         """Refresh the window. With the reader, the line is written twice, to gauge the size
            and then two actually display it to the new sized window."""
-
-        self.links =  utility.getlinks(self.story["descr"])
+        
+        self.links = [(self.story["link"], "main link")]
+        self.links.extend(utility.getlinks(self.story["descr"]))
 
         # Get the size.
         self.lines = self.cfg.render.reader(self.story, width, self.links, self.show_links, None)
@@ -66,7 +67,7 @@ class Reader :
     def page_down(self):
         if self.more > self.height:
             self.offset += self.height
-        else :
+        else:
             self.offset = self.lines - self.height
 
     def scroll_up(self):
@@ -85,7 +86,7 @@ class Reader :
         except : return
 
         if i in range(len(self.links) + 1) :
-            self.cfg.goto(self.links[i - 1][0])
+            self.cfg.goto(self.links[i][0])
         self.draw_elements()
 
     def goto(self):
