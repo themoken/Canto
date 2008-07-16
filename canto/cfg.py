@@ -85,6 +85,12 @@ class Cfg:
         
         self.columns = 1
 
+        # We have to do this here, otherwise it won't
+        # appear until after canto  is closed.
+
+        if update_first:
+            print "Pausing to update feeds. Wait a moment."
+
         # Start ncurses for two shakes, to get the term's
         # height and width so that the config can 
         # use the info.
@@ -114,7 +120,6 @@ class Cfg:
             return
 
         if update_first:
-            print "Pausing to update feeds."
             pid = utility.silentfork(self.bin_path + "/canto-fetch", 0)
             while 1:
                 try:
