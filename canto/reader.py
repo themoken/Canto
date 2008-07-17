@@ -85,7 +85,7 @@ class Reader :
         try : i = int(s)
         except : return
 
-        if i in range(len(self.links) + 1) :
+        if i in range(len(self.links)) :
             self.cfg.goto(self.links[i][0])
         self.draw_elements()
 

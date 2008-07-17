@@ -150,7 +150,7 @@ class Renderer :
         if show_links:
             row = f("\n", row)
             for idx,link in enumerate(links):
-                row = f(self.reader_link(idx + 1, link), row)
+                row = f(self.reader_link(idx, link), row)
         row = self.simple_out(self.reader_foot(story, width), row, -1, width, [window])
         return row
 
