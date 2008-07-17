@@ -68,7 +68,7 @@ def log(path, str, mode="a"):
 def main():
     MAJOR = 0
     MINOR = 4
-    REV = 0
+    REV = 2
 
     if len(sys.argv) == 1:
         home = os.getenv("HOME")

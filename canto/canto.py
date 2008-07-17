@@ -47,7 +47,7 @@ def main():
 
     MAJOR = 0
     MINOR = 4
-    REV = 1
+    REV = 2
 
     locale.setlocale(locale.LC_ALL, "")
     conf_dir = None
