@@ -14,7 +14,7 @@ class Canto_install_data(install_data):
         os.system("sed -ie 's/SETUPPY_SET_BIN_PATH/\"" + install_cmd.install_scripts.replace('/', '\\/') + "\"/g' " + libdir + "/canto/cfg.py")
 
 setup(name='Canto',
-        version='0.4.1',
+        version='0.4.2',
         description='An ncurses RSS aggregator.',
         author='Jack Miller',
         author_email='jack@codezen.org',
