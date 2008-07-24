@@ -24,6 +24,10 @@ class ConfigError(Exception):
     def __str__(self):
         return repr(self.value)
 
+class FeedError(Exception):
+    def __str__(self):
+        return repr(self.value)
+
 class Cfg:
     """Cfg() is the class encompassing the configuration of Canto. It contains
     all of the options and functions required to drive the actual GUI. Input
@@ -108,11 +112,8 @@ class Cfg:
                     feed.delete()
                     self.feeds.remove(feed)
                     self.gen_serverconf()
-                    print "Feed deleted from filesystem."
                     return
-
-            print "Feed \"%s\" not found." % (del_feed,)
-            return
+            raise FeedError
                 
         self.gen_serverconf()
 

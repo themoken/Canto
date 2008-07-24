@@ -105,12 +105,18 @@ def main():
         sys.exit(-1)
     except cfg.ConfigError:
         sys.exit(-1)
+    except cfg.FeedError:
+        print "Feed not found."
+        sys.exit(-1)
     except :
         curses.endwin()
         print "Caught exception."
         traceback.print_exc()
         sys.exit(-1)
 
+    if del_feed:
+        print "Feed deleted."
+        sys.exit(0)
     if only_conf:
         print "Server config generated."
         sys.exit(0)
