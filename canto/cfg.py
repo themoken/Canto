@@ -179,7 +179,7 @@ class Cfg:
         if type(c) == int:
             if 0 <= c <= 7:
                 return c
-            else :
+            else:
                 self.log("Color out of range: %d\n" % (c, ))
                 return 0
         elif type(c) == str:
@@ -206,7 +206,7 @@ class Cfg:
         #For some reason, RETURN isn't in curses
         elif s == "KEY_RETURN":
             return (10, 0)
-        else :
+        else:
             return (getattr(curses, s), 0)
 
     def conv_key_list(self, dict):
@@ -230,12 +230,12 @@ class Cfg:
 
         if kwargs.has_key("keep"):
             keep = kwargs["keep"]
-        else :
+        else:
             keep = self.default_keep
 
         if kwargs.has_key("rate"):
             rate = kwargs["rate"]
-        else :
+        else:
             rate = self.default_rate
 
         self.feeds.append(feed.Feed(self, self.feed_dir + handle, handle, URL, rate, keep))
@@ -278,8 +278,10 @@ class Cfg:
             "colors" : self.colors}
 
         self.log("Parsing %s\n" % self.path)
+        data = codecs.open(self.path, "r").read()
+
         try :
-            execfile(self.path, {}, locals)
+            exec(data, {}, locals)
         except :
             print "Invalid line in config."
             traceback.print_exc()
@@ -303,8 +305,10 @@ class Cfg:
             fsock = codecs.open(self.sconf, "w", "UTF-8", "ignore")
             try :
                 for f in self.feeds:
-                    fsock.write("add \"%s\" \"%s\" \"%d\" \"%d\"\n" \
-                            % (f.handle, f.URL, f.rate, f.keep))
+                    fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\"\n" \
+                            % (f.handle.decode("UTF-8"), 
+                               f.URL.decode("UTF-8"), 
+                               f.rate, f.keep))
             finally :
                 fsock.close()
         except IOError:
@@ -346,9 +350,9 @@ class Cfg:
             k2 = self.stdscr.getch()
             if k2 >= 64:
                 t = (k2 - 64, 1)
-            else :
+            else:
                 t = (k, 0)
-        else :
+        else:
             t = (k, 0)
 
         # Pass the vetted key to the last of all handlers.
