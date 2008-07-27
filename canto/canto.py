@@ -45,9 +45,7 @@ def main():
     command line arguments. However it's also host to the
     infinite loop that calls Cfg.loop."""
 
-    MAJOR = 0
-    MINOR = 4
-    REV = 2
+    MAJOR,MINOR,REV = VERSION_TUPLE
 
     locale.setlocale(locale.LC_ALL, "")
     conf_dir = None
