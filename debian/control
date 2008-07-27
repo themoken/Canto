@@ -1,0 +1,12 @@
+Package: canto
+Version: VERSION
+Section: net
+Priority: optional
+Architecture: i386
+Depends: python (>= 2.5.0), libc6, libncursesw5
+Maintainer: Jack Miller <jack@codezen.org>
+Homepage: http://codezen.org/canto
+Description: A flexible ncurses RSS/Atom newsreader
+ Eschewing the traditional three-pane display, in favor of
+ a headline list approach.
+
