@@ -5,7 +5,7 @@ from distutils.command.install_data import install_data
 import os
 
 version = ['0','4','3']
-man_date = "17 July 2008"
+man_date = "27 July 2008"
 
 class Canto_install_data(install_data):
     def run(self):
