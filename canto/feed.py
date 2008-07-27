@@ -24,6 +24,7 @@ class Feed(tag.Tag):
         tag.Tag.__init__(self)
         self.path = dirpath
         self.handle = handle
+        self.safehandle = self.handle.replace("/", " ")
         self.URL = URL
         self.cfg = cfg
 
@@ -39,7 +40,7 @@ class Feed(tag.Tag):
 
         newlist = []
         try:
-            fsock = codecs.open(self.path + "/../" + self.handle + ".idx", "r", "UTF-8", "ignore")
+            fsock = codecs.open(self.path + "/../" + self.safehandle + ".idx", "r", "UTF-8", "ignore")
             try:
                 data = fsock.read().split("\00")[:-1]
             finally:
@@ -51,7 +52,7 @@ class Feed(tag.Tag):
 
         except IOError:
             pass
-        
+
         for i in range(len(newlist)):
             r = self.search_stories(newlist[i])
             if r != -1 :
@@ -72,7 +73,7 @@ class Feed(tag.Tag):
 
     def delete(self):
         try:
-            os.unlink(self.path + "/../" + self.handle + ".idx")
+            os.unlink(self.path + "/../" + self.safehandle + ".idx")
         except:
             pass
 

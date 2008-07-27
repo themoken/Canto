@@ -16,6 +16,7 @@ class Canto_install_data(install_data):
         mandir = install_cmd.install_data + "/share/man/man1/"
 
         os.system("sed -ie 's/VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + "/canto/canto.py")
+        os.system("sed -ie 's/VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + "/canto_fetch/canto_fetch.py")
         os.system("sed -ie 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + "canto.1")
         os.system("sed -ie 's/MAN_DATE/" + man_date + "/g' " + mandir + "canto.1")
 

@@ -238,7 +238,7 @@ class Cfg:
         else:
             rate = self.default_rate
 
-        self.feeds.append(feed.Feed(self, self.feed_dir + handle, handle, URL, rate, keep))
+        self.feeds.append(feed.Feed(self, self.feed_dir + handle.replace("/", " "), handle, URL, rate, keep))
         self.stories.extend(self.feeds[-1])
 
     def set_default_rate(self, rate):
@@ -323,8 +323,8 @@ class Cfg:
 
         self.log("Got SIGWINCH\n")
 
-        curses.endwin();
-        self.stdscr.refresh();
+        curses.endwin()
+        self.stdscr.refresh()
         self.height, self.width = self.stdscr.getmaxyx()
         self.stdscr.keypad(1)
         for g in self.key_handlers :

@@ -50,7 +50,7 @@ class Cfg(list):
 
     def __add_feed(self, (handle, URL, rate, keep)):
         self.log("Add Feed %s\n" % handle)
-        dir = self.feed_dir + handle
+        dir = self.feed_dir + handle.replace("/", " ")
         self.__safe_mkdir(dir)
         self.append(feed.Feed(dir, handle, URL, int(rate), int(keep), self.log))
 
@@ -66,9 +66,7 @@ def log(path, str, mode="a"):
         pass
 
 def main():
-    MAJOR = 0
-    MINOR = 4
-    REV = 2
+    MAJOR,MINOR,REV = VERSION_TUPLE
 
     if len(sys.argv) == 1:
         home = os.getenv("HOME")
@@ -78,7 +76,7 @@ def main():
     elif len(sys.argv) != 4:
         print "USAGE: canto-fetch <conf file> <feed dir> <log file>"
         sys.exit(-1)
-    else :
+    else:
         conf = sys.argv[1]
         path = sys.argv[2]
         log_file = sys.argv[3]
