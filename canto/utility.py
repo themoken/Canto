@@ -36,22 +36,20 @@ def silentfork(path, text):
     """Fork/exec a path with args, ensure it's quiet."""
 
     args = qasplit(path)        
-    os.setpgid(os.getpid(), os.getpid())
     pid = os.fork()
     if not pid :
         if not text :
             os.close(sys.stdout.fileno())
         os.close(sys.stderr.fileno())
-        os.setpgid(os.getpid(), os.getpid())
         os.execve(args[0], args, os.environ)
         sys.exit(-1)
+
     if text :
         s = signal.getsignal(signal.SIGALRM)
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
-        os.tcsetpgrp(sys.stdin.fileno(), pid)
         os.waitpid(pid, 0)
-        os.tcsetpgrp(sys.stdin.fileno(), os.getpid())
         signal.signal(signal.SIGALRM, s)
+
     return pid
 
 def getlinks(string):
