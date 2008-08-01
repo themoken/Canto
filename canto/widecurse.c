@@ -200,20 +200,17 @@ static PyObject * mvw(PyObject *self, PyObject *args)
                 return Py_BuildValue("si", NULL, x);
             else
                 style_box(win, message[i]);
-        } else { 
-            putxy(win, width, &i, &y, &x, &message[i]);
-
-            /* Handle intelligent wrapping on words by ensuring
-               that the next word can fit, or bail on the line. */
-
-            if ((wrap)&&(message[i] == ' ')) {
+        } else if ((wrap)&&(message[i] == ' ')) {
                 int tmp = theme_strlen(&message[i + 1], ' ');
                 if ((tmp >= (width - x)) && (tmp < width)) {
                     i++;
                     break;
                 }
-            }
-        }
+                else
+                    putxy(win, width, &i, &y, &x, &message[i]);
+        } else
+            putxy(win, width, &i, &y, &x, &message[i]);
+
     }
 
     return Py_BuildValue("si", &message[i], x);
