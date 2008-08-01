@@ -96,6 +96,11 @@ class ParsedFeed(list):
             self.tag = name
             return
 
+        if name == "guid":
+            if attrs.has_key('isPermaLink') and attrs['isPermaLink'] == "true":
+                self.string = ""
+                self.tag = name
+    
         if name in ["item", "entry"]:
             self.clear()
             if name == "entry":
@@ -117,6 +122,13 @@ class ParsedFeed(list):
             if not self.item.has_key("description") and \
                 self.item.has_key("summary"):
                 self.item["description"] = self.item["summary"]
+
+            # Default link to guid isPermaLink, if no other
+            # link specified.
+
+            if not self.item.has_key("link") and \
+                self.item.has_key("guid"):
+                self.item["link"] = self.item["guid"]
                     
             for k in ["title", "link", "description"]:
                 if not self.item.has_key(k):
@@ -140,8 +152,8 @@ class ParsedFeed(list):
                 self.string = "None"
             if name in ["title", "description", "summary"]:
                 self.item[name] = self.string
-            elif name == "link":
-                self.item["link"] = self.link_base + self.string
+            elif name in ["link", "guid"]:
+                self.item[name] = self.link_base + self.string
             elif name == "content":
                 self.item["description"] = self.string
             self.tag = ""
