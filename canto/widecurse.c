@@ -132,7 +132,7 @@ static void style_box(WINDOW *win, char code)
     }
 }
 
-static int putxy(WINDOW *win, int *width, int *i, int *y, int *x, char *str)
+static int putxy(WINDOW *win, int width, int *i, int *y, int *x, char *str)
 {
     if ((unsigned char) str[0] > 0x7F) {
         wchar_t dest[2];
@@ -149,17 +149,13 @@ static int putxy(WINDOW *win, int *width, int *i, int *y, int *x, char *str)
                Andreas (newsbeuter) for that one. */
 
             int rwidth = wcwidth(dest[0]);
-            if (rwidth > (width - *i))
+            if (rwidth > (width - *x))
                 return 0;
 
             dest[1] = 0;
             mvwaddwstr(win, *y, *x, dest);
             *x += rwidth;
-
-            /* Move to the next character and kludge the width
-               to keep the for loop correct. */
             *i += bytes;
-            *width += (bytes - (rwidth - 1));
         }
     } else
         mvwaddch(win, *y, (*x)++, str[0]);
@@ -182,36 +178,37 @@ static PyObject * mvw(PyObject *self, PyObject *args)
         win = ((PyCursesWindowObject *)window)->win;
     else
         win = NULL;
+    
+    /* Make width relative to current x */
+    width += x;
 
     int i = 0;
-    for (i = 0; i <= width; i++) {
+    for (i = 0; x <= width; i++) {
         if (!message[i]) {
             return Py_BuildValue("si", NULL, x);
         } else if (message[i] == '\n') {
+            i++;
             wmove(win, y, x);
             wclrtoeol(win);
-            i++;
             break;
         } else if (message[i] == '\\') {
             i++;
-            width++;
-            putxy(win, &width, &i, &y, &x, &message[i]);
+            putxy(win, width, &i, &y, &x, &message[i]);
         } else if (message[i] == '%') {
-            width += 2;
             i++;
             if (!message[i])
                 return Py_BuildValue("si", NULL, x);
             else
                 style_box(win, message[i]);
         } else { 
-            putxy(win, &width, &i, &y, &x, &message[i]);
+            putxy(win, width, &i, &y, &x, &message[i]);
 
             /* Handle intelligent wrapping on words by ensuring
                that the next word can fit, or bail on the line. */
 
             if ((wrap)&&(message[i] == ' ')) {
                 int tmp = theme_strlen(&message[i + 1], ' ');
-                if ((tmp >= (width - i)) && (tmp < width)) {
+                if ((tmp >= (width - x)) && (tmp < width)) {
                     i++;
                     break;
                 }
@@ -225,7 +222,7 @@ static PyObject * mvw(PyObject *self, PyObject *args)
 
 static PyMethodDef MvWMethods[] = {
     {"core", mvw, METH_VARARGS, "Wide char print."},
-    {"tlen", tlen, METH_VARARGS, "Len ignoring theme escpaes, and accounting for Unicode character width."},
+    {"tlen", tlen, METH_VARARGS, "Len ignoring theme escapes, and accounting for Unicode character width."},
     {NULL, NULL, 0, NULL}
 };
 
