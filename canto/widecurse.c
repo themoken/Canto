@@ -157,7 +157,7 @@ static int putxy(WINDOW *win, int width, int *i, int *y, int *x, char *str)
 
             int rwidth = wcwidth(dest[0]);
             if (rwidth > (width - *x))
-                return 0;
+                return 1;
 
             dest[1] = 0;
             mvwaddwstr(win, *y, *x, dest);
@@ -167,7 +167,7 @@ static int putxy(WINDOW *win, int width, int *i, int *y, int *x, char *str)
     } else
         mvwaddch(win, *y, (*x)++, str[0]);
 
-    return 1;
+    return 0;
 }
 
 static int do_char(WINDOW *win, int width, int *i, int *y, int *x, char *str)
@@ -191,8 +191,8 @@ static int do_char(WINDOW *win, int width, int *i, int *y, int *x, char *str)
         }
         else
             putxy(win, width, i, y, x, &str[*i]);
-    } else
-        putxy(win, width, i, y, x, &str[*i]);
+    } else if(putxy(win, width, i, y, x, &str[*i]))
+        return -2;
 
     return 0;
 }

@@ -22,7 +22,7 @@ class Renderer :
         return [("%B   " + t, " ", "%C"),("%B┌", "─", "┐%C")]
 
     def tag_foot(self, tag):
-        return [("%B└", "─", "┘%C\n")]
+        return [("%1%B└", "─", "┘%C\n")]
 
     def firsts(self, story):
         base = "%C%1%B│%b "
@@ -40,13 +40,13 @@ class Renderer :
             else:
                 base += "%2%B"
 
-        return (base, " ", " %1%B│%b")
+        return (base, " ", " %1%B│%b%0")
 
     def mids(self, story):
-        return ("%B│%b%0      ", " ", " %1%B│%b")
+        return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
     def ends(self, story):
-        return ("%B│%b%0      ", " ", " %1%B│%b")
+        return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
     def reader_head(self, story):
         return [("%1%B" + story["title"], " ", " "),("┌","─","┐%C\n")]
@@ -108,7 +108,15 @@ class Renderer :
                 else:
                     start, rep, end = l[2]
 
+                t = s
                 s = core(window, winrow, 0, width, start + s, rep, end)[0]
+
+                # Detect an infinite loop caused by start, and canto
+                # trying to be smart about wrapping =).
+
+                if s and s.endswith(t):
+                    s = core(window, winrow, 0, width, s, " ","")[0]
+
                 line += 1
 
         return row + line
