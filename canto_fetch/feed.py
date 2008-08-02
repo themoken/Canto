@@ -5,12 +5,11 @@ import codecs
 import time
 
 class Feed :
-    def __init__(self, dir_path, handle, URL, rate, keep, title_key, log_func):
+    def __init__(self, dir_path, handle, URL, rate, keep, log_func):
         self.handle = handle
         self.URL = URL
         self.rate = rate
         self.keep = keep
-        self.title_key = title_key
         self.pf = None
         self.log = log_func
         self.path = dir_path
@@ -18,12 +17,8 @@ class Feed :
 
     def search_entries(self, string):
         for s in self.pf:
-            if not self.title_key:
-                if s["title"] + " " + str(s["hash"]) == string:
-                    return 1
-            else:
-                if s["title"][:s["title"].rfind(" ")] == string:
-                    return 1
+            if s["title"] + " " + str(s["hash"]) == string:
+                return 1
         return 0
 
     def sanitize_path(self, string):
@@ -34,6 +29,7 @@ class Feed :
         self.log("Updating %s\n" % self.handle)
         self.pf = parse.ParsedFeed(self.URL, self.log)
         self.dump_to_files()
+        self.log("Dumped.\n")
         idxtmp = self.idx + ".tmp"
 
         try:
@@ -46,8 +42,7 @@ class Feed :
             try:
                 items = 0
                 for s in self.pf:
-                    if items >= self.keep or (self.title_key and s["title"] in [x["title"] for x in self.pf[:items]]):
-                        print s
+                    if items >= self.keep:
                         st = self.sanitize_path(s["title"] + " " + str(s["hash"]))
                         try:
                             os.unlink(self.path + "/" + st)

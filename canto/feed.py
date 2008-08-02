@@ -20,17 +20,15 @@ class Feed(tag.Tag):
     """Feed() encapsulates a feed directory and handles
     all updates in that feed directory when ticked()"""
 
-    def __init__(self, cfg, dirpath, handle, URL, rate, keep, title_key):
+    def __init__(self, cfg, dirpath, handle, URL, rate, keep):
         tag.Tag.__init__(self)
-        self.title_key = title_key
         self.path = dirpath
         self.handle = handle
         self.safehandle = self.handle.replace("/", " ")
         self.URL = URL
         self.cfg = cfg
 
-        if self.path:
-            self.update()
+        if self.path : self.update()
 
         self.rate = rate
         self.time = 1
