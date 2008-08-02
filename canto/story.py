@@ -35,7 +35,7 @@ class Story(dict):
 
             self["tags"] = data.pop().split(',')
             for tag in ["descr", "link", "title"]:
-                self[tag] = utility.stripchars(data.pop())
+                self[tag] = utility.stripchars(data.pop()).encode("UTF-8")
 
         except IOError:
             pass

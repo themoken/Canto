@@ -163,15 +163,47 @@ static int putxy(WINDOW *win, int width, int *i, int *y, int *x, char *str)
     return 1;
 }
 
+static int do_char(WINDOW *win, int width, int *i, int *y, int *x, char *str)
+{
+    if (!str[*i]) {
+        return -1;
+    } else if (str[*i] == '\\') {
+        (*i)++;
+        putxy(win, width, i, y, x, &str[*i]);
+    } else if (str[*i] == '%') {
+        (*i)++;
+        if (!str[(*i)])
+            return -1;
+        else
+            style_box(win, str[*i]);
+    } else if (str[*i] == ' ') {
+        int tmp = theme_strlen(&str[*i + 1], ' ');
+        if ((tmp >= (width - *x)) && (tmp < width)) {
+            (*i)++;
+            return -2;
+        }
+        else
+            putxy(win, width, i, y, x, &str[*i]);
+    } else
+        putxy(win, width, i, y, x, &str[*i]);
+
+    return 0;
+}
+
 static PyObject * mvw(PyObject *self, PyObject *args)
 {
-    int y, x, width, wrap;
-    char *message;
+    int y, x, width, rep_len, end_len, ret;
+    char *message, *rep, *end;
+    const char *m_enc, *r_enc, *e_enc;
     PyObject *window;
     WINDOW *win;
 
-    if(!PyArg_ParseTuple(args, "Oiiiis", 
-                &window, &y, &x, &width, &wrap, &message))
+    /* We use the 'et' format because we don't want Python
+       to touch the encoding and generate Unicode Exceptions */
+
+    if(!PyArg_ParseTuple(args, "Oiiietetet", 
+                &window, &y, &x, &width, &m_enc, &message,
+                &r_enc, &rep, &e_enc, &end))
             return NULL;
 
     if (window != Py_None)
@@ -179,41 +211,30 @@ static PyObject * mvw(PyObject *self, PyObject *args)
     else
         win = NULL;
     
+    rep_len = strlen(rep);
+    end_len = theme_strlen(end, 0);
+
     /* Make width relative to current x */
     width += x;
 
     int i = 0;
-    for (i = 0; x <= width; i++) {
-        if (!message[i]) {
-            return Py_BuildValue("si", NULL, x);
-        } else if (message[i] == '\n') {
-            i++;
-            wmove(win, y, x);
-            wclrtoeol(win);
+    for (i = 0; x < (width - end_len); i++) {
+        ret = do_char(win, width - end_len, &i, &y, &x, message);
+        if(ret)
             break;
-        } else if (message[i] == '\\') {
-            i++;
-            putxy(win, width, &i, &y, &x, &message[i]);
-        } else if (message[i] == '%') {
-            i++;
-            if (!message[i])
-                return Py_BuildValue("si", NULL, x);
-            else
-                style_box(win, message[i]);
-        } else if ((wrap)&&(message[i] == ' ')) {
-                int tmp = theme_strlen(&message[i + 1], ' ');
-                if ((tmp >= (width - x)) && (tmp < width)) {
-                    i++;
-                    break;
-                }
-                else
-                    putxy(win, width, &i, &y, &x, &message[i]);
-        } else
-            putxy(win, width, &i, &y, &x, &message[i]);
-
     }
 
-    return Py_BuildValue("si", &message[i], x);
+    int j = 0;
+    for(j = 0; x < (width - end_len); j = (j + 1) % rep_len)
+        do_char(win, width - end_len, &j, &y, &x, rep);
+
+    for(j = 0; end[j]; j++)
+        do_char(win, width, &j, &y, &x, end);
+
+    if (ret == -1)
+        return Py_BuildValue("si", NULL, x);
+    else
+        return Py_BuildValue("si", &message[i], x);
 }
 
 
