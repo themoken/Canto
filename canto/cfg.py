@@ -260,12 +260,17 @@ class Cfg:
         else:
             keep = self.default_keep
 
+        if kwargs.has_key("title_key"):
+            title_key = kwargs["title_key"]
+        else:
+            title_key = 1
+
         if kwargs.has_key("rate"):
             rate = kwargs["rate"]
         else:
             rate = self.default_rate
 
-        self.feeds.append(feed.Feed(self, self.feed_dir + handle.replace("/", " "), handle, URL, rate, keep))
+        self.feeds.append(feed.Feed(self, self.feed_dir + handle.replace("/", " "), handle, URL, rate, keep, title_key))
         self.stories.extend(self.feeds[-1])
 
     def set_default_rate(self, rate):
@@ -332,10 +337,10 @@ class Cfg:
             fsock = codecs.open(self.sconf, "w", "UTF-8", "ignore")
             try :
                 for f in self.feeds:
-                    fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\"\n" \
+                    fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\" \"%d\"\n" \
                             % (f.handle.decode("UTF-8"), 
                                f.URL.decode("UTF-8"), 
-                               f.rate, f.keep))
+                               f.rate, f.keep, f.title_key))
             finally :
                 fsock.close()
         except IOError:
