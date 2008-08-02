@@ -17,7 +17,7 @@ class Renderer :
             if tag[0].selected():
                 return [("%B > " + t + "%C", " ", " "),(" "," "," ")]
             else:
-                return [("%B   " + t + "%C)"," ", " "),(" "," "," ")]
+                return [("%B   " + t + "%C"," ", " "),(" "," "," ")]
         
         return [("%B   " + t, " ", "%C"),("%B┌", "─", "┐%C")]
 
