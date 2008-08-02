@@ -33,7 +33,7 @@ class Cfg:
     all of the options and functions required to drive the actual GUI. Input
     and signals are all routed to here and dispatched as necessary."""
 
-    def __init__(self, log, conf, sconf, feed_dir, del_feed, only_conf, update_first):
+    def __init__(self, log, conf_dir, conf, sconf, feed_dir, del_feed, only_conf, update_first, new_ct, feed_ct, feed_list):
         self.browser_path = "/usr/bin/firefox \"%u\""
         self.text_browser = 0
         self.render = interface_draw.Renderer()
@@ -80,6 +80,7 @@ class Cfg:
         self.default_rate = 5
         self.default_keep = 40
 
+        self.conf_dir = conf_dir
         self.path = conf
         self.sconf = sconf
         self.feed_dir = feed_dir
@@ -88,6 +89,8 @@ class Cfg:
         self.key_handlers = []
         
         self.columns = 1
+        self.height = 0
+        self.width = 0
 
         # We have to do this here, otherwise it won't
         # appear until after canto  is closed.
@@ -95,13 +98,15 @@ class Cfg:
         if update_first:
             print "Pausing to update feeds. Wait a moment."
 
-        # Start ncurses for two shakes, to get the term's
-        # height and width so that the config can 
-        # use the info.
+        if not del_feed and not only_conf and not new_ct\
+                and not feed_list:
+            # Start ncurses for two shakes, to get the term's
+            # height and width so that the config can 
+            # use the info.
 
-        self.stdscr = curses.initscr()
-        self.height, self.width = self.stdscr.getmaxyx()
-        curses.endwin()
+            self.stdscr = curses.initscr()
+            self.height, self.width = self.stdscr.getmaxyx()
+            curses.endwin()
 
         self.parse()
 
@@ -121,7 +126,8 @@ class Cfg:
             return
 
         if update_first:
-            pid = utility.silentfork(self.bin_path + "/canto-fetch", 0)
+            pid = utility.silentfork(self.bin_path + "/canto-fetch " +\
+                   self.sconf + " " + self.feed_dir + " " + self.conf_dir + "/slog" , 0)
             while 1:
                 try:
                     os.waitpid(pid, 0)
@@ -137,6 +143,27 @@ class Cfg:
                 self.stories.extend(f)
 
         if len(self.feeds) == 0:
+            return
+
+        if feed_list:
+            for feed in self.feeds:
+                print feed.handle
+            return
+
+        if new_ct:
+            if feed_ct:
+                for feed in self.feeds:
+                    if feed.handle == feed_ct:
+                        feed.update()
+                        t = tag.Tag(feed_ct)
+                        t.extend(feed)
+                        print t.unread
+            else:
+                t = tag.Tag()
+                for feed in self.feeds:
+                    feed.update()
+                    t.extend(feed)
+                print t.unread
             return
 
         self.key_list = self.conv_key_list(self.key_list)
