@@ -61,10 +61,10 @@ class Renderer :
         return ("%B│%b%1 ", " ", " %1%B│%b")
 
     def rmids(self, story):
-        return ("%B│%b%1 ", " ", " %1%B│%b")
+        return ("%B│%b%0 ", " ", " %1%B│%b")
     
     def rends(self, story):
-        return ("%B│%b%1 ", " ", " %1%B│%b")
+        return ("%B│%b%0 ", " ", " %1%B│%b")
 
     def __window(self, row, height, window_list):
         if height != -1:
