@@ -19,6 +19,8 @@ class Canto_install_data(install_data):
         os.system("sed -i 's/VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + "/canto_fetch/canto_fetch.py")
         os.system("sed -i 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + "canto.1")
         os.system("sed -i 's/MAN_DATE/" + man_date + "/g' " + mandir + "canto.1")
+        os.system("sed -i 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + "canto-fetch.1")
+        os.system("sed -i 's/MAN_DATE/" + man_date + "/g' " + mandir + "canto-fetch.1")
 
         os.system("sed -ie 's/SETUPPY_SET_MAN_PATH/\"" + install_cmd.install_data.replace('/', '\\/') + "\\/share\\/man\\/man1\"/g' " + libdir + "/canto/cfg.py")
         os.system("sed -ie 's/SETUPPY_SET_BIN_PATH/\"" + install_cmd.install_scripts.replace('/', '\\/') + "\"/g' " + libdir + "/canto/cfg.py")
@@ -33,6 +35,6 @@ setup(name='Canto',
         scripts=['bin/canto','bin/canto-fetch'],
         packages=['canto','canto_fetch'],
         ext_modules=[Extension('canto.widecurse', sources = ['canto/widecurse.c'], libraries = ['ncursesw'])],
-        data_files = [("share/man/man1/", ["man/canto.1"])],
+        data_files = [("share/man/man1/", ["man/canto.1", "man/canto-fetch.1"])],
         cmdclass={'install_data': Canto_install_data}
 )
