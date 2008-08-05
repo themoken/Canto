@@ -22,9 +22,6 @@ class Canto_install_data(install_data):
         os.system("sed -i 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + "canto-fetch.1")
         os.system("sed -i 's/MAN_DATE/" + man_date + "/g' " + mandir + "canto-fetch.1")
 
-        os.system("sed -ie 's/SETUPPY_SET_MAN_PATH/\"" + install_cmd.install_data.replace('/', '\\/') + "\\/share\\/man\\/man1\"/g' " + libdir + "/canto/cfg.py")
-        os.system("sed -ie 's/SETUPPY_SET_BIN_PATH/\"" + install_cmd.install_scripts.replace('/', '\\/') + "\"/g' " + libdir + "/canto/cfg.py")
-
 setup(name='Canto',
         version=".".join(version),
         description='An ncurses RSS aggregator.',

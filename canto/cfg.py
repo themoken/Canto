@@ -34,11 +34,9 @@ class Cfg:
     and signals are all routed to here and dispatched as necessary."""
 
     def __init__(self, log, conf_dir, conf, sconf, feed_dir, del_feed, only_conf, update_first, new_ct, feed_ct, feed_list):
-        self.browser_path = "/usr/bin/firefox \"%u\""
+        self.browser_path = "firefox \"%u\""
         self.text_browser = 0
         self.render = interface_draw.Renderer()
-        self.bin_path = SETUPPY_SET_BIN_PATH
-        self.man_path = SETUPPY_SET_MAN_PATH
 
         self.key_list = {"q" : "quit",
                          "KEY_DOWN" : "next_item",
@@ -111,7 +109,6 @@ class Cfg:
         self.parse()
 
         if del_feed:
-            target = None
             for feed in self.feeds:
                 if feed.handle == del_feed:
                     feed.delete()
@@ -126,7 +123,7 @@ class Cfg:
             return
 
         if update_first:
-            pid = utility.silentfork(self.bin_path + "/canto-fetch " +\
+            pid = utility.silentfork("canto-fetch " +\
                    self.sconf + " " + self.feed_dir + " " + self.conf_dir + "/slog" , 0)
             while 1:
                 try:
@@ -192,6 +189,7 @@ class Cfg:
         self.refresh()
 
     def convcolor(self, c):
+        """ Take color string and return curses color code. """
         colordir = {"default" : -1, 
                 "black" : 0, 
                 "white" : 7, 

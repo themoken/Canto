@@ -118,7 +118,7 @@ class Gui :
 
     def help(self):
         """Help() will silent fork the canto man page."""
-        utility.silentfork(sys.prefix + "/bin/man " + self.cfg.man_path + "/canto.1", 1)
+        utility.silentfork("man canto", 1)
         self.cfg.alarm()
         self.cfg.refresh()
 

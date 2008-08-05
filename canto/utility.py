@@ -35,13 +35,12 @@ def qasplit(path):
 def silentfork(path, text):
     """Fork/exec a path with args, ensure it's quiet."""
 
-    args = qasplit(path)        
     pid = os.fork()
     if not pid :
         if not text :
             os.close(sys.stdout.fileno())
         os.close(sys.stderr.fileno())
-        os.execve(args[0], args, os.environ)
+        os.system(path)
         sys.exit(-1)
 
     if text :
