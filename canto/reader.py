@@ -60,6 +60,19 @@ class Reader :
         
         self.refresh(self.max_height, self.width)
 
+    def __replace(self):
+        l = lambda x : x.reader()
+        self.destroy(l)
+        return 1
+
+    def reader_next(self):
+        self.cfg.key_handlers[-2].next_item()
+        return self.__replace()
+ 
+    def reader_prev(self):
+        self.cfg.key_handlers[-2].prev_item()
+        return self.__replace()
+
     def scroll_down(self):
         if self.more > 0 :
             self.offset += 1
@@ -83,7 +96,8 @@ class Reader :
     def __dogoto(self, s):
         """Perform the actual goto."""
         try : i = int(s)
-        except : return
+        except:
+            return
 
         if i in range(len(self.links)) :
             self.cfg.goto(self.links[i][0])
@@ -106,5 +120,5 @@ class Reader :
             self.destroy()
             return
 
-    def destroy(self):
-        self.cfg.pop_handler()
+    def destroy(self, l = None):
+        self.cfg.pop_handler(l)

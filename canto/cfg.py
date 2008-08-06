@@ -67,7 +67,9 @@ class Cfg:
                               "KEY_NPAGE" : "page_down",
                               "KEY_PPAGE" : "page_up",
                               "g" : "goto",
-                              "l" : "toggle_show_links"}
+                              "l" : "toggle_show_links",
+                              "n" : "reader_next",
+                              "p" : "reader_prev"}
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
                 ("green","black"),("pink","black"),(0,0),(0,0),(0,0)]
@@ -410,12 +412,19 @@ class Cfg:
             self.alarm()
             self.refresh()
 
-    def pop_handler(self):
+    def pop_handler(self, l = None):
         """Remove the last reference to a key_handler, keeping
         it from receiving keys and allowing it to be garbage
         collected."""
 
         self.key_handlers.pop()
+ 
+        # Used to add ability to execute after 
+        # a handler has died.
+       
+        if l:
+            l(self.key_handlers[-1])
+
         if len(self.key_handlers):
             for h in self.key_handlers:
                 h.refresh(self.height, self.width)

@@ -47,7 +47,7 @@ class Gui :
             if len(t):
                 t[0].select()
                 break
-        else :
+        else:
             raise IndexError
 
         self.list[0][0].select()
@@ -106,7 +106,7 @@ class Gui :
         self.map = filter(lambda x: x != None, 
                 [self.__map_filter(i, j, row) for i in range(len(self.list)) for j in range(len(self.list[i]))])
         self.items = len(self.map) - 1
-        if d : 
+        if d:
             self.draw_elements()
 
     def key(self, t):
@@ -141,7 +141,7 @@ class Gui :
             while self.map[self.selected][0:2] != (j,r):
                 self.selected += 1
             self.select()
-        else :
+        else:
             self.__select_topoftag(j)
 
         self.cfg.key_handlers[-1].draw_elements()
@@ -185,7 +185,7 @@ class Gui :
         for i in range(len(self.window_list)) :
             if i * self.height > row:
                 self.window_list[i].clear()
-            else :
+            else:
                 self.window_list[i].clrtobot()
             self.window_list[i].noutrefresh()
         curses.doupdate()
@@ -209,11 +209,12 @@ class Gui :
 
         if j == 0:
             self.selected = 0
-        else :
+        else:
             while 1:
                 self.selected -= 1
                 j2,k2,r2,l2,f2 = self.map[self.selected]
-                if j2 < j and k2 == 0 : break
+                if j2 < j and k2 == 0 :
+                    break
 
         self.select()
 
@@ -226,7 +227,8 @@ class Gui :
             while 1:
                 self.selected += 1
                 j2,k2,r2,l2,f2 = self.map[self.selected]
-                if j2 > j : break
+                if j2 > j :
+                    break
 
             self.offset = min(r2,max(0,self.map[-1][2] + self.map[-1][3] - self.lines))
             self.select()
@@ -266,18 +268,18 @@ class Gui :
         return 1
 
     def __do_search(self, s) :
-        if s :
+        if s:
             items = [y for x in self.list for y in x if s.match(y["title"])]
             if items :
                 Gui(self.cfg, self.height, self.width, items, [tag.Tag("*")])
 
     def __do_inline_search(self, s) :
-        if s : 
+        if s:
             for t in self.list:
                 for story in t:
                     if s.match(story["title"]):
                         story.mark()
-                    else :
+                    else:
                         story.unmark()
         self.draw_elements()
 
@@ -293,7 +295,8 @@ class Gui :
         self.unselect()
         newcursor = self.selected + 1
         while newcursor < self.items :
-            if self.__select_if_marked(newcursor): return
+            if self.__select_if_marked(newcursor):
+                return
             newcursor += 1
         self.select()
 
@@ -301,7 +304,8 @@ class Gui :
         self.unselect()
         newcursor = self.selected - 1
         while newcursor > 0:
-            if self.__select_if_marked(newcursor): return
+            if self.__select_if_marked(newcursor):
+                return
             newcursor -= 1
         self.select()
 
@@ -309,7 +313,7 @@ class Gui :
         j,k,r,l,f = self.map[self.selected]
         if self.list[j][k].marked() :
             self.list[j][k].unmark()
-        else :
+        else:
             self.list[j][k].mark()
 
     def toggle_collapse_tag(self):
@@ -337,19 +341,21 @@ class Gui :
         self.list[self.map[self.selected][0]].all_read()
 
     def all_read(self):
-        for t in self.list : t.all_read()
+        for t in self.list:
+            t.all_read()
 
     def tag_unread(self):
         self.list[self.map[self.selected][0]].all_unread()
 
     def all_unread(self):
-        for t in self.list : t.all_unread()
+        for t in self.list :
+            t.all_unread()
 
     def __change_select(self, val):
         j,k,r,l,f = self.map[self.selected]
         if val == 0 :
             self.list[j][k].unselect()
-        else :
+        else:
             self.list[j][k].select()
 
     def unselect(self) :
