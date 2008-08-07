@@ -10,6 +10,37 @@ Canto-fetch is meant to be used through a cron, adding this line to your crontab
 
 * * * * * canto-fetch
 
+.SH USAGE
+These options correspond to options to the canto client.
+
+.TP
+-h / --help
+Print usage and quit.
+
+.TP
+-v / --version
+Print version and quit.
+
+.TP
+-V / --verbose
+Output status while updating.
+
+.TP
+-f / --force
+Force updates on all feeds, ignoring timestamps.
+
+.TP
+-C / --conf [PATH]
+Set path to configuration file (default: ~/.canto/sconf)
+
+.TP
+-F / --fdir [PATH]
+Set path to feed directory (default: ~/.canto/feeds/)
+
+.TP
+-L / --log [PATH]
+Set path to log (default: ~/.canto/slog)
+
 .SH FILES
 .TP
 .I ~/.canto/sconf

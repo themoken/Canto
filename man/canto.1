@@ -10,10 +10,7 @@ Canto is the client, separate from the fetcher Canto-fetch. In order to update y
 
 * * * * * canto-fetch
 
-That will keep your feeds up to date. For the first time, however
-you may want to fill in a config as listed at the bottom of this
-man page and run `canto -u` which will automatically attempt to
-update the feeds before running the client.
+After you have your configuration file generated, just run `canto` and it will update for you, if canto-fetch hasn't been run already.
 
 .SH COMMAND LINE USAGE
 .TP
@@ -160,7 +157,7 @@ The ~/.canto/conf file is where all of the configuration is. You can start by us
 .nf
 
 # Setup browser
-browser="/usr/bin/elinks \\"%u\\""
+browser="elinks \\"%u\\""
 text_browser = 1
 
 keys["z"] = "goto"
