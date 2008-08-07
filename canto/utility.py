@@ -46,7 +46,12 @@ def silentfork(path, text):
     if text :
         s = signal.getsignal(signal.SIGALRM)
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
-        os.waitpid(pid, 0)
+        while 1:
+            try:
+                os.waitpid(pid, 0)
+            except OSError:
+                continue
+            break
         signal.signal(signal.SIGALRM, s)
 
     return pid

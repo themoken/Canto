@@ -5,13 +5,15 @@ import codecs
 import time
 
 class Feed :
-    def __init__(self, dir_path, handle, URL, rate, keep, log_func):
+    def __init__(self, dir_path, handle, URL, rate, keep, log_func, verbose, force):
         self.handle = handle
         self.URL = URL
         self.rate = rate
         self.keep = keep
         self.pf = None
         self.log = log_func
+        self.verbose = verbose
+        self.force = force
         self.path = dir_path
         self.idx = self.path + "/../" + self.handle.replace("/", " ") + ".idx"
 
@@ -27,9 +29,10 @@ class Feed :
 
     def update(self):
         self.log("Updating %s\n" % self.handle)
+        if self.verbose:
+            print "Updating %s" % self.handle
         self.pf = parse.ParsedFeed(self.URL, self.log)
         self.dump_to_files()
-        self.log("Dumped.\n")
         idxtmp = self.idx + ".tmp"
 
         try:
@@ -98,5 +101,6 @@ class Feed :
 
     def tick(self):
         if not os.path.exists(self.idx) or \
-                time.time() - os.stat(self.idx).st_mtime > self.rate * 60:
+                time.time() - os.stat(self.idx).st_mtime > self.rate * 60 or\
+                self.force :
             self.update()

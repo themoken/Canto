@@ -62,7 +62,7 @@ def main():
         sys.exit(-1)
 
     for opt, arg in optlist:
-        if opt == "-D":
+        if opt in ["-D", "--dir"]:
             conf_dir = arg
 
     if not conf_dir:
@@ -128,7 +128,6 @@ def main():
         print "Feed not found."
         sys.exit(-1)
     except :
-        #curses.endwin()
         print "Caught exception."
         traceback.print_exc()
         sys.exit(-1)

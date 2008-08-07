@@ -13,14 +13,17 @@ import time
 import signal
 import errno
 import codecs
+import getopt
 
 class Cfg(list):
     """A basic holster for the config and all of its options.
        pass it a log function, a path to the canto-fetch conf and
        a feed directory and it will populate itself with feeds."""
 
-    def __init__(self, log_func, conf, feed_dir):
+    def __init__(self, log_func, conf, feed_dir, verbose, force):
         list.__init__(self)
+        self.verbose = verbose
+        self.force = force
         self.path = conf
         self.log = log_func
 
@@ -52,7 +55,8 @@ class Cfg(list):
         self.log("Add Feed %s\n" % handle)
         dir = self.feed_dir + handle.replace("/", " ")
         self.__safe_mkdir(dir)
-        self.append(feed.Feed(dir, handle, URL, int(rate), int(keep), self.log))
+        self.append(feed.Feed(dir, handle, URL, int(rate), int(keep),\
+                self.log, self.verbose, self.force))
 
 def log(path, str, mode="a"):
     """Simple append log"""
@@ -65,27 +69,58 @@ def log(path, str, mode="a"):
     except IOError:
         pass
 
+def print_usage():
+    print "USAGE: canto-fetch [-hvfVCFL]"
+    print "--help    -h        Print this help."
+    print "--version -v        Print version info."
+    print "--verbose -V        Print status while updating."
+    print "--force   -f        Force update, even if timestamp is too recent."
+    print "--conf    -C [path] Set configuration file. (~/.canto/sconf)"
+    print "--fdir    -F [path] Set feed directory. (~/.canto/feeds/)"
+    print "--log     -L [path] Set log file (~/.canto/slog)"
+
 def main():
     MAJOR,MINOR,REV = VERSION_TUPLE
+    
+    home = os.getenv("HOME")
+    conf = home + "/.canto/sconf"
+    path = home + "/.canto/feeds/"
+    log_file = home + "/.canto/slog"
+    verbose = 0
+    force = 0
 
-    if len(sys.argv) == 1:
-        home = os.getenv("HOME")
-        conf = home + "/.canto/sconf"
-        path = home + "/.canto/feeds/"
-        log_file = home + "/.canto/slog"
-    elif len(sys.argv) != 4:
-        print "USAGE: canto-fetch <conf file> <feed dir> <log file>"
+    try:
+        optlist, arglist = getopt.getopt(sys.argv[1:], 'hvfVC:F:L:',\
+                ["verbose","conf=","fdir=","log=", "help", "force"])
+    except getopt.GetoptError, e:
+        print "Error: %s" % e.msg
         sys.exit(-1)
-    else:
-        conf = sys.argv[1]
-        path = sys.argv[2]
-        log_file = sys.argv[3]
 
+    for opt, arg in optlist:
+        if opt in ["-v","--version"]:
+            print "Canto-fetch v %d.%d.%d" % (MAJOR,MINOR,REV)
+            sys.exit(0)
+        if opt in ["-V","--verbose"]:
+            verbose = 1
+        elif opt in ["-h","--help"]:
+            print_usage()
+            sys.exit(0)
+        elif opt in ["-C", "--conf"]:
+            conf = arg
+        elif opt in ["-F", "--fdir"]:
+            path = arg
+            if path[-1] != '/':
+                path += '/'
+        elif opt in ["-L", "--log"]:
+            log_file = arg
+        elif opt in ["-f", "--force"]:
+            force = 1
+    
     log(log_file, "Canto-fetch v %d.%d.%d\n" % (MAJOR,MINOR,REV), "w")
     log(log_file, "Started execution: %s\n" % time.asctime(time.localtime()), "a")
     log_func = lambda x : log(log_file, x, "a")
     
-    cfg = Cfg(log_func, conf, path)
+    cfg = Cfg(log_func, conf, path, verbose, force)
     cfg.parse()
     
     for f in cfg:

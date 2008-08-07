@@ -125,15 +125,10 @@ class Cfg:
             return
 
         if update_first:
-            pid = utility.silentfork("canto-fetch " +\
-                   self.sconf + " " + self.feed_dir + " " + self.conf_dir + "/slog" , 0)
-            while 1:
-                try:
-                    os.waitpid(pid, 0)
-                except OSError:
-                    print "Interrupted..."
-                    continue
-                break
+            pid = utility.silentfork("canto-fetch -Vf " +\
+                   "-C \"" + self.sconf + \
+                   "\" -F \"" + self.feed_dir + \
+                   "\" -L \"" + self.conf_dir + "/slog\"" , 1)
 
             self.stories = []
             for f in self.feeds :
