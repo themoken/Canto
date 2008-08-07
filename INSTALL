@@ -2,7 +2,7 @@
 
 =REQUIREMENTS=
 - Python >=2.4 (tested mostly on 2.5.1)
-- NCursesw (yes, Unicode is a requirement)
+- NCursesw >=5.5 (yes, Unicode is a requirement)
 
 =BUILDING=
 - Python development headers
