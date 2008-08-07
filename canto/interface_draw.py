@@ -12,14 +12,14 @@ class Renderer :
             (re.compile("[\\\n]{3,}"), "\n\n")]
 
     def tag_head(self, tag):
-        t = "%1" + tag.tag.encode("UTF-8") + " [%2" + str(tag.unread) + "%0]"
+        t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
         if tag.collapsed:
             if tag[0].selected():
                 return [("%B > " + t + "%C", " ", " "),(" "," "," ")]
             else:
                 return [("%B   " + t + "%C"," ", " "),(" "," "," ")]
         
-        return [("%B   " + t, " ", "%C"),("%B┌", "─", "┐%C")]
+        return [("%B   " + t, " ", "%C"),("%1%B┌", "─", "┐%C")]
 
     def tag_foot(self, tag):
         return [("%1%B└", "─", "┘%C\n")]
