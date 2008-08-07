@@ -119,9 +119,6 @@ def main():
 
     try :
         i = cfg.Cfg(log_func, conf_dir, conf_file, serv_file, feed_dir, del_feed, only_conf, update_first, new_ct, feed_ct, feed_list)
-    except IndexError:
-        print "You must update feeds, try `canto -u`"
-        sys.exit(-1)
     except cfg.ConfigError:
         sys.exit(-1)
     except cfg.FeedError:

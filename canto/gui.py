@@ -50,7 +50,6 @@ class Gui :
         else:
             raise IndexError
 
-        self.list[0][0].select()
         self.cfg.key_handlers.append(self)
         self.refresh(self.height, self.width)
 

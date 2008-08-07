@@ -104,8 +104,7 @@ class Cfg:
             # height and width so that the config can 
             # use the info.
 
-            self.stdscr = curses.initscr()
-            self.height, self.width = self.stdscr.getmaxyx()
+            self.start_curses()
             curses.endwin()
 
         self.parse()
@@ -124,18 +123,6 @@ class Cfg:
         if only_conf:
             return
 
-        if update_first:
-            pid = utility.silentfork("canto-fetch -Vf " +\
-                   "-C \"" + self.sconf + \
-                   "\" -F \"" + self.feed_dir + \
-                   "\" -L \"" + self.conf_dir + "/slog\"" , 1)
-
-            self.stories = []
-            for f in self.feeds :
-                f.time = 1
-                f.tick()
-                self.stories.extend(f)
-
         if len(self.feeds) == 0:
             return
 
@@ -143,6 +130,9 @@ class Cfg:
             for feed in self.feeds:
                 print feed.handle
             return
+
+        if update_first:
+            self.force_update()
 
         if new_ct:
             if feed_ct:
@@ -163,27 +153,36 @@ class Cfg:
         self.key_list = self.conv_key_list(self.key_list)
         self.reader_key_list = self.conv_key_list(self.reader_key_list)
 
+        self.start_curses()
+        
+        tagl = [tag.Tag(x.handle) for x in self.feeds]
+        try:
+            gui.Gui(self, self.height, self.width,self.stories, tagl)
+        except IndexError:
+            try:
+                curses.endwin()
+                self.force_update()
+                self.start_curses()
+                gui.Gui(self, self.height, self.width,self.stories, tagl)
+            except IndexError:
+                self.destroy()
+                raise
+
+        self.refresh()
+
+    def start_curses(self):
         self.stdscr = curses.initscr()
         curses.noecho()
         curses.start_color()
         curses.halfdelay(1)
         curses.use_default_colors()
-
-        # Initialize colors.
+        
         for i in range(8) :
             f = self.convcolor(self.colors[i][0])
             b = self.convcolor(self.colors[i][1])
             curses.init_pair(i + 1, f, b)
 
         self.height, self.width = self.stdscr.getmaxyx()
-        
-        try:
-            gui.Gui(self, self.height, self.width,self.stories, [tag.Tag(x.handle) for x in self.feeds])
-        except IndexError:
-            self.destroy()
-            raise
-
-        self.refresh()
 
     def convcolor(self, c):
         """ Take color string and return curses color code. """
@@ -335,6 +334,18 @@ class Cfg:
                 fsock.close()
         except IOError:
             pass
+
+    def force_update(self):
+        pid = utility.silentfork("canto-fetch -Vf " +\
+               "-C \"" + self.sconf + \
+               "\" -F \"" + self.feed_dir + \
+               "\" -L \"" + self.conf_dir + "/slog\"" , 1)
+
+        self.stories = []
+        for f in self.feeds :
+            f.time = 1
+            f.tick()
+            self.stories.extend(f)
 
     def winch(self, a=None, b=None):
         curses.ungetch(curses.KEY_RESIZE)
