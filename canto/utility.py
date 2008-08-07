@@ -12,26 +12,6 @@ import sys
 import os
 import signal 
 
-def qasplit(path):
-    """Quote aware split."""
-    args = []
-    arg = ""
-    quote = 0
-
-    for c in path :
-        if c == " " and quote == 0:
-            args.append(arg)
-            arg = ""
-        elif c == "\"" :
-            quote = not quote
-        else:
-            arg += c
-
-    if arg :
-        args.append(arg)
-
-    return args
-
 def silentfork(path, text):
     """Fork/exec a path with args, ensure it's quiet."""
 
