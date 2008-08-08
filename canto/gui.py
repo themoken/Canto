@@ -306,13 +306,19 @@ class Gui :
         self.__map_items(0)
         self.__select_topoftag(j)
 
-    def toggle_collapse_all(self):
+    def __collapse_all(self, c):
         j,k,r,l,f = self.map[self.selected]
         for t in self.list:
-            t.collapsed = not t.collapsed
+            t.collapsed = c
         self.unselect()
         self.__map_items(0)
-        self.__select_topoftag(j)        
+        self.__select_topoftag(j)
+
+    def set_collapse_all(self):
+        self.__collapse_all(1)
+
+    def unset_collapse_all(self):
+        self.__collapse_all(0)
 
     def force_update(self):
         self.cfg.log("Forcing update\n")

@@ -5,6 +5,7 @@ Canto 0.4.4 ChangeLog
 * Added canto -a for printing number of new items in all
 * Added canto-fetch -V for verbose state printing
 * Added canto-fetch -f to force update, regardless of timestamp
+* Added set_collapse_all unset_collapse_all keybinds, eliminate toggle.
 * Make canto -u verbose
 * Stop kludging paths with sed, start relying on os.system()
 * Start forcing an update if all feeds are empty (first start?)
