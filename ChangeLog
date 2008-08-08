@@ -5,7 +5,8 @@ Canto 0.4.4 ChangeLog
 * Added canto -a for printing number of new items in all
 * Added canto-fetch -V for verbose state printing
 * Added canto-fetch -f to force update, regardless of timestamp
-* Stop kludging paths with sed
+* Make canto -u verbose
+* Stop kludging paths with sed, start relying on os.system()
 * Start forcing an update if all feeds are empty (first start?)
 * Fix canto -D
 * Fix drawing on very skinny terminals
