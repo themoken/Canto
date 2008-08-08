@@ -41,9 +41,6 @@ class Gui :
 
         self.list = tags
         for t in self.list :
-            t.extend(list)
-
-        for t in self.list :
             if len(t):
                 t[0].select()
                 break
@@ -52,18 +49,6 @@ class Gui :
 
         self.cfg.key_handlers.append(self)
         self.refresh(self.height, self.width)
-
-    def __enumerate(self):
-        """Fill in all information in the story dealing with the
-        order of the item on screen."""
-
-        for t in self.list:
-            lt = len(t)
-            for i in range(lt):
-                t[i].idx = i
-                t[i].last = 0
-            if lt :
-                t[-1].last = 1
 
     def refresh(self, height=0, width=0):
         """Recreate all windows and recalculate map to fit the
@@ -101,7 +86,6 @@ class Gui :
         a drastic change in item order (i.e. collapsing)"""
 
         row = [0]
-        self.__enumerate()
         self.map = filter(lambda x: x != None, 
                 [self.__map_filter(i, j, row) for i in range(len(self.list)) for j in range(len(self.list[i]))])
         self.items = len(self.map) - 1

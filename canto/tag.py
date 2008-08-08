@@ -23,12 +23,14 @@ class Tag(list):
         return -1
 
     def all_read(self):
-        for s in self : s.read()
+        for s in self :
+            s.read()
         self.unread = 0
         self.read = len(self)
 
     def all_unread(self):
-        for s in self : s.unread()
+        for s in self :
+            s.unread()
         self.read = 0
         self.unread = len(self)
 
@@ -46,6 +48,14 @@ class Tag(list):
 
     def extend(self, iter):
         list.extend(self, [s for s in iter if self.tag in s["tags"]])
+
+        lt = len(self)
+        for i in range(lt):
+            self[i].idx = i
+            self[i].last = 0
+        if lt:
+            self[-1].last = 1
+
         self.read = len(filter(lambda x : x.wasread(), self))
         self.unread = len(self) - self.read
 

@@ -111,7 +111,7 @@ class Cfg:
 
         if del_feed:
             for feed in self.feeds:
-                if feed.handle == del_feed:
+                if feed.tag == del_feed:
                     feed.delete()
                     self.feeds.remove(feed)
                     self.gen_serverconf()
@@ -128,7 +128,7 @@ class Cfg:
 
         if feed_list:
             for feed in self.feeds:
-                print feed.handle
+                print feed.tag
             return
 
         if update_first:
@@ -137,17 +137,15 @@ class Cfg:
         if new_ct:
             if feed_ct:
                 for feed in self.feeds:
-                    if feed.handle == feed_ct:
+                    if feed.tag == feed_ct:
                         feed.update()
-                        t = tag.Tag(feed_ct)
-                        t.extend(feed)
-                        print t.unread
+                        print feed.unread
             else:
-                t = tag.Tag()
+                i = 0
                 for feed in self.feeds:
                     feed.update()
-                    t.extend(feed)
-                print t.unread
+                    i += feed.unread
+                print i
             return
 
         self.key_list = self.conv_key_list(self.key_list)
@@ -155,15 +153,14 @@ class Cfg:
 
         self.start_curses()
         
-        tagl = [tag.Tag(x.handle) for x in self.feeds]
         try:
-            gui.Gui(self, self.height, self.width,self.stories, tagl)
+            gui.Gui(self, self.height, self.width,self.stories, self.feeds)
         except IndexError:
             try:
                 curses.endwin()
                 self.force_update()
                 self.start_curses()
-                gui.Gui(self, self.height, self.width,self.stories, tagl)
+                gui.Gui(self, self.height, self.width,self.stories, self.feeds)
             except IndexError:
                 self.destroy()
                 raise
@@ -245,7 +242,7 @@ class Cfg:
             ret[newkey] = dict[key]
         return ret
 
-    def feedwrap(self, handle, URL, **kwargs):
+    def feedwrap(self, tag, URL, **kwargs):
         """A function for export to the config, that makes a feed
         and adds its stories to self.stories appropriately."""
 
@@ -259,7 +256,7 @@ class Cfg:
         else:
             rate = self.default_rate
 
-        self.feeds.append(feed.Feed(self, self.feed_dir + handle.replace("/", " "), handle, URL, rate, keep))
+        self.feeds.append(feed.Feed(self, self.feed_dir + tag.replace("/", " "), tag, URL, rate, keep))
         self.stories.extend(self.feeds[-1])
 
     def set_default_rate(self, rate):
@@ -327,9 +324,7 @@ class Cfg:
             try :
                 for f in self.feeds:
                     fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\"\n" \
-                            % (f.handle.decode("UTF-8"), 
-                               f.URL.decode("UTF-8"), 
-                               f.rate, f.keep))
+                            % (f.tag, f.URL, f.rate, f.keep))
             finally :
                 fsock.close()
         except IOError:

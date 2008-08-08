@@ -20,15 +20,15 @@ class Feed(tag.Tag):
     """Feed() encapsulates a feed directory and handles
     all updates in that feed directory when ticked()"""
 
-    def __init__(self, cfg, dirpath, handle, URL, rate, keep):
-        tag.Tag.__init__(self)
+    def __init__(self, cfg, dirpath, t, URL, rate, keep):
+        tag.Tag.__init__(self, t)
         self.path = dirpath
-        self.handle = handle
-        self.safehandle = self.handle.replace("/", " ")
+        self.safetag = self.tag.replace("/", " ")
         self.URL = URL
         self.cfg = cfg
 
-        if self.path : self.update()
+        if self.path :
+            self.update()
 
         self.rate = rate
         self.time = 1
@@ -40,7 +40,7 @@ class Feed(tag.Tag):
 
         newlist = []
         try:
-            fsock = codecs.open(self.path + "/../" + self.safehandle + ".idx", "r", "UTF-8", "ignore")
+            fsock = codecs.open(self.path + "/../" + self.safetag + ".idx", "r", "UTF-8", "ignore")
             try:
                 data = fsock.read().split("\00")[:-1]
             finally:
@@ -73,7 +73,7 @@ class Feed(tag.Tag):
 
     def delete(self):
         try:
-            os.unlink(self.path + "/../" + self.safehandle + ".idx")
+            os.unlink(self.path + "/../" + self.safetag + ".idx")
         except:
             pass
 
