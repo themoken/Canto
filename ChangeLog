@@ -1,0 +1,20 @@
+Canto 0.4.4 ChangeLog
+* Vast cleanups in renderer / renderer format / C code
+* Added canto -l for listing
+* Added canto -n for printing number of new items in feed
+* Added canto -a for printing number of new items in all
+* Added canto-fetch -V for verbose state printing
+* Added canto-fetch -f to force update, regardless of timestamp
+* Stop kludging paths with sed
+* Start forcing an update if all feeds are empty (first start?)
+* Fix canto -D
+* Fix drawing on very skinny terminals
+* Fix feed / tag separation in cfg
+
+	
+Canto 0.4.3 ChangeLog
+* `xterm -e canto` now works as planned (reported by Aldrik Dunbar and grunge)
+* The canto/.conf is now encoded in memory to UTF-8 fixing embedded, non-ASCII
+	characters (reported by Ricardo Martins)
+* Feed names now have forward slashes stripped for disk storage (reported by
+	Ricardo Martins)
