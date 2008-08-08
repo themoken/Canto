@@ -20,12 +20,13 @@ class Feed(tag.Tag):
     """Feed() encapsulates a feed directory and handles
     all updates in that feed directory when ticked()"""
 
-    def __init__(self, cfg, dirpath, t, URL, rate, keep):
+    def __init__(self, cfg, dirpath, t, URL, rate, keep, title_key):
         tag.Tag.__init__(self, t)
         self.path = dirpath
         self.safetag = self.tag.replace("/", " ")
         self.URL = URL
         self.cfg = cfg
+        self.title_key = title_key
 
         if self.path :
             self.update()
@@ -48,7 +49,9 @@ class Feed(tag.Tag):
 
             for item in data:
                 path = self.path + "/" + item.replace("/", " ")
-                newlist.append(story.Story(path))
+                s = story.Story(path)
+                if not self.title_key or s["title"] not in [x["title"] for x in newlist]:
+                    newlist.append(s)
 
         except IOError:
             pass

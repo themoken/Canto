@@ -80,6 +80,7 @@ class Cfg:
 
         self.default_rate = 5
         self.default_keep = 40
+        self.default_title_key = 1
 
         self.conf_dir = conf_dir
         self.path = conf
@@ -257,7 +258,12 @@ class Cfg:
         else:
             rate = self.default_rate
 
-        self.feeds.append(feed.Feed(self, self.feed_dir + tag.replace("/", " "), tag, URL, rate, keep))
+        if kwargs.has_key("title_key"):
+            title_key = kwargs["title_key"]
+        else:
+            title_key = self.default_title_key
+
+        self.feeds.append(feed.Feed(self, self.feed_dir + tag.replace("/", " "), tag, URL, rate, keep, title_key))
         self.stories.extend(self.feeds[-1])
 
     def set_default_rate(self, rate):
@@ -271,6 +277,12 @@ class Cfg:
         immediately after it's changed."""
 
         self.default_keep = keep
+
+    def set_default_title_key(self, title_key):
+        """Wrapper to ensure that default_title_key is honored by addfeed
+        immediately after it's changed."""
+
+        self.default_title_key = title_key
 
     def parse(self):
         """Parse the configuration, which exports a number of variables
@@ -289,6 +301,7 @@ class Cfg:
             "text_browser" : self.text_browser,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
+            "default_title_key" : self.set_default_title_key,
             "render" : self.render,
             "renderer" : interface_draw.Renderer,
             "keys" : self.key_list,
