@@ -1,3 +1,6 @@
+Canto 0.4.4.1 ChangeLog
+* Quick fix for conf.example generation/use.
+
 Canto 0.4.4 ChangeLog
 * Vast cleanups in renderer / renderer format / C code
 * Added canto -l for listing
