@@ -176,15 +176,17 @@ class Cfg:
         self.reader_key_list = self.conv_key_list(self.reader_key_list)
 
         self.start_curses()
-        
+       
+
+        tagl = [tag.Tag(x.tag) for x in self.feeds]
         try:
-            gui.Gui(self, self.height, self.width,self.stories, self.feeds)
+            gui.Gui(self, self.height, self.width,self.stories, tagl)
         except IndexError:
             try:
                 curses.endwin()
                 self.force_update()
                 self.start_curses()
-                gui.Gui(self, self.height, self.width,self.stories, self.feeds)
+                gui.Gui(self, self.height, self.width,self.stories, tagl)
             except IndexError:
                 self.destroy()
                 raise

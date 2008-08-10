@@ -40,6 +40,9 @@ class Gui :
         self.offset = 0
 
         self.list = tags
+        for t in self.list:
+            t.extend(list)
+
         for t in self.list :
             if len(t):
                 t[0].select()
