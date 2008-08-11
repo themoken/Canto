@@ -42,7 +42,10 @@ class ParsedFeed(list):
         """Convert an entity reference into a printable
            Unicode character."""
         name, = name.groups()
-        return unichr(htmlentitydefs.name2codepoint[name])
+        if htmlentitydefs.name2codepoint.has_key(name):
+            return unichr(htmlentitydefs.name2codepoint[name])
+        else:
+            return "&%s;" % (name,)
 
     def __getchar(self, num):
         num, = num.groups()

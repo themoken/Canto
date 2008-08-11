@@ -4,12 +4,16 @@ import re
 
 class Renderer :
     def __init__(self):
-        self.reader_rgx = [(re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
+        self.reader_rgx = [
+            (re.compile("\\\n"), " "),
+            (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
             (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
+            (re.compile("\\\n"), " "),
             (re.compile("<p>"), "\n\n"),
             (re.compile("<br\s*/?>"), "\n"),
             (re.compile("<.*?>"), ""),
-            (re.compile("[\\\n]{3,}"), "\n\n")]
+            (re.compile("[\\\n]{3,}"), "\n\n"),
+            (re.compile("\\\n"), "\n ")]
 
     def tag_head(self, tag):
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
@@ -22,7 +26,7 @@ class Renderer :
         return [("%B   " + t, " ", "%C"),("%1%B┌", "─", "┐%C")]
 
     def tag_foot(self, tag):
-        return [("%1%B└", "─", "┘%C\n")]
+        return [("%1%B└", "─", "┘%C")]
 
     def firsts(self, story):
         base = "%C%1%B│%b "
@@ -49,10 +53,10 @@ class Renderer :
         return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
     def reader_head(self, story):
-        return [("%1%B" + story["title"], " ", " "),("┌","─","┐%C\n")]
+        return [("%1%B" + story["title"], " ", " "),("┌","─","┐%C")]
 
     def reader_foot(self, story):
-        return [("%B└", "─", "┘%C\n")]
+        return [("%B└", "─", "┘%C")]
 
     def reader_link(self, idx, link):
         return "%4[" + str(idx) + "] " + link[1] + "- %1" + link[0]
