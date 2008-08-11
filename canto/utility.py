@@ -38,7 +38,8 @@ def silentfork(path, text):
 
 def getlinks(string):
     """Convert entities and escaped chars into unicode, grab links"""
-    links = re.findall("<a\s+href=\"(.*?)\".*?>(.*?)</\s*a\s*>", string)
+    s = re.sub("\\\n", " ", string[:])
+    links = re.findall("<a\s+href=\"(.*?)\".*?>(.*?)</\s*a\s*>", s)
     return links 
 
 def stripchars(string):
