@@ -17,16 +17,14 @@ import getopt
 import codecs
 import curses
 import traceback
+import utility
+import tag
+import gui
 
-def log(path, str, mode="a"):
-    try :
-        f = codecs.open(path, mode, "UTF-8", "ignore")
-        try:
-            f.write(str)
-        finally:
-            f.close()
-    except IOError:
-        pass
+ONLY_CONF = 1
+UPDATE_FIRST = 2
+CHECK_NEW = 4
+FEED_LIST = 8
 
 def print_usage():
     print "USAGE: canto [-hvgulanDCLF]"
@@ -43,104 +41,146 @@ def print_usage():
     print "--log       -L [path] Set client log file. (~/.canto/log)"
     print "--fdir      -F [path] Set feed directory. (~/.canto/feeds/)"
 
-def main():
-    """The main function is dedicated mostly to reading
-    command line arguments. However it's also host to the
-    infinite loop that calls Cfg.loop."""
+class Main():
+    def __init__(self):
+        MAJOR,MINOR,REV = VERSION_TUPLE
 
-    MAJOR,MINOR,REV = VERSION_TUPLE
+        locale.setlocale(locale.LC_ALL, "")
+        
+        try :
+            optlist, arglist = getopt.getopt(sys.argv[1:], 'hvgaln:d:D:C:L:S:O:F:u',\
+                    ["help","version","gensconf","update","list","checkall",\
+                     "checknew=", "delete=", "dir=", "conf=","log=","fdir="])
+        except getopt.GetoptError, e:
+            print "Error: %s" % e.msg
+            sys.exit(-1)
 
-    locale.setlocale(locale.LC_ALL, "")
-    conf_dir = None
-    try :
-        optlist, arglist = getopt.getopt(sys.argv[1:], 'hvgaln:d:D:C:L:S:O:F:u',\
-                ["help","version","gensconf","update","list","checkall",\
-                 "checknew=", "delete=", "dir=", "conf=","log=","fdir="])
-    except getopt.GetoptError, e:
-        print "Error: %s" % e.msg
-        sys.exit(-1)
+        for opt, arg in optlist:
+            if opt in ["-D", "--dir"]:
+                conf_dir = arg
+                break
+        else:
+            conf_dir = os.getenv("HOME") + "/.canto/"
 
-    for opt, arg in optlist:
-        if opt in ["-D", "--dir"]:
-            conf_dir = arg
+        if conf_dir[-1] != '/' :
+            conf_dir += '/'
 
-    if not conf_dir:
-        conf_dir = os.getenv("HOME") + "/.canto/"
+        log_file = conf_dir + "log"
+        conf_file = conf_dir + "conf"
+        serv_file = conf_dir + "sconf"
+        feed_dir = conf_dir + "feeds/"
+        flags = 0 
+        
+        del_feed = None
+        feed_ct = None
 
-    elif conf_dir[-1] != '/' : conf_dir += '/'
+        for opt, arg in optlist :
+            if opt in ["-C", "--conf"] :
+                conf_file = arg
+            elif opt in ["-d","--delete"] :
+                del_feed = arg
+            elif opt in ["-L","--log"] :
+                log_file = arg
+            elif opt in ["-F","--fdir"] :
+                feed_dir = arg
+                if feed_dir[-1] != '/' :
+                    feed_dir += '/'
+            elif opt in ["-g","--gensconf"] :
+                flags |= ONLY_CONF
+            elif opt in ["-u","--update"] :
+                flags |= UPDATE_FIRST
+            elif opt in ["-n","--checknew"] :
+                flags |= CHECK_NEW
+                feed_ct = arg
+            elif opt in ["-a","--checkall"] :
+                flags |= CHECK_NEW
+            elif opt in ["-l","--list"] :
+                flags |= FEED_LIST
+            elif opt in ["-h","--help"] :
+                print_usage()
+                sys.exit(0)
+            elif opt in ["-v","--version"] :
+                print "Canto v %d.%d.%d" % (MAJOR,MINOR,REV)
+                sys.exit(0)
 
-    columns = 0
-    log_file = conf_dir + "log"
-    conf_file = conf_dir + "conf"
-    serv_file = conf_dir + "sconf"
-    feed_dir = conf_dir + "feeds/"
-    only_conf = 0
-    update_first = 0
+        try :
+            self.cfg = cfg.Cfg(conf_file, serv_file, feed_dir)
+        except cfg.ConfigError:
+            sys.exit(-1)
 
-    new_ct = 0
-    feed_ct = None
+        self.cfg.key_list = utility.conv_key_list(self.cfg.key_list)
+        self.cfg.reader_key_list = utility.conv_key_list(self.cfg.reader_key_list)
 
-    feed_list = 0
+        stories = []
+        for f in self.cfg.feeds:
+            stories.extend(f)
 
-    for opt, arg in optlist :
-        if opt in ["-C", "--conf"] :
-            conf_file = arg
-        elif opt in ["-L","--log"] :
-            log_file = arg
-        elif opt in ["-F","--fdir"] :
-            feed_dir = arg
-            if feed_dir[-1] != '/' :
-                feed_dir += '/'
-        elif opt in ["-g","--gensconf"] :
-            only_conf = 1
-        elif opt in ["-u","--update"] :
-            update_first = 1
-        elif opt in ["-n","--checknew"] :
-            feed_ct = arg
-            new_ct = 1
-        elif opt in ["-a","--checkall"] :
-            new_ct = 1
-        elif opt in ["-l","--list"] :
-            feed_list = 1
-        elif opt in ["-h","--help"] :
-            print_usage()
-            sys.exit(0)
-        elif opt in ["-v","--version"] :
-            print "Canto v %d.%d.%d" % (MAJOR,MINOR,REV)
-            sys.exit(0)
+        self.cfg.stdscr = curses.initscr()
+        curses.noecho()
+        curses.start_color()
+        curses.halfdelay(1)
+        curses.use_default_colors()
 
-    log(log_file, "Canto v %d.%d.%d\n" % (MAJOR,MINOR,REV), "w")
-    log(log_file, "Started execution: %s\n" % time.asctime(time.localtime()), "a")
-    log_func = (lambda x : log(log_file, x, "a"))
+        self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
-    try :
-        i = cfg.Cfg(log_func, conf_dir, conf_file, serv_file, feed_dir, only_conf, update_first, new_ct, feed_ct, feed_list)
-    except cfg.ConfigError:
-        sys.exit(-1)
-    except cfg.FeedError:
-        print "Feed not found."
-        sys.exit(-1)
-    except :
-        print "Caught exception."
-        traceback.print_exc()
-        sys.exit(-1)
+        for i in range(8) :
+            f = utility.convcolor(self.cfg.colors[i][0])
+            b = utility.convcolor(self.cfg.colors[i][1])
+            curses.init_pair(i + 1, f, b)
 
-    if only_conf:
-        print "Server config generated."
+        tag_list = [tag.Tag(x.tag) for x in self.cfg.feeds]
+
+        self.key_handlers = []
+        gui.Gui(self.cfg, stories, tag_list, self.push_handler, self.pop_handler)
+        self.refresh()
+
+        while 1:
+            if not len(self.key_handlers):
+                break
+
+            t = None
+            k = self.cfg.stdscr.getch()
+
+            if k == curses.KEY_RESIZE:
+                self.refresh()
+                t = (k, 0)
+            elif k == 195:
+                k2 = c.stdscr.getch()
+                if k2 >= 64:
+                    t = (k2 - 64, 1)
+                else:
+                    t = (k, 0)
+            elif k != -1:
+                t = (k, 0)
+
+            if t:
+                r = self.key_handlers[-1].key(t)
+                if r == 1:
+                    self.refresh()
+                elif r == 2:
+                    self.key_handlers[-1].next_item()
+                    self.key_handlers[-1].reader()
+                elif r == 3:
+                    self.key_handlers[-1].prev_item()
+                    self.key_handlers[-1].reader()
+
+        curses.endwin()
         sys.exit(0)
-    elif new_ct or feed_list:
-        sys.exit(0)
-    elif len(i.feeds) <= 0 :
-        print "You have to add some feeds! Read `man canto`"
-        sys.exit(-1)
 
-    signal.signal(signal.SIGALRM, i.alarm)
-    signal.signal(signal.SIGWINCH, i.winch)
-    signal.signal(signal.SIGTTOU, signal.SIG_IGN)
-    signal.alarm(1)
+    def refresh(self):
+        curses.endwin()
+        self.cfg.stdscr.refresh()
+        self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
+        self.cfg.stdscr.keypad(1)
+        for g in self.key_handlers :
+            g.refresh()
 
-    while 1 :
-        if i.loop() :
-            break
+    def push_handler(self, handler):
+        self.key_handlers.append(handler)
 
-    sys.exit(0)
+    def pop_handler(self):
+        self.key_handlers.pop()
+        if len(self.key_handlers):
+           for h in self.key_handlers:
+               h.refresh()
+

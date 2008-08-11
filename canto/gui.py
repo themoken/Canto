@@ -19,25 +19,19 @@ import sys
 import tag
 
 class Gui :
-    def __init__(self, cfg, height, width, list, tags):
-        """Gui() handles all of the display and navigation logic.
-        It is based around the self.map list that contains information
-        about each printed line.
-        
-        Each function in Gui() can be tied to a key in Cfg()'s key_list
-        unless it's private. As such, all functions that shouldn't
-        be called by the user are prefixed with __. Key() and alarm()
-        are exceptions, being called by Cfg()."""
-
+    def __init__(self, cfg, list, tags, register, deregister):
         self.cfg = cfg
+        
         self.lines = 0
-        self.height = height
-        self.width = width
         self.window_list = []
         self.map = []
         self.selected = 0
         self.items = 0
         self.offset = 0
+
+        register(self)
+        self.register = register
+        self.deregister = deregister
 
         self.list = tags
         for t in self.list:
@@ -50,29 +44,19 @@ class Gui :
         else:
             raise IndexError
 
-        self.cfg.key_handlers.append(self)
-        self.refresh(self.height, self.width)
+        self.refresh()
 
-    def refresh(self, height=0, width=0):
-        """Recreate all windows and recalculate map to fit the
-        new size of the terminal."""
-
-        if height and width :
-            self.height, self.width = height, width
-        self.window_list = [curses.newwin(self.height + 1, \
-                    self.width / self.cfg.columns, 0, \
-                    (self.width / self.cfg.columns) * i) for i in range(0, self.cfg.columns)]
+    def refresh(self):
+        self.window_list = [curses.newwin(self.cfg.height + 1, \
+                    self.cfg.width / self.cfg.columns, 0, \
+                    (self.cfg.width / self.cfg.columns) * i) for i in range(0, self.cfg.columns)]
 
         for window in self.window_list:
             window.bkgdset(curses.color_pair(1))
-        self.lines = self.cfg.columns * self.height
+        self.lines = self.cfg.columns * self.cfg.height
         self.__map_items()
 
     def __map_filter(self, i,j,row):
-        """Map filter takes self.list[i][j] and returns a tuple
-        for use in map. If the item shouldn't be visible, it returns
-        None to be filtered out in __map_items."""
-
         if self.list[i].collapsed and j != 0:
             return None
         f = self.list[i][j].print_item
@@ -84,10 +68,6 @@ class Gui :
         return r
 
     def __map_items(self, d = 1):
-        """Refresh self.map, and (by default) redraw the items. If
-        necessary (d = 0), drawing can be foregone when mapping causes
-        a drastic change in item order (i.e. collapsing)"""
-
         row = [0]
         self.map = filter(lambda x: x != None, 
                 [self.__map_filter(i, j, row) for i in range(len(self.list)) for j in range(len(self.list[i]))])
@@ -96,22 +76,20 @@ class Gui :
             self.draw_elements()
 
     def key(self, t):
-        """A function dispatcher based on a key from key_list."""
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
             f = getattr(self, self.cfg.key_list[t], None)
-            if f and not f():
-                self.draw_elements()
+            if f:
+                r = f()
+                if not r:
+                    self.draw_elements()
+                return r
 
     def help(self):
-        """Help() will silent fork the canto man page."""
         utility.silentfork("man canto", 1)
         self.cfg.alarm()
         self.cfg.refresh()
 
     def alarm(self, listobj):
-        """Rebuild map, attempt to change self.selected to 
-        persist with the the same object."""
-
         j,k,r,l,f = self.map[self.selected]
         selected = self.list[j][k]
 
@@ -133,17 +111,12 @@ class Gui :
         self.cfg.key_handlers[-1].draw_elements()
    
     def __select_topoftag(self, j=0):
-        """Select the first item in a tag, useful if the 
-        selected story no longer exists, or if the tag
-        is collapsed."""
-
         self.selected = 0
         while self.map[self.selected][0] != j:
             self.selected += 1
         self.select()
 
     def __check_scroll(self) :
-        """Change offset to keep cursor visible."""
         i,j,r,l,f = self.map[self.selected]
         
         if r < self.offset :
@@ -156,9 +129,6 @@ class Gui :
         return 0
 
     def draw_elements(self):
-        """Actually print to the ncurses screen each of
-        the visible items, then provoke a screen update."""
-
         self.__check_scroll()
         row = -1 * self.offset
         for i,j,r,l,f in self.map :
@@ -169,7 +139,7 @@ class Gui :
             row += l
         
         for i in range(len(self.window_list)) :
-            if i * self.height > row:
+            if i * self.cfg.height > row:
                 self.window_list[i].clear()
             else:
                 self.window_list[i].clrtobot()
@@ -230,22 +200,20 @@ class Gui :
         self.list[j].set_unread(k)
 
     def goto(self) :
-        """Simple item wrapper around Cfg().goto()."""
         j,k,r,l,f = self.map[self.selected]
         self.list[j].set_read(k)
         self.draw_elements()
         self.cfg.goto(self.list[j][k]["link"])
 
     def reader(self) :
-        """Instantiate the reader."""
         j,k,r,l,f = self.map[self.selected]
         self.list[j].set_read(k)
-        reader.Reader(self.list[j][k], self.height, self.width, self.cfg)
+        reader.Reader(self.cfg, self.list[j][k], self.register, self.deregister) 
         return 1
 
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \
-                self.__do_inline_search, self.height, self.width, self.cfg.log)
+                self.__do_inline_search, self.register, self.deregister)
         return 1
 
     def search(self):
@@ -344,7 +312,6 @@ class Gui :
         self.__collapse_all(0)
 
     def force_update(self):
-        self.cfg.log("Forcing update\n")
         for f in self.cfg.feeds :
             f.time = 1
         self.cfg.alarm()
@@ -377,5 +344,5 @@ class Gui :
         self.__change_select(1)
 
     def quit(self):
-        self.cfg.pop_handler()
+        self.deregister()
         return 1

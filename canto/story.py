@@ -104,4 +104,4 @@ class Story(dict):
         self.__tagwrap("selected", -1)
 
     def print_item(self, tag, row, i):
-        return i.cfg.render.story(tag, self, row, i.height, i.width / i.cfg.columns, i.window_list)
+        return i.cfg.render.story(tag, self, row, i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)

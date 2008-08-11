@@ -11,27 +11,21 @@ import re
 import input
 
 class Search(input.Input):
-    """Search sub-classes Input, but instead of returning a 
-    simple string it returns a compiled regex to match against."""
-
-    def __init__(self, cfg, caption, func, height, width, log):
-        input.Input.__init__(self, cfg, caption, func, height, width, log)
+    def __init__(self, cfg, caption, func, register, deregister):
+        input.Input.__init__(self, cfg, caption, func, register, deregister)
         
-    def destroy(self):
-        self.cfg.pop_handler()
-
     def callfunc(self):
         if not self.term :
             self.func(None)
             return
         elif self.term.startswith("rgx:"):
             str = self.term[4:]
-        else :
+        else:
             str = ".*" + re.escape(self.term) + ".*"
         
         try:
             m = re.compile(str)
-        except :
+        except:
             self.func(None)
 
         self.func(m)
