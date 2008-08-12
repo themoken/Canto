@@ -203,7 +203,7 @@ class Gui :
         j,k,r,l,f = self.map[self.selected]
         self.list[j].set_read(k)
         self.draw_elements()
-        self.cfg.goto(self.list[j][k]["link"])
+        utility.goto(self.list[j][k]["link"], self.cfg)
 
     def reader(self) :
         j,k,r,l,f = self.map[self.selected]
