@@ -48,9 +48,9 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         try :
-            optlist, arglist = getopt.getopt(sys.argv[1:], 'hvgaln:d:D:C:L:S:O:F:u',\
+            optlist, arglist = getopt.getopt(sys.argv[1:], 'hvgaln:D:C:L:S:O:F:u',\
                     ["help","version","gensconf","update","list","checkall",\
-                     "checknew=", "delete=", "dir=", "conf=","log=","fdir="])
+                     "checknew=", "dir=", "conf=","log=","fdir="])
         except getopt.GetoptError, e:
             print "Error: %s" % e.msg
             sys.exit(-1)
@@ -71,14 +71,11 @@ class Main():
         feed_dir = conf_dir + "feeds/"
         flags = 0 
         
-        del_feed = None
         feed_ct = None
 
         for opt, arg in optlist :
             if opt in ["-C", "--conf"] :
                 conf_file = arg
-            elif opt in ["-d","--delete"] :
-                del_feed = arg
             elif opt in ["-L","--log"] :
                 log_file = arg
             elif opt in ["-F","--fdir"] :
@@ -107,6 +104,42 @@ class Main():
             self.cfg = cfg.Cfg(conf_file, serv_file, feed_dir)
         except cfg.ConfigError:
             sys.exit(-1)
+
+        if flags & ONLY_CONF:
+            sys.exit(0)
+        
+        if flags & FEED_LIST:
+            for f in self.cfg.feeds:
+                print f.tag
+            sys.exit(0)
+
+        if flags & UPDATE_FIRST:
+            utility.silentfork("canto-fetch -Vf " +\
+               "-C \"" + serv_file + \
+               "\" -F \"" + feed_dir + \
+               "\" -L \"" + conf_dir + "slog\"", 1)
+            
+            self.stories = []
+            for f in self.cfg.feeds :
+                f.time = 1
+                f.tick()
+                self.stories.extend(f)
+
+
+        if flags & CHECK_NEW:
+            if feed_ct:
+                for f in self.cfg.feeds:
+                    if f.tag == feed_ct:
+                        print f.unread
+                        break
+                else:
+                    print "Feed not found."
+            else:
+                count = 0
+                for f in self.cfg.feeds:
+                    count += f.unread
+                print count
+            sys.exit(0)
 
         self.cfg.key_list = utility.conv_key_list(self.cfg.key_list)
         self.cfg.reader_key_list = utility.conv_key_list(self.cfg.reader_key_list)
@@ -137,7 +170,6 @@ class Main():
         signal.alarm(60)
 
         self.refresh()
-
 
         while 1:
             if not len(self.key_handlers):
