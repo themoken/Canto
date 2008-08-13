@@ -132,7 +132,12 @@ class Main():
 
         self.key_handlers = []
         gui.Gui(self.cfg, stories, tag_list, self.push_handler, self.pop_handler)
+        signal.signal(signal.SIGWINCH, self.winch)
+        signal.signal(signal.SIGALRM, self.alarm)
+        signal.alarm(60)
+
         self.refresh()
+
 
         while 1:
             if not len(self.key_handlers):
@@ -166,6 +171,21 @@ class Main():
 
         curses.endwin()
         sys.exit(0)
+
+    def winch(self, a=None, b=None):
+        curses.ungetch(curses.KEY_RESIZE)
+
+    def alarm(self, a=None, b=None):
+        delay = 60
+        self.stories = []
+        for f in self.cfg.feeds:
+            f.tick()
+            if len(f) == 0:
+                delay = 1
+            self.stories.extend(f)
+
+        self.key_handlers[0].alarm(self.stories)
+        signal.alarm(delay)
 
     def refresh(self):
         curses.endwin()

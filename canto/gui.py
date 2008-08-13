@@ -108,8 +108,6 @@ class Gui :
         else:
             self.__select_topoftag(j)
 
-        self.cfg.key_handlers[-1].draw_elements()
-   
     def __select_topoftag(self, j=0):
         self.selected = 0
         while self.map[self.selected][0] != j:
@@ -190,12 +188,10 @@ class Gui :
             self.select()
 
     def just_read(self):
-        # Added for binding
         j,k,r,l,f = self.map[self.selected]
         self.list[j].set_read(k)
 
     def just_unread(self):
-        # Added for binding.
         j,k,r,l,f = self.map[self.selected]
         self.list[j].set_unread(k)
 

@@ -91,11 +91,11 @@ class Reader :
             return
 
         if i in range(len(self.links)) :
-            self.cfg.goto(self.links[i][0])
+            utility.goto(self.links[i][0], self.cfg)
         self.draw_elements()
 
     def goto(self):
-        input.Input(self.cfg, " Link Number ", self.__dogoto, self.height, self.width, self.cfg.log)
+        input.Input(self.cfg, " Link Number ", self.__dogoto, self.register, self.deregister)
         return 1
     
     def key(self, t):
