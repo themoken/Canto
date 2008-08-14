@@ -109,7 +109,14 @@ class Gui :
 
     def __select_topoftag(self, j=0):
         self.selected = 0
-        while self.map[self.selected][0] != j:
+        l = len(self.map)
+        while self.map[self.selected][0] < j:
+            if self.selected == l - 1:
+                if j:
+                    self.__select_topoftag(j - 1)
+                else:
+                    self.selected = -1
+                break
             self.selected += 1
         self.select()
 
