@@ -200,6 +200,8 @@ class Main():
                 elif r == 3:
                     self.key_handlers[-1].prev_item()
                     self.key_handlers[-1].reader()
+                elif r == 4:
+                    self.alarm()
 
         curses.endwin()
         sys.exit(0)
@@ -219,6 +221,7 @@ class Main():
 
         self.key_handlers[0].alarm(self.stories)
         signal.alarm(delay)
+        self.refresh()
 
     def refresh(self):
         curses.endwin()

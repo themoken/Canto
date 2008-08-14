@@ -309,7 +309,7 @@ class Gui :
     def force_update(self):
         for f in self.cfg.feeds :
             f.time = 1
-        self.cfg.alarm()
+        return 4
 
     def tag_read(self):
         self.list[self.map[self.selected][0]].all_read()
