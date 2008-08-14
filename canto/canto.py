@@ -123,7 +123,7 @@ class Main():
             for f in self.cfg.feeds :
                 f.time = 1
                 f.tick()
-                self.stories.extend(f)
+                self.filter_extend(f)
 
 
         if flags & CHECK_NEW:
@@ -144,9 +144,9 @@ class Main():
         self.cfg.key_list = utility.conv_key_list(self.cfg.key_list)
         self.cfg.reader_key_list = utility.conv_key_list(self.cfg.reader_key_list)
 
-        stories = []
+        self.stories = []
         for f in self.cfg.feeds:
-            stories.extend(f)
+            self.filter_extend(f)
 
         self.cfg.stdscr = curses.initscr()
         curses.noecho()
@@ -164,7 +164,7 @@ class Main():
         tag_list = [tag.Tag(x.tag) for x in self.cfg.feeds]
 
         self.key_handlers = []
-        gui.Gui(self.cfg, stories, tag_list, self.push_handler, self.pop_handler)
+        gui.Gui(self.cfg, self.stories, tag_list, self.push_handler, self.pop_handler)
         signal.signal(signal.SIGWINCH, self.winch)
         signal.signal(signal.SIGALRM, self.alarm)
         signal.alarm(60)
@@ -214,7 +214,8 @@ class Main():
             f.tick()
             if len(f) == 0:
                 delay = 1
-            self.stories.extend(f)
+            else:
+                self.filter_extend(f)
 
         self.key_handlers[0].alarm(self.stories)
         signal.alarm(delay)
@@ -224,6 +225,10 @@ class Main():
         self.cfg.stdscr.refresh()
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
         self.cfg.stdscr.keypad(1)
+
+        if self.cfg.resize_hook:
+            self.cfg.resize_hook(self.cfg)
+
         for g in self.key_handlers :
             g.refresh()
 
@@ -235,4 +240,10 @@ class Main():
         if len(self.key_handlers):
            for h in self.key_handlers:
                h.refresh()
+
+    def filter_extend(self, t):
+        if self.cfg.item_filter:
+            self.stories.extend(filter(lambda x: self.cfg.item_filter(t,x), t))
+        else:
+            self.stories.extend(t)
 

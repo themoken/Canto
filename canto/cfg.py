@@ -92,6 +92,9 @@ class Cfg:
         self.height = 0
         self.width = 0
 
+        self.resize_hook = None
+        self.item_filter = None
+
         try :
             os.stat(self.path)
         except :
@@ -180,6 +183,11 @@ class Cfg:
         self.render = locals["render"]
         if locals["columns"] > 0:
             self.columns = locals["columns"]
+
+        if locals.has_key("resize_hook"):
+            self.resize_hook = locals["resize_hook"]
+        if locals.has_key("item_filter"):
+            self.item_filter = locals["item_filter"]
 
     def gen_serverconf(self):
         try :
