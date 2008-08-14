@@ -4,8 +4,8 @@ from distutils.core import setup, Extension
 from distutils.command.install_data import install_data
 import os
 
-version = ['0','4','8']
-man_date = "29 August 2008"
+version = ['0','5','0']
+man_date = "02 September 2008"
 
 class Canto_install_data(install_data):
     def run(self):

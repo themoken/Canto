@@ -193,7 +193,7 @@ class Main():
             if t:
                 r = self.key_handlers[-1].key(t)
                 if r == 1:
-                    self.refresh()
+                    self.key_handlers[-1].refresh()
                 elif r == 2:
                     self.key_handlers[-1].next_item()
                     self.key_handlers[-1].reader()

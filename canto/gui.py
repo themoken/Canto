@@ -86,8 +86,7 @@ class Gui :
 
     def help(self):
         utility.silentfork("man canto", 1)
-        self.cfg.alarm()
-        self.cfg.refresh()
+        return 1
 
     def alarm(self, listobj):
         j,k,r,l,f = self.map[self.selected]
@@ -341,4 +340,4 @@ class Gui :
 
     def quit(self):
         self.deregister()
-        return 1
+        return -1
