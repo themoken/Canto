@@ -49,15 +49,13 @@ class Feed(tag.Tag):
 
             for item in data:
                 path = self.path + "/" + item.replace("/", " ")
-                s = story.Story(path)
-                if not self.title_key or s["title"] not in [x["title"] for x in newlist]:
-                    newlist.append(s)
+                newlist.append(story.Story(path))
 
         except IOError:
             pass
 
         for i in range(len(newlist)):
-            r = self.search_stories(newlist[i])
+            r = self.search_stories(newlist[i], self.title_key)
             if r != -1 :
                 newlist[i] = self[r]
         

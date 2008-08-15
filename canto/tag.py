@@ -16,10 +16,15 @@ class Tag(list):
         self.read = 0
         self.unread = 0
 
-    def search_stories(self, story):
-        for i in range(len(self)) :
-            if self[i] == story :
-                return i
+    def search_stories(self, story, tk = 0):
+        if tk:
+            for i in range(len(self)) :
+                if self[i]["title"] == story["title"]:
+                    return i
+        else:
+            for i in range(len(self)) :
+                if self[i] == story:
+                    return i
         return -1
 
     def all_read(self):
