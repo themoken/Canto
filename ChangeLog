@@ -1,3 +1,9 @@
+Canto 0.4.5 ChangeLog
+* Fix html entity crash
+* Improve reader internal link detection
+* Fix title_key behavior
+* Minor theme fix for collapsed feeds
+
 Canto 0.4.4.1 ChangeLog
 * Quick fix for conf.example generation/use.
 
