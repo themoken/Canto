@@ -183,33 +183,31 @@ class Gui :
 
     def prev_tag(self) :
         self.unselect()
-        j,k,r,l,f = self.map[self.selected]
+        j = self.map[self.selected][0]
 
-        if j == 0:
-            self.selected = 0
-        else:
-            while 1:
-                self.selected -= 1
-                j2,k2,r2,l2,f2 = self.map[self.selected]
-                if j2 < j and k2 == 0 :
-                    break
+        while self.selected > 0:
+            j2,k2 = self.map[self.selected][0:2]
+            if j2 < j and k2 == 0 :
+                break
+            self.selected -= 1
 
         self.select()
 
     def next_tag(self) :
-        j,k,r,l,f = self.map[self.selected]
+        j = self.map[self.selected][0]
+        self.unselect()
 
-        if j != len(self.list) - 1  :
-            self.unselect()
+        while self.selected < self.items:
+            if self.map[self.selected][0] > j:
+                break
+            self.selected += 1
 
-            while 1:
-                self.selected += 1
-                j2,k2,r2,l2,f2 = self.map[self.selected]
-                if j2 > j :
-                    break
+        row = self.map[self.selected][2]
+        lastrow = self.map[-1][2]
+        lastlines = self.map[-1][3]
 
-            self.offset = min(r2,max(0,self.map[-1][2] + self.map[-1][3] - self.lines))
-            self.select()
+        self.offset = min(row,max(0,lastrow + lastlines - self.lines))
+        self.select()
 
     def just_read(self):
         j,k,r,l,f = self.map[self.selected]
