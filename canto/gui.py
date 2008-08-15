@@ -105,7 +105,25 @@ class Gui :
                 self.selected += 1
             self.select()
         else:
-            self.__select_topoftag(j)
+            self.__select_nearest_valid(j, k)
+
+    def __select_nearest_valid(self, j, oldk):
+        self.__select_topoftag(j)
+        if self.map[self.selected][0] != j:
+            return
+
+        self.unselect()
+        l = len(self.map)
+        while self.map[self.selected][1] < oldk and\
+                self.selected < l and\
+                self.map[self.selected][0] == j:
+            self.selected += 1
+
+        if self.map[self.selected][0] > j \
+            and self.map[self.selected - 1][0] == j:
+                self.selected -= 1
+
+        self.select()
 
     def __select_topoftag(self, j=0):
         self.selected = 0
