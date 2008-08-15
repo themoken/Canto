@@ -236,17 +236,6 @@ class Gui :
                 self.__do_inline_search, self.register, self.deregister)
         return 1
 
-    def search(self):
-        search.Search(self.cfg, " Collect Search ", \
-                self.__do_search, self.height, self.width, self.cfg.log)
-        return 1
-
-    def __do_search(self, s) :
-        if s:
-            items = [y for x in self.list for y in x if s.match(y["title"])]
-            if items :
-                Gui(self.cfg, self.height, self.width, items, [tag.Tag("*")])
-
     def __do_inline_search(self, s) :
         if s:
             for t in self.list:

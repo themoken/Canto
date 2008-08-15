@@ -50,7 +50,6 @@ class Cfg:
                          "." : "next_unread",
                          "," : "prev_unread",
                          "f" : "inline_search",
-                         "F" : "search",
                          "n" : "next_mark",
                          "p" : "prev_mark",
                          " " : "reader",
