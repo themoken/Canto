@@ -49,7 +49,12 @@ class Feed(tag.Tag):
 
             for item in data:
                 path = self.path + "/" + item.replace("/", " ")
-                newlist.append(story.Story(path))
+                s = story.Story(path)
+                if self.title_key:
+                    if s["title"] not in [x["title"] for x in newlist]:
+                        newlist.append(s)
+                else:
+                    newlist.append(s)
 
         except IOError:
             pass
