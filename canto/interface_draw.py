@@ -7,21 +7,37 @@ class Renderer :
     def __init__(self):
         self.story_rgx = []
 
+        self.reader_rgx = [
+            # Strip out newlines for formatting.
+            (re.compile("\\\n"), " "),
+            (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
+
+            # Highlight quotes in color 5
+            (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
+
+            # Convert linebreaks
+            (re.compile("<p>|<pre>"), "\n\n"),
+            (re.compile("<br\s*/?>"), "\n"),
+
+            # Do something smart with lists.
+            (re.compile("<ul>|<ol>"), "\n\n"),
+            (re.compile("<li>"), "• "),
+            (re.compile("</li>"), "\n"),
+
+            # Strip out any remaining unescaped HTML
+            (re.compile("<.*?>"), ""),
+
+            # Consolidate more than two linebreaks.
+            (re.compile("[\\\n]{3,}"), "\n\n"),
+
+            # Add spaces for splitting.
+            (re.compile("\\\n"), "\n ")]
+
+        # Currently just used to strip html entities from all content.
         self.common_rgx = [
             (re.compile("&(\w{1,8});"), utility.getentity),
             (re.compile("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"), utility.getchar)]
-
-        self.reader_rgx = [
-            (re.compile("\\\n"), " "),
-            (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
-            (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
-            (re.compile("\\\n"), " "),
-            (re.compile("<p>"), "\n\n"),
-            (re.compile("<br\s*/?>"), "\n"),
-            (re.compile("<.*?>"), ""),
-            (re.compile("[\\\n]{3,}"), "\n\n"),
-            (re.compile("\\\n"), "\n ")]
-    
+   
     def tag_head(self, tag):
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
         if tag.collapsed:
