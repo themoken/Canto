@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 from widecurse import core, tlen
+import utility
 import re
 
 class Renderer :
     def __init__(self):
+        self.story_rgx = []
+
+        self.common_rgx = [
+            (re.compile("&(\w{1,8});"), utility.getentity),
+            (re.compile("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"), utility.getchar)]
+
         self.reader_rgx = [
             (re.compile("\\\n"), " "),
             (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
@@ -14,7 +21,7 @@ class Renderer :
             (re.compile("<.*?>"), ""),
             (re.compile("[\\\n]{3,}"), "\n\n"),
             (re.compile("\\\n"), "\n ")]
-
+    
     def tag_head(self, tag):
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
         if tag.collapsed:
@@ -126,6 +133,11 @@ class Renderer :
         return row + line
 
     def story(self, tag, story, row, height, width, window_list):
+        title = story["title"]
+        for rlist in [self.story_rgx, self.common_rgx]:
+            for rgx,rep in rlist:
+                title = rgx.sub(rep,title)
+
         if story.idx == 0:
             row = self.simple_out(self.tag_head(tag),\
                 row, height, width, window_list)
@@ -142,8 +154,9 @@ class Renderer :
 
     def reader(self, story, width, links, show_links, window):
         s = story["descr"]
-        for rgx,rep in self.reader_rgx:
-            s = rgx.sub(rep, s)
+        for rlist in [self.reader_rgx, self.common_rgx]:
+            for rgx,rep in rlist:
+                s = rgx.sub(rep,s)
         
         row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
 

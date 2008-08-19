@@ -11,6 +11,7 @@ import re
 import sys
 import os
 import signal 
+import htmlentitydefs
 
 def silentfork(path, text):
     """Fork/exec a path with args, ensure it's quiet."""
@@ -51,3 +52,25 @@ def stripchars(string):
 
 def strip_escape_chars(strings):
     return (re.sub("\\\\(.)", "\\1", string) for string in strings)
+
+def getentity(name):
+    """Convert an entity reference into a printable
+       Unicode character."""
+    name, = name.groups()
+    if htmlentitydefs.name2codepoint.has_key(name):
+        return unichr(htmlentitydefs.name2codepoint[name]).encode("UTF-8")
+    else:
+        return "&%s;" % (name,)
+
+def getchar(num):
+    num, = num.groups()
+    """Convert a character reference into a printable
+       Unicode character."""
+    try :
+        if num[0] in ['x','X']:
+            c = int(num[1:], 16)
+        else:
+            c = int(num)
+    except :
+        return num
+    return unichr(c).encode("UTF-8")

@@ -7,8 +7,6 @@
 
 import xml.parsers.expat
 import urllib2
-import htmlentitydefs
-import re
 
 class ParsedFeed(list):
     def __init__(self, URL, log_func):
@@ -38,33 +36,6 @@ class ParsedFeed(list):
             self.log("OFFSET: %d\n" % v.offset)
             self.log("CODE: %d\n" % v.code)
     
-    def __getentity(self, name):
-        """Convert an entity reference into a printable
-           Unicode character."""
-        name, = name.groups()
-        if htmlentitydefs.name2codepoint.has_key(name):
-            return unichr(htmlentitydefs.name2codepoint[name])
-        else:
-            return "&%s;" % (name,)
-
-    def __getchar(self, num):
-        num, = num.groups()
-        """Convert a character reference into a printable
-           Unicode character."""
-        try :
-            if num[0] in ['x','X']:
-                c = int(num[1:], 16)
-            else:
-                c = int(num)
-        except :
-            return num
-        return unichr(c)
-
-    def entstrip(self, str):
-        string = re.sub("&(\w{1,8});", self.__getentity, str)
-        string = re.sub("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]", self.__getchar, string)
-        return string
-
     def clear(self):
         self.item = {}
         self.string = ""
@@ -150,7 +121,7 @@ class ParsedFeed(list):
             self.clear()
 
         if self.tag == name :
-            self.string = self.entstrip(self.string.rstrip().lstrip())
+            self.string = self.string.rstrip().lstrip()
             if not self.string:
                 self.string = "None"
             if name in ["title", "description", "summary"]:

@@ -1,3 +1,7 @@
+Canto 0.4.6 ChangeLog
+* More title_key fixups.
+* Move entity parsing to client, for more correct handling.
+
 Canto 0.4.5 ChangeLog
 * Fix html entity crash
 * Improve reader internal link detection
