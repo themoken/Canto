@@ -51,7 +51,12 @@ class Feed(tag.Tag):
                 path = self.path + "/" + item.replace("/", " ")
                 s = story.Story(path)
                 if self.title_key:
-                    if s["title"] not in [x["title"] for x in newlist]:
+                    for i in range(len(newlist)):
+                        if s["title"] == newlist[i]["title"]:
+                            if s.wasread() and not newlist[i].wasread():
+                                newlist[i] = s
+                            break
+                    else:
                         newlist.append(s)
                 else:
                     newlist.append(s)
