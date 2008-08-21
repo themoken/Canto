@@ -159,7 +159,7 @@ class Renderer :
                 row, height, width, window_list)
 
         if not tag.collapsed:
-            row = self.out([[story["title"], (self.firsts(story), self.mids(story), self.ends(story))]],
+            row = self.out([[title, (self.firsts(story), self.mids(story), self.ends(story))]],
                     row, height, width, window_list)
             
             if story.last:
