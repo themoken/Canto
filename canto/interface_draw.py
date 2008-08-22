@@ -14,15 +14,16 @@ class Renderer :
 
             # Highlight quotes in color 5
             (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
+            (re.compile("<blockquote\s*>(.*?)</blockquote\s*>"), "\n\n%5\\1%1\n\n"),
 
             # Convert linebreaks
-            (re.compile("<p>|<pre>"), "\n\n"),
+            (re.compile("<p\s*>|<pre\s*>"), "\n\n"),
             (re.compile("<br\s*/?>"), "\n"),
 
             # Do something smart with lists.
-            (re.compile("<ul>|<ol>"), "\n\n"),
-            (re.compile("<li>"), "• "),
-            (re.compile("</li>"), "\n"),
+            (re.compile("<ul\s*>|<ol\s*>"), "\n\n"),
+            (re.compile("<li\s*>"), "• "),
+            (re.compile("</li\s*>"), "\n"),
 
             # Strip out any remaining unescaped HTML
             (re.compile("<.*?>"), ""),
