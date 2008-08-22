@@ -29,7 +29,7 @@ def log(path, str, mode="a"):
         pass
 
 def print_usage():
-    print "USAGE: canto [-hvgulandDCLF]"
+    print "USAGE: canto [-hvgulanDCLF]"
     print "--help      -h        This help."
     print "--version   -v        Print version info."
     print "--gensconf  -g        Only generate server config."
