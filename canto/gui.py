@@ -267,6 +267,9 @@ class Gui :
                         story.mark()
                     else:
                         story.unmark()
+
+        self.prev_mark()
+        self.next_mark()
         self.draw_elements()
 
     def __select_if_marked(self, newcursor) :
