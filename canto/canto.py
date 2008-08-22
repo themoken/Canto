@@ -38,7 +38,6 @@ def print_usage():
     print "--checkall  -a        Prints number of new items."
     print "--checknew  -n [feed] Prints number of items that are new in feed."
     print ""
-    print "--delete    -d [feed] Delete feed from filesystem."
     print "--dir       -D [path] Set configuration directory. (~/.canto/)"
     print "--conf      -C [path] Set configuration file. (~/.canto/conf)"
     print "--log       -L [path] Set client log file. (~/.canto/log)"
@@ -77,7 +76,6 @@ def main():
     feed_dir = conf_dir + "feeds/"
     only_conf = 0
     update_first = 0
-    del_feed = None
 
     new_ct = 0
     feed_ct = None
@@ -87,8 +85,6 @@ def main():
     for opt, arg in optlist :
         if opt in ["-C", "--conf"] :
             conf_file = arg
-        elif opt in ["-d","--delete"] :
-            del_feed = arg
         elif opt in ["-L","--log"] :
             log_file = arg
         elif opt in ["-F","--fdir"] :
@@ -118,7 +114,7 @@ def main():
     log_func = (lambda x : log(log_file, x, "a"))
 
     try :
-        i = cfg.Cfg(log_func, conf_dir, conf_file, serv_file, feed_dir, del_feed, only_conf, update_first, new_ct, feed_ct, feed_list)
+        i = cfg.Cfg(log_func, conf_dir, conf_file, serv_file, feed_dir, only_conf, update_first, new_ct, feed_ct, feed_list)
     except cfg.ConfigError:
         sys.exit(-1)
     except cfg.FeedError:
@@ -129,10 +125,7 @@ def main():
         traceback.print_exc()
         sys.exit(-1)
 
-    if del_feed:
-        print "Feed deleted."
-        sys.exit(0)
-    elif only_conf:
+    if only_conf:
         print "Server config generated."
         sys.exit(0)
     elif new_ct or feed_list:

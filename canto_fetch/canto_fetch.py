@@ -14,6 +14,7 @@ import signal
 import errno
 import codecs
 import getopt
+import stat
 
 class Cfg(list):
     """A basic holster for the config and all of its options.
@@ -57,6 +58,18 @@ class Cfg(list):
         self.__safe_mkdir(dir)
         self.append(feed.Feed(dir, handle, URL, int(rate), int(keep),\
                 self.log, self.verbose, self.force))
+
+    def cleanup(self):
+        handles = [x.path for x in self]
+        for i in os.listdir(self.feed_dir):
+            i = self.feed_dir + i
+            if stat.S_ISDIR(os.stat(i).st_mode):
+                if i not in handles:
+                    for path in os.listdir(i):
+                        os.unlink(i + '/' + path)
+                    os.rmdir(i)
+            elif i.endswith(".idx") and i[:-4] not in handles:
+                os.unlink(i)
 
 def log(path, str, mode="a"):
     """Simple append log"""
@@ -122,6 +135,7 @@ def main():
     
     cfg = Cfg(log_func, conf, path, verbose, force)
     cfg.parse()
+    cfg.cleanup()
     
     for f in cfg:
         f.tick()

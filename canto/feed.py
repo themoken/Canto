@@ -81,16 +81,3 @@ class Feed(tag.Tag):
                 self.time = 1
             else:
                 self.time = self.rate
-
-    def delete(self):
-        try:
-            os.unlink(self.path + "/../" + self.safetag + ".idx")
-        except:
-            pass
-
-        try:
-            for i in os.listdir(self.path):
-                os.unlink(self.path + "/" + i)
-            os.rmdir(self.path)
-        except:
-            pass

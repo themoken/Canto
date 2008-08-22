@@ -34,7 +34,7 @@ class Cfg:
     all of the options and functions required to drive the actual GUI. Input
     and signals are all routed to here and dispatched as necessary."""
 
-    def __init__(self, log, conf_dir, conf, sconf, feed_dir, del_feed, only_conf, update_first, new_ct, feed_ct, feed_list):
+    def __init__(self, log, conf_dir, conf, sconf, feed_dir, only_conf, update_first, new_ct, feed_ct, feed_list):
         self.browser_path = "firefox \"%u\""
         self.text_browser = 0
         self.render = interface_draw.Renderer()
@@ -126,8 +126,7 @@ class Cfg:
         if update_first:
             print "Pausing to update feeds. Wait a moment."
 
-        if not del_feed and not only_conf and not new_ct\
-                and not feed_list:
+        if not only_conf and not new_ct and not feed_list:
             # Start ncurses for two shakes, to get the term's
             # height and width so that the config can 
             # use the info.
@@ -137,15 +136,6 @@ class Cfg:
 
         self.parse()
 
-        if del_feed:
-            for feed in self.feeds:
-                if feed.tag == del_feed:
-                    feed.delete()
-                    self.feeds.remove(feed)
-                    self.gen_serverconf()
-                    return
-            raise FeedError
-                
         self.gen_serverconf()
 
         if only_conf:
