@@ -1,3 +1,12 @@
+Canto 0.4.7 ChangeLog
+* Fix HTML entities in story titles.
+* Prioritize read over unread stories on disk.
+* Remove --delete, canto-fetch cleans up automatically.
+* Add vim-like (j/k) scrolling default bindings.
+* Theme cleanups, interpret more HTML tags.
+* Add User-Agent request header, fixing feeds like Google News.
+* Add next/prev_unread bindings (default to ./,)
+
 Canto 0.4.6 ChangeLog
 * More title_key fixups.
 * Move entity parsing to client, for more correct handling.
