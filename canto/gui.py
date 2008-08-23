@@ -272,42 +272,48 @@ class Gui :
         self.next_mark()
         self.draw_elements()
 
-    def __select_if_attr(self, newcursor, attr) :
+    def __select_if_attr(self, newcursor, attr, status) :
         j,k,r,l,f = self.map[newcursor]
         f = getattr(self.list[j][k], attr, None)
 
         if not f:
             return
 
-        if f() :
+        if f() == status:
             self.selected = newcursor
             self.select()
             return 1
         return 0
 
-    def __next_attr(self, attr) :
+    def __next_attr(self, attr, status) :
         self.unselect()
         newcursor = self.selected + 1
         while newcursor < self.items :
-            if self.__select_if_attr(newcursor, attr):
+            if self.__select_if_attr(newcursor, attr, status):
                 return
             newcursor += 1
         self.select()
 
-    def __prev_attr(self, attr) :
+    def __prev_attr(self, attr, status) :
         self.unselect()
         newcursor = self.selected - 1
         while newcursor > 0:
-            if self.__select_if_attr(newcursor, attr):
+            if self.__select_if_attr(newcursor, attr, status):
                 return
             newcursor -= 1
         self.select()
 
     def next_mark(self):
-        self.__next_attr("marked")
+        self.__next_attr("marked", 1)
 
     def prev_mark(self):
-        self.__prev_attr("marked")
+        self.__prev_attr("marked", 1)
+
+    def next_unread(self):
+        self.__next_attr("wasread", 0)
+
+    def prev_unread(self):
+        self.__prev_attr("wasread", 0)
 
     def toggle_mark(self):
         j,k,r,l,f = self.map[self.selected]

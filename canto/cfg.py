@@ -51,6 +51,8 @@ class Cfg:
                          "l" : "next_tag",
                          "o" : "prev_tag",
                          "g" : "goto",
+                         "." : "next_unread",
+                         "," : "prev_unread",
                          "f" : "inline_search",
                          "F" : "search",
                          "n" : "next_mark",
