@@ -9,6 +9,17 @@
 #include <py_curses.h>
 #include <ncursesw/ncurses.h>
 
+char *lstrip(char *s)
+{
+    int i = 0;
+    for(i=0;s[i];i++) {
+        if((s[i] != ' ')&&(s[i] != '\t'))
+            break;
+    }
+
+    return &s[i];
+}
+
 static int theme_strlen(char *message, char end)
 {
     int len = 0;
@@ -239,9 +250,9 @@ static PyObject * mvw(PyObject *self, PyObject *args)
         do_char(win, width, &j, &y, &x, end);
 
     if (ret == -1)
-        return Py_BuildValue("si", NULL, x);
+        return Py_BuildValue("s", NULL);
     else
-        return Py_BuildValue("si", &message[i], x);
+        return Py_BuildValue("s", lstrip(&message[i]));
 }
 
 

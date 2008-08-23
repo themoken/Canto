@@ -110,7 +110,7 @@ class Renderer :
         for s,rep,end in list:
             while s:
                  window, winrow = self.__window(row + line, height, window_list)
-                 s = core(window, winrow, 0, width, s, rep, end)[0]
+                 s = core(window, winrow, 0, width, s, rep, end)
                  line += 1
 
         return row + line
@@ -137,14 +137,13 @@ class Renderer :
                     start, rep, end = l[2]
 
                 t = s
-                s = core(window, winrow, 0, width, start + s, rep, end)[0]
+                s = core(window, winrow, 0, width, start + s, rep, end)
 
                 # Detect an infinite loop caused by start, and canto
                 # trying to be smart about wrapping =).
 
                 if s and s.endswith(t):
-                    s = core(window, winrow, 0, width, s, " ","")[0]
-
+                    s = core(window, winrow, 0, width, s, " ","")
                 line += 1
 
         return row + line
