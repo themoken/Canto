@@ -17,13 +17,13 @@ class Renderer :
             (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
 
             # Convert linebreaks
-            (re.compile("<p\s*>|<pre\s*>|<blockquote\s*>"), "\n\n"),
-            (re.compile("<br\s*/?>"), "\n"),
+            (re.compile("<p.*?>|<pre.*?>|<blockquote.*?>|<div.*?>"), "\n\n"),
+            (re.compile("<br.*?>"), "\n"),
 
             # Do something smart with lists.
-            (re.compile("<ul\s*>|<ol\s*>"), "\n\n"),
-            (re.compile("<li\s*>"), "• "),
-            (re.compile("</li\s*>"), "\n"),
+            (re.compile("<ul.*?>|<ol.*?>"), "\n\n"),
+            (re.compile("<li.*?>"), "• "),
+            (re.compile("</li.*?>"), "\n"),
 
             # Strip out any remaining unescaped HTML
             (re.compile("<.*?>"), ""),
@@ -77,7 +77,8 @@ class Renderer :
         return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
     def reader_head(self, story):
-        return [("%1%B" + story["title"], " ", " "),("┌","─","┐%C")]
+        title = self.__do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        return [("%1%B" + title, " ", " "),("┌","─","┐%C")]
 
     def reader_foot(self, story):
         return [("%B└", "─", "┘%C")]
