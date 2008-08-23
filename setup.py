@@ -15,7 +15,7 @@ class Canto_install_data(install_data):
         libdir = install_cmd.install_lib
         mandir = install_cmd.install_data + "/share/man/man1/"
 
-        for f in ["/canto/canto.py","/canto_fetch/canto_fetch.py"]:
+        for f in ["/canto/canto.py","/canto_fetch/canto_fetch.py","/canto_fetch/parse.py"]:
             os.system("sed -i 's/VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + f)
 
         for m in ["canto.1","canto-fetch.1"]:

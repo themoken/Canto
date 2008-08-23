@@ -23,7 +23,10 @@ class ParsedFeed(list):
         self.log("Parsing.\n")
 
         try :
-            c = urllib2.urlopen(URL).read()
+            request = urllib2.Request(URL)
+            request.add_header("User-Agent","Canto/%d.%d.%d" % VERSION_TUPLE)
+            o = urllib2.build_opener()
+            c = o.open(request).read()
         except:
             self.log("Error fetching feed!\n")
             return
