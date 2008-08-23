@@ -272,31 +272,42 @@ class Gui :
         self.next_mark()
         self.draw_elements()
 
-    def __select_if_marked(self, newcursor) :
+    def __select_if_attr(self, newcursor, attr) :
         j,k,r,l,f = self.map[newcursor]
-        if self.list[j][k].marked() :
+        f = getattr(self.list[j][k], attr, None)
+
+        if not f:
+            return
+
+        if f() :
             self.selected = newcursor
             self.select()
             return 1
         return 0
 
-    def next_mark(self) :
+    def __next_attr(self, attr) :
         self.unselect()
         newcursor = self.selected + 1
         while newcursor < self.items :
-            if self.__select_if_marked(newcursor):
+            if self.__select_if_attr(newcursor, attr):
                 return
             newcursor += 1
         self.select()
 
-    def prev_mark(self) :
+    def __prev_attr(self, attr) :
         self.unselect()
         newcursor = self.selected - 1
         while newcursor > 0:
-            if self.__select_if_marked(newcursor):
+            if self.__select_if_attr(newcursor, attr):
                 return
             newcursor -= 1
         self.select()
+
+    def next_mark(self):
+        self.__next_attr("marked")
+
+    def prev_mark(self):
+        self.__prev_attr("marked")
 
     def toggle_mark(self):
         j,k,r,l,f = self.map[self.selected]
