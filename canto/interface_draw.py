@@ -10,14 +10,14 @@ class Renderer :
         self.reader_rgx = [
             # Strip out newlines for formatting.
             (re.compile("\\\n"), " "),
+            (re.compile("<img.*?>"), "[image]"),
             (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
 
             # Highlight quotes in color 5
             (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
-            (re.compile("<blockquote\s*>(.*?)</blockquote\s*>"), "\n\n%5\\1%1\n\n"),
 
             # Convert linebreaks
-            (re.compile("<p\s*>|<pre\s*>"), "\n\n"),
+            (re.compile("<p\s*>|<pre\s*>|<blockquote\s*>"), "\n\n"),
             (re.compile("<br\s*/?>"), "\n"),
 
             # Do something smart with lists.
@@ -29,7 +29,7 @@ class Renderer :
             (re.compile("<.*?>"), ""),
 
             # Consolidate more than two linebreaks.
-            (re.compile("[\\\n]{3,}"), "\n\n"),
+            (re.compile("(\\\n|\s){3,}"), "\n\n"),
 
             # Add spaces for splitting.
             (re.compile("\\\n"), "\n ")]
@@ -83,7 +83,7 @@ class Renderer :
         return [("%B└", "─", "┘%C")]
 
     def reader_link(self, idx, link):
-        return "%4[" + str(idx) + "] " + link[1] + "- %1" + link[0]
+        return "%4[" + str(idx) + "] " + link[1] + "%1 - " + link[0]
 
     def rfirsts(self, story):
         return ("%B│%b%1 ", " ", " %1%B│%b")
@@ -148,11 +148,15 @@ class Renderer :
 
         return row + line
 
-    def story(self, tag, story, row, height, width, window_list):
-        title = story["title"]
-        for rlist in [self.story_rgx, self.common_rgx]:
+    def __do_regex(self, target, l):
+        s = target
+        for rlist in l:
             for rgx,rep in rlist:
-                title = rgx.sub(rep,title)
+                s = rgx.sub(rep,s)
+        return s.lstrip()
+    
+    def story(self, tag, story, row, height, width, window_list):
+        title = self.__do_regex(story["title"], [self.story_rgx, self.common_rgx])
 
         if story.idx == 0:
             row = self.simple_out(self.tag_head(tag),\
@@ -169,11 +173,8 @@ class Renderer :
         return row
 
     def reader(self, story, width, links, show_links, window):
-        s = story["descr"]
-        for rlist in [self.reader_rgx, self.common_rgx]:
-            for rgx,rep in rlist:
-                s = rgx.sub(rep,s)
-        
+        s = self.__do_regex(story["descr"], [self.reader_rgx, self.common_rgx])
+
         row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
 
         l = s.split("\n")
