@@ -9,11 +9,12 @@ import xml.parsers.expat
 import urllib2
 
 class ParsedFeed(list):
-    def __init__(self, URL, log_func):
+    def __init__(self, URL, log_func, title_key):
         list.__init__(self)
         self.log = log_func
         self.clear()
         self.link_base = ""
+        self.title_key = title_key
 
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = self.start
@@ -117,8 +118,11 @@ class ParsedFeed(list):
             if self.item["title"].startswith("."):
                 self.item["title"] = " " + self.item["title"]
 
-            self.item["hash"] = abs((hash(self.item["link"]) / 8) + \
-                    (hash(self.item["description"])))
+            if self.title_key:
+                self.item["hash"] = 0000
+            else:
+                self.item["hash"] = abs((hash(self.item["link"]) / 8) + \
+                        (hash(self.item["description"])))
 
             self.append(self.item)
             self.clear()

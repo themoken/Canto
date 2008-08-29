@@ -358,8 +358,8 @@ class Cfg:
             fsock = codecs.open(self.sconf, "w", "UTF-8", "ignore")
             try :
                 for f in self.feeds:
-                    fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\"\n" \
-                            % (f.tag, f.URL, f.rate, f.keep))
+                    fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\" \"%d\"\n" \
+                            % (f.tag, f.URL, f.rate, f.keep, f.title_key))
             finally :
                 fsock.close()
         except IOError:

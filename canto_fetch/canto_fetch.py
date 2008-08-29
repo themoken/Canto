@@ -31,7 +31,7 @@ class Cfg(list):
         self.__safe_mkdir(feed_dir)
         self.feed_dir = feed_dir
 
-        self.handlers = [(re.compile("^add\s\"(.*?)\"\s\"(.*?)\"\s\"([0-9]+?)\"\s\"([0-9]+?)\""), self.__add_feed)]
+        self.handlers = [(re.compile("^add\s\"(.*?)\"\s\"(.*?)\"\s\"([0-9]+?)\"\s\"([0-9]+?)\"\s\"([0-9]+?)\""), self.__add_feed)]
 
     def parse(self):
         try:
@@ -52,12 +52,12 @@ class Cfg(list):
             return
         os.mkdir(path)
 
-    def __add_feed(self, (handle, URL, rate, keep)):
+    def __add_feed(self, (handle, URL, rate, keep, title_key)):
         self.log("Add Feed %s\n" % handle)
         dir = self.feed_dir + handle.replace("/", " ")
         self.__safe_mkdir(dir)
         self.append(feed.Feed(dir, handle, URL, int(rate), int(keep),\
-                self.log, self.verbose, self.force))
+                self.log, self.verbose, self.force, title_key))
 
     def cleanup(self):
         handles = [x.path for x in self]

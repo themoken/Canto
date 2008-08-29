@@ -5,7 +5,7 @@ import codecs
 import time
 
 class Feed :
-    def __init__(self, dir_path, handle, URL, rate, keep, log_func, verbose, force):
+    def __init__(self, dir_path, handle, URL, rate, keep, log_func, verbose, force, title_key):
         self.handle = handle
         self.URL = URL
         self.rate = rate
@@ -15,6 +15,7 @@ class Feed :
         self.verbose = verbose
         self.force = force
         self.path = dir_path
+        self.title_key = title_key
         self.idx = self.path + "/../" + self.handle.replace("/", " ") + ".idx"
 
     def search_entries(self, string):
@@ -31,7 +32,8 @@ class Feed :
         self.log("Updating %s\n" % self.handle)
         if self.verbose:
             print "Updating %s" % self.handle
-        self.pf = parse.ParsedFeed(self.URL, self.log)
+
+        self.pf = parse.ParsedFeed(self.URL, self.log, self.title_key)
         self.dump_to_files()
         idxtmp = self.idx + ".tmp"
 
@@ -42,40 +44,32 @@ class Feed :
 
         try:
             fsock = codecs.open(self.idx, "w", "UTF-8", "ignore")
-            try:
-                items = 0
-                for s in self.pf:
-                    if items >= self.keep:
-                        st = self.sanitize_path(s["title"] + " " + str(s["hash"]))
-                        try:
+            items = 0
+            for s in self.pf:
+                if items >= self.keep:
+                    st = self.sanitize_path(s["title"] + " " + str(s["hash"]))
+                    os.unlink(self.path + "/" + st)
+                else:
+                    fsock.write(s["title"] + " " + str(s["hash"]) + "\00")
+                    items += 1
+            
+            if idxtmp :
+                tmpsock = codecs.open(idxtmp, "r", "UTF-8", "ignore")
+                lines = tmpsock.read().split("\00")[:-1]
+                tmpsock.close()
+
+                for l in lines:
+                    if not self.search_entries(l):
+                        if items >= self.keep :
+                            st = self.sanitize_path(l)
                             os.unlink(self.path + "/" + st)
-                        except:
-                            pass
-                    else:
-                        fsock.write(s["title"] + " " + str(s["hash"]) + "\00")
-                        items += 1
-                
-                if idxtmp :
-                    try:
-                        tmpsock = codecs.open(idxtmp, "r", "UTF-8", "ignore")
-                        try:
-                            lines = tmpsock.read().split("\00")[:-1]
-                            for l in lines:
-                                if not self.search_entries(l):
-                                    if items >= self.keep :
-                                        st = self.sanitize_path(l)
-                                        os.unlink(self.path + "/" + st)
-                                    else:
-                                        fsock.write(l + "\00")
-                                        items += 1
-                        finally :
-                            tmpsock.close()
-                    except :
-                        raise
-                    os.unlink(idxtmp)
-            finally :
-                fsock.close()
+                        else:
+                            fsock.write(l + "\00")
+                            items += 1
+                os.unlink(idxtmp)
+            fsock.close()
         except :
+            self.log("%s %s %s\n" % sys.exc_info())
             raise
 
     def dump_to_files(self):
@@ -84,20 +78,19 @@ class Feed :
             fullpath = self.path + "/" + sanpath
             fullpath = fullpath.encode("utf-8", "ignore")
 
+            if os.path.exists(fullpath):
+                continue
+
             try:
-                f = os.stat(fullpath)
-            except :
-                try :
-                    fsock = codecs.open(fullpath, "w", "UTF-8", "ignore")
-                    try :
-                        fsock.write(s["title"] + "\00")
-                        fsock.write(s["link"] + "\00")
-                        fsock.write(s["description"] + "\00")
-                        fsock.write(self.handle + ",*\00")
-                    finally :
-                        fsock.close()
-                except:
-                    self.log("%s %s %s\n" % sys.exc_info())
+                fsock = codecs.open(fullpath, "w", "UTF-8", "ignore")
+                fsock.write(s["title"] + "\00")
+                fsock.write(s["link"] + "\00")
+                fsock.write(s["description"] + "\00")
+                fsock.write(self.handle + ",*\00")
+                fsock.close()
+            except:
+                self.log("%s %s %s\n" % sys.exc_info())
+                raise
 
     def tick(self):
         if not os.path.exists(self.idx) or \
