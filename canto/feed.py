@@ -40,29 +40,14 @@ class Feed(tag.Tag):
         from the disk."""
 
         newlist = []
-        try:
-            fsock = codecs.open(self.path + "/../" + self.safetag + ".idx", "r", "UTF-8", "ignore")
-            try:
-                data = fsock.read().split("\00")[:-1]
-            finally:
-                fsock.close()
+        fsock = codecs.open(self.path + "/../" + self.safetag + ".idx", "r", "UTF-8", "ignore")
+        data = fsock.read().split("\00")[:-1]
+        fsock.close()
 
-            for item in data:
-                path = self.path + "/" + item.replace("/", " ")
-                s = story.Story(path)
-                if self.title_key:
-                    for i in range(len(newlist)):
-                        if s["title"] == newlist[i]["title"]:
-                            if s.wasread() and not newlist[i].wasread():
-                                newlist[i] = s
-                            break
-                    else:
-                        newlist.append(s)
-                else:
-                    newlist.append(s)
-
-        except IOError:
-            pass
+        for item in data:
+            path = self.path + "/" + item.replace("/", " ")
+            s = story.Story(path)
+            newlist.append(s)
 
         for i in range(len(newlist)):
             r = self.search_stories(newlist[i], self.title_key)
