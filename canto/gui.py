@@ -297,7 +297,7 @@ class Gui :
     def __prev_attr(self, attr, status) :
         self.unselect()
         newcursor = self.selected - 1
-        while newcursor > 0:
+        while newcursor >= 0:
             if self.__select_if_attr(newcursor, attr, status):
                 return
             newcursor -= 1
