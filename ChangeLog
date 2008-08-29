@@ -1,3 +1,7 @@
+Canto 0.4.8 ChangeLog
+* Fix minor search problem
+* Move title_key logic into canto_fetch
+
 Canto 0.4.7 ChangeLog
 * Fix HTML entities in story titles.
 * Prioritize read over unread stories on disk.
