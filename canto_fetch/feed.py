@@ -48,7 +48,8 @@ class Feed :
             for s in self.pf:
                 if items >= self.keep:
                     st = self.sanitize_path(s["title"] + " " + str(s["hash"]))
-                    os.unlink(self.path + "/" + st)
+                    if os.path.exists(self.path + "/" + st):
+                        os.unlink(self.path + "/" + st)
                 else:
                     fsock.write(s["title"] + " " + str(s["hash"]) + "\00")
                     items += 1

@@ -57,7 +57,7 @@ class Cfg(list):
         dir = self.feed_dir + handle.replace("/", " ")
         self.__safe_mkdir(dir)
         self.append(feed.Feed(dir, handle, URL, int(rate), int(keep),\
-                self.log, self.verbose, self.force, title_key))
+                self.log, self.verbose, self.force, int(title_key)))
 
     def cleanup(self):
         handles = [x.path for x in self]

@@ -39,6 +39,9 @@ class Feed(tag.Tag):
         """Invoke an update, reading all of the stories
         from the disk."""
 
+        if not os.path.exists(self.path):
+            return
+
         newlist = []
         fsock = codecs.open(self.path + "/../" + self.safetag + ".idx", "r", "UTF-8", "ignore")
         data = fsock.read().split("\00")[:-1]

@@ -119,7 +119,7 @@ class ParsedFeed(list):
                 self.item["title"] = " " + self.item["title"]
 
             if self.title_key:
-                self.item["hash"] = 0000
+                self.item["hash"] = 0
             else:
                 self.item["hash"] = abs((hash(self.item["link"]) / 8) + \
                         (hash(self.item["description"])))
