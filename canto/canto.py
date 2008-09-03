@@ -206,7 +206,8 @@ class Main():
         curses.endwin()
 
         for feed in self.cfg.feeds:
-            feed.todisk()
+            if feed.changed:
+                feed.todisk()
         print "Flushed to disk."
 
         sys.exit(0)
