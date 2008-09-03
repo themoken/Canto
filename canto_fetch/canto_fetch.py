@@ -5,71 +5,13 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import sys
-import re
-import os
-import feed
-import time
-import signal
-import errno
+import cPickle
 import codecs
 import getopt
-import stat
-
-class Cfg(list):
-    """A basic holster for the config and all of its options.
-       pass it a log function, a path to the canto-fetch conf and
-       a feed directory and it will populate itself with feeds."""
-
-    def __init__(self, log_func, conf, feed_dir, verbose, force):
-        list.__init__(self)
-        self.verbose = verbose
-        self.force = force
-        self.path = conf
-        self.log = log_func
-
-        self.__safe_mkdir(feed_dir)
-        self.feed_dir = feed_dir
-
-        self.handlers = [(re.compile("^add\s\"(.*?)\"\s\"(.*?)\"\s\"([0-9]+?)\"\s\"([0-9]+?)\"\s\"([0-9]+?)\""), self.__add_feed)]
-
-    def parse(self):
-        try:
-            fsock = codecs.open(self.path, "r", "UTF-8", "ignore")
-            try:
-                for line in fsock.readlines():
-                    for rgx, f in self.handlers:
-                        m = rgx.match(line)
-                        if m :
-                            f(m.groups())
-            finally:
-                fsock.close()
-        except:
-            raise
-
-    def __safe_mkdir(self, path):
-        if os.path.exists(path) and os.path.isdir(path):
-            return
-        os.mkdir(path)
-
-    def __add_feed(self, (handle, URL, rate, keep, title_key)):
-        self.log("Add Feed %s\n" % handle)
-        dir = self.feed_dir + handle.replace("/", " ")
-        self.__safe_mkdir(dir)
-        self.append(feed.Feed(dir, handle, URL, int(rate), int(keep),\
-                self.log, self.verbose, self.force, int(title_key)))
-
-    def cleanup(self):
-        handles = [x.path for x in self]
-        for i in os.listdir(self.feed_dir):
-            i = self.feed_dir + i
-            if stat.S_ISDIR(os.stat(i).st_mode):
-                if i not in handles:
-                    for path in os.listdir(i):
-                        os.unlink(i + '/' + path)
-                    os.rmdir(i)
-            elif i.endswith(".idx") and i[:-4] not in handles:
-                os.unlink(i)
+import time
+import os
+import sys
+import feedparser
 
 def log(path, str, mode="a"):
     """Simple append log"""
@@ -93,7 +35,7 @@ def print_usage():
     print "--log     -L [path] Set log file (~/.canto/slog)"
 
 def main():
-    MAJOR,MINOR,REV = VERSION_TUPLE
+    MAJOR,MINOR,REV = (0,5,0)
     
     home = os.getenv("HOME")
     conf = home + "/.canto/sconf"
@@ -132,13 +74,54 @@ def main():
     log(log_file, "Canto-fetch v %d.%d.%d\n" % (MAJOR,MINOR,REV), "w")
     log(log_file, "Started execution: %s\n" % time.asctime(time.localtime()), "a")
     log_func = lambda x : log(log_file, x, "a")
+  
+    f = open(conf, "r")
+    feeds = cPickle.load(f)
+    f.close()
+
+    for handle,url,update,rate in feeds:
+        newfeed = feedparser.parse(url)
+
+        fpath = path + "/" + handle.replace("/", " ")
+        if os.path.exists(fpath):
+            f = open(fpath, "rb")
+            curfeed = cPickle.load(f)
+            f.close()
+        else:
+            curfeed = {"canto_state":[], "entries":[]}
+
+        newfeed["canto_state"] = curfeed["canto_state"]
+
+        for entry in newfeed["entries"] :
+            if not entry.has_key("id"):
+                if entry.has_key("link"):
+                    entry["id"] = entry["link"]
+                elif entry.has_key("title"):
+                    entry["id"] = entry["title"]
+                else:
+                    entry["id"] = None
+
+            for centry in curfeed["entries"] :
+                if entry["id"] == centry["id"]:
+                    entry["canto_state"] = centry["canto_state"]
+                    break
+
+            if not entry.has_key("canto_state"):
+                entry["canto_state"] = [ handle,"unread", "*"]
+
+        for entry in newfeed["entries"]:
+            if entry.has_key("content"):
+                for c in entry["content"]:
+                    c["value"] = c["value"].encode("UTF-8")
+
+            for key in entry.keys():
+                if type(entry[key]) in [unicode,str]:
+                    entry[key] = entry[key].encode("UTF-8")
+            
+
+        f = open(fpath, "wb")
+        cPickle.dump(newfeed, f)
+        f.close()
     
-    cfg = Cfg(log_func, conf, path, verbose, force)
-    cfg.parse()
-    cfg.cleanup()
-    
-    for f in cfg:
-        f.tick()
-        
     log_func("Gracefully exiting Canto-fetch.\n")
     sys.exit(0)

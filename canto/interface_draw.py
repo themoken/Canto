@@ -174,7 +174,12 @@ class Renderer :
         return row
 
     def reader(self, story, width, links, show_links, window):
-        s = self.__do_regex(story["descr"], [self.reader_rgx, self.common_rgx])
+        if story.has_key("content"):
+            s = story["content"][0]["value"]
+        else:
+            s = story["description"]
+
+        s = self.__do_regex(s, [self.reader_rgx, self.common_rgx])
 
         row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
 

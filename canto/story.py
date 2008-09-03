@@ -13,68 +13,33 @@ import struct
 import re
 import codecs
 
-class Story(dict):
-    """Story() handles a single story. It parses the story
-    file into a dictionary, modifies that story file to
-    reflect read/unread status and performs the printing
-    for a single story."""
-
-    def __init__(self, story_path):
-        dict.__init__(self)
-        self["name"] = story_path
+class Story():
+    def __init__(self, ufp, update):
         self.idx = 0
         self.last = 0
-
-    def __parse(self, item):
-        try:
-            fsock = codecs.open(item, "r", "UTF-8", "ignore")
-            try:
-                data = fsock.read().split("\00")[:-1]
-            finally:
-                fsock.close()
-
-            self["tags"] = data.pop().split(',')
-            for tag in ["descr", "link", "title"]:
-                self[tag] = utility.stripchars(data.pop()).encode("UTF-8")
-
-        except IOError:
-            pass
-
-    def __update(self):
-        try:
-            fsock = open(self["name"], "r+")
-            try:
-                fsock.seek(fsock.read().rfind("\00", 0, -1) + 1)
-                fsock.write(','.join(filter(lambda x : x not in ["selected", "marked"], self["tags"])) + "\00")
-                fsock.truncate()
-            finally:
-                fsock.close()
-        except IOError:
-            pass
-
-    def __setitem__(self, key, item):
-        if key == "name" and item:
-            self.__parse(item)
-        dict.__setitem__(self, key, item)
+        self.ufp = ufp
+        self.update = update
+        self.sel = 0
 
     def __eq__(self, other):
-        if self["title"] != other["title"]:
-            return 0
-        if self["link"] != other["link"]:
-            return 0
-        if self["descr"] != other["descr"]:
+        if self.ufp["id"] != other.ufp["id"]:
             return 0
         return 1
 
+    def __getitem__(self, key):
+        return self.ufp[key]
+
+    def has_key(self, key):
+        return self.ufp.has_key(key)
+
     def __tagwrap(self, tag, i):
         if i == 0:
-            return tag in self["tags"]
-        elif i == 1 and not tag in self["tags"]:
-            self["tags"].append(tag)
-        elif i == -1 and tag in self["tags"]:
-            self["tags"].remove(tag)
-        if tag not in ["marked", "selected"]:
-            self.__update()
+            return tag in self.ufp["canto_state"]
+        elif i == 1 and not tag in self.ufp["canto_state"]:
+            self.ufp["canto_state"].append(tag)
+        elif i == -1 and tag in self.ufp["canto_state"]:
+            self.ufp["canto_state"].remove(tag)
+        self.update()
 
     def wasread(self):
         return self.__tagwrap("read", 0)
@@ -95,13 +60,13 @@ class Story(dict):
         self.__tagwrap("marked", -1)
 
     def selected(self):
-        return self.__tagwrap("selected", 0)
+        return self.sel
 
     def select(self):
-        self.__tagwrap("selected", 1)
+        self.sel = 1
 
     def unselect(self):
-        self.__tagwrap("selected", -1)
+        self.sel = 0
 
     def print_item(self, tag, row, i):
         return i.cfg.render.story(tag, self, row, i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)

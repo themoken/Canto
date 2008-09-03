@@ -20,7 +20,7 @@ import signal
 import interface_draw
 import traceback
 import time
-
+import cPickle
 class ConfigError(Exception):
     def __str__(self):
         return repr(self.value)
@@ -189,13 +189,10 @@ class Cfg:
             self.item_filter = locals["item_filter"]
 
     def gen_serverconf(self):
-        try :
-            fsock = codecs.open(self.sconf, "w", "UTF-8", "ignore")
-            try :
-                for f in self.feeds:
-                    fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\" \"%d\"\n" \
-                            % (f.tag, f.URL, f.rate, f.keep, f.title_key))
-            finally :
-                fsock.close()
-        except IOError:
-            pass
+        l = []
+        for f in self.feeds:
+            l.append((f.tag, f.URL, f.rate, f.keep))
+
+        fsock = codecs.open(self.sconf, "w", "UTF-8", "ignore")
+        cPickle.dump(l, fsock)
+        fsock.close()

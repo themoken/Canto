@@ -34,7 +34,7 @@ class Reader :
 
     def refresh(self):
         self.links = [(self.story["link"], "main link")]
-        self.links.extend(utility.getlinks(self.story["descr"]))
+        self.links.extend(utility.getlinks(self.story["description"]))
 
         self.lines = self.cfg.render.reader(self.story, self.cfg.width, self.links, self.show_links, None)
 

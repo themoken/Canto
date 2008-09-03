@@ -17,14 +17,9 @@ class Tag(list):
         self.unread = 0
 
     def search_stories(self, story, tk = 0):
-        if tk:
-            for i in range(len(self)) :
-                if self[i]["title"] == story["title"]:
-                    return i
-        else:
-            for i in range(len(self)) :
-                if self[i] == story:
-                    return i
+        for i in range(len(self)) :
+            if self[i]["id"] == story["id"]:
+                return i
         return -1
 
     def all_read(self):
@@ -52,7 +47,7 @@ class Tag(list):
             self.read -= 1
 
     def extend(self, iter):
-        list.extend(self, [s for s in iter if self.tag in s["tags"]])
+        list.extend(self, [s for s in iter if self.tag in s["canto_state"]])
 
         lt = len(self)
         for i in range(lt):

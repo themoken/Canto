@@ -146,7 +146,7 @@ class Main():
 
         self.stories = []
         for f in self.cfg.feeds:
-            self.filter_extend(f)
+            self.stories.extend(f)
 
         self.cfg.stdscr = curses.initscr()
         curses.noecho()
@@ -204,6 +204,11 @@ class Main():
                     self.alarm()
 
         curses.endwin()
+
+        for feed in self.cfg.feeds:
+            feed.todisk()
+        print "Flushed to disk."
+
         sys.exit(0)
 
     def winch(self, a=None, b=None):
@@ -217,7 +222,7 @@ class Main():
             if len(f) == 0:
                 delay = 1
             else:
-                self.filter_extend(f)
+                self.stories.extend(f)
 
         self.key_handlers[0].alarm(self.stories)
         signal.alarm(delay)
@@ -246,7 +251,6 @@ class Main():
 
     def filter_extend(self, t):
         if self.cfg.item_filter:
-            self.stories.extend(filter(lambda x: self.cfg.item_filter(t,x), t))
+            self.stories.extend(filter(lambda x: self.cfg.item_filter(t,x), t.ufp.entries))
         else:
-            self.stories.extend(t)
-
+            self.stories.extend(map(story.Story, t.ufp.entries))

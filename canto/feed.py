@@ -15,18 +15,17 @@ import re
 import codecs
 import tag
 import os
+import cPickle
 
 class Feed(tag.Tag):
-    """Feed() encapsulates a feed directory and handles
-    all updates in that feed directory when ticked()"""
-
     def __init__(self, cfg, dirpath, t, URL, rate, keep, title_key):
         tag.Tag.__init__(self, t)
+        self.ufp = None
+
         self.path = dirpath
         self.safetag = self.tag.replace("/", " ")
         self.URL = URL
         self.cfg = cfg
-        self.title_key = title_key
 
         if self.path :
             self.update()
@@ -34,34 +33,33 @@ class Feed(tag.Tag):
         self.rate = rate
         self.time = 1
         self.keep = keep
-        
+        self.changed = 0
+    
     def update(self):
-        """Invoke an update, reading all of the stories
-        from the disk."""
-
         if not os.path.exists(self.path):
             return
 
-        newlist = []
-        fsock = codecs.open(self.path + "/../" + self.safetag + ".idx", "r", "UTF-8", "ignore")
-        data = fsock.read().split("\00")[:-1]
-        fsock.close()
+        f = open(self.path, "rb")
+        self.ufp = cPickle.load(f)
+        f.close()
 
-        for item in data:
-            path = self.path + "/" + item.replace("/", " ")
-            s = story.Story(path)
-            newlist.append(s)
+        self.clear()
+        for entry in self.ufp["entries"]:
+            self.append(story.Story(entry, self.has_changed))
 
-        for i in range(len(newlist)):
-            r = self.search_stories(newlist[i], self.title_key)
-            if r != -1 :
-                newlist[i] = self[r]
-        
-        for i in range(len(self)):
-            self.pop()
-        self.extend(newlist)
+    def has_changed(self):
+        self.changed = 1
+
+    def todisk(self):
+        f = open(self.path, "wb")
+        cPickle.dump(self.ufp, f)
+        f.close()
 
     def tick(self):
+        if self.changed:
+            self.todisk()
+            self.changed = 0
+
         self.time -= 1
         if self.time <= 0:
             self.update()
