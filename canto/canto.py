@@ -146,7 +146,7 @@ class Main():
 
         self.stories = []
         for f in self.cfg.feeds:
-            self.stories.extend(f)
+            self.filter_extend(f)
 
         self.cfg.stdscr = curses.initscr()
         curses.noecho()
@@ -223,7 +223,7 @@ class Main():
             if len(f) == 0:
                 delay = 1
             else:
-                self.stories.extend(f)
+                self.filter_extend(f)
 
         self.key_handlers[0].alarm(self.stories)
         signal.alarm(delay)
@@ -252,6 +252,6 @@ class Main():
 
     def filter_extend(self, t):
         if self.cfg.item_filter:
-            self.stories.extend(filter(lambda x: self.cfg.item_filter(t,x), t.ufp.entries))
+            self.stories.extend(filter(lambda x: self.cfg.item_filter(t,x), t))
         else:
-            self.stories.extend(map(story.Story, t.ufp.entries))
+            self.stories.extend(map(story.Story, t))
