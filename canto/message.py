@@ -11,12 +11,9 @@ import interface_draw
 import curses
 
 class Message :
-    def __init__(self, cfg, message, register, deregister):
+    def __init__(self, cfg, message):
         self.cfg = cfg
         self.message = message
-        self.register = register
-        self.deregister = deregister
-        self.register(self)
         self.refresh()
 
     def refresh(self):
@@ -25,15 +22,3 @@ class Message :
         self.window.bkgdset(curses.color_pair(1))
         self.cfg.render.message(self.message, self.cfg.width, self.window)
         self.window.refresh(0,0,0,0,self.lines - 1, self.cfg.width)
-
-    def key(self, t):
-        if t != (curses.KEY_RESIZE, 0):
-            self.destroy()
-            return 5
-
-    def alarm(self, stories):
-        self.destroy()
-
-    def destroy(self):
-        self.deregister()
-        

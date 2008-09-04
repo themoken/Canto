@@ -30,6 +30,8 @@ class Gui :
         self.items = 0
         self.offset = 0
 
+        self.message = None
+
         register(self)
         self.register = register
         self.deregister = deregister
@@ -43,7 +45,7 @@ class Gui :
                 t[0].select()
                 break
         else:
-            message.Message(self.cfg, "No Items.", self.register, self.deregister)
+            self.message = message.Message(self.cfg, "No Items.")
             return
 
         self.refresh()
@@ -57,6 +59,8 @@ class Gui :
             window.bkgdset(curses.color_pair(1))
         self.lines = self.cfg.columns * self.cfg.height
         self.__map_items()
+        if self.message:
+            self.message.refresh()
 
     def __map_filter(self, i,j,row):
         if self.list[i].collapsed and j != 0:
@@ -80,7 +84,8 @@ class Gui :
     def key(self, t):
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
             if self.items < 0 and self.cfg.key_list[t] not in ["help", "quit"]:
-                message.Message(self.cfg, "No Items.", self.register, self.deregister)
+                if not self.message:
+                    self.message = message.Message(self.cfg, "No Items.")
                 return
 
             f = getattr(self, self.cfg.key_list[t], None)
@@ -118,10 +123,11 @@ class Gui :
                 else:
                     self.__select_nearest_valid(j, k)
             else:
+                self.message = None
                 self.selected = 0
                 self.select()
-        elif selected:
-            message.Message(self.cfg, "No Items.", self.register, self.deregister)
+        elif selected and not self.message:
+            self.message = message.Message(self.cfg, "No Items.")
                                                                                                                                  
     def __select_nearest_valid(self, j, oldk):
         self.__select_topoftag(j)
