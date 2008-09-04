@@ -114,5 +114,9 @@ class Reader :
     def alarm(self, stories):
         pass
 
+    def quit(self):
+        self.destroy()
+        return 1
+
     def destroy(self):
         self.deregister()

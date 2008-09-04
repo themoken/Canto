@@ -74,7 +74,8 @@ class Cfg:
                               "g" : "goto",
                               "l" : "toggle_show_links",
                               "n" : "reader_next",
-                              "p" : "reader_prev"}
+                              "p" : "reader_prev",
+                              " " : "quit"}
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
                 ("green","black"),("pink","black"),(0,0),(0,0),(0,0)]
