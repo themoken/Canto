@@ -165,6 +165,7 @@ class Main():
 
         self.key_handlers = []
         gui.Gui(self.cfg, self.stories, tag_list, self.push_handler, self.pop_handler)
+
         signal.signal(signal.SIGWINCH, self.winch)
         signal.signal(signal.SIGALRM, self.alarm)
         signal.alarm(60)
@@ -190,7 +191,7 @@ class Main():
             elif k != -1:
                 t = (k, 0)
 
-            if t:
+            while t:
                 r = self.key_handlers[-1].key(t)
                 if r == 1:
                     self.key_handlers[-1].refresh()
@@ -202,6 +203,9 @@ class Main():
                     self.key_handlers[-1].reader()
                 elif r == 4:
                     self.alarm()
+                elif r == 5:
+                    continue
+                break
 
         curses.endwin()
 
@@ -224,8 +228,9 @@ class Main():
                 delay = 1
             else:
                 self.filter_extend(f)
-
-        self.key_handlers[0].alarm(self.stories)
+        
+        for handler in self.key_handlers:
+            handler.alarm(self.stories)
         signal.alarm(delay)
         self.refresh()
 

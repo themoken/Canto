@@ -56,6 +56,9 @@ class Input :
 
     def callfunc(self):
         self.func(self.term)
+    
+    def alarm(self, stories):
+        pass
 
     def destroy(self):
         self.deregister()

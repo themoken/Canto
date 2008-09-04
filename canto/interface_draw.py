@@ -173,6 +173,12 @@ class Renderer :
     
         return row
 
+    def message(self, message, width, window):
+        row = self.simple_out([("%B┌","─","┐")], 0, -1, width, [window])
+        row = self.out([[message, [("%B│%b%1 ", " ", " %1%B│%b")]*3]], row, -1, width, [window])
+        row = self.simple_out([("└","─","┘%C")], row, -1, width, [window])
+        return row
+
     def reader(self, story, width, links, show_links, window):
         if story.has_key("content"):
             s = story["content"][0]["value"]
@@ -181,14 +187,13 @@ class Renderer :
 
         s = self.__do_regex(s, [self.reader_rgx, self.common_rgx])
 
-        row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
-
         l = s.split("\n")
         if show_links:
             l.append(" ")
             for idx,link in enumerate(links):
                 l.append(self.reader_link(idx, link))
 
+        row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
         row = self.out([[x, (self.rfirsts(story), self.rmids(story), self.rends(story))] for x in l], row, -1, width, [window])
         row = self.simple_out(self.reader_foot(story), row, -1, width, [window])
         return row

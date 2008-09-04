@@ -109,7 +109,10 @@ class Reader :
 
         elif t != (curses.KEY_RESIZE, 0):
             self.destroy()
-            return
+            return 5
+
+    def alarm(self, stories):
+        pass
 
     def destroy(self):
         self.deregister()

@@ -17,6 +17,7 @@ import feed
 import reader
 import sys
 import tag
+import message
 
 class Gui :
     def __init__(self, cfg, list, tags, register, deregister):
@@ -42,7 +43,8 @@ class Gui :
                 t[0].select()
                 break
         else:
-            raise IndexError
+            message.Message(self.cfg, "No Items.", self.register, self.deregister)
+            return
 
         self.refresh()
 
@@ -77,6 +79,10 @@ class Gui :
 
     def key(self, t):
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
+            if self.items < 0 and self.cfg.key_list[t] not in ["help", "quit"]:
+                message.Message(self.cfg, "No Items.", self.register, self.deregister)
+                return
+
             f = getattr(self, self.cfg.key_list[t], None)
             if f:
                 r = f()
@@ -89,24 +95,34 @@ class Gui :
         return 1
 
     def alarm(self, listobj):
-        j,k,r,l,f = self.map[self.selected]
-        selected = self.list[j][k]
+        if self.items >= 0:
+            j,k,r,l,f = self.map[self.selected]
+            selected = self.list[j][k]
+            self.unselect()
+        else:
+            selected = None
 
-        self.unselect()
         for t in self.list:
             t.clear()
             t.extend(listobj)
         self.__map_items(0) 
 
-        r = self.list[j].search_stories(selected)
-        if r != -1  :
-            self.selected = 0
-            while self.map[self.selected][0:2] != (j,r):
-                self.selected += 1
-            self.select()
-        else:
-            self.__select_nearest_valid(j, k)
-
+        if self.items >= 0:
+            if selected:
+                r = self.list[j].search_stories(selected)
+                if r != -1  :
+                    self.selected = 0
+                    while self.map[self.selected][0:2] != (j,r):
+                        self.selected += 1
+                    self.select()
+                else:
+                    self.__select_nearest_valid(j, k)
+            else:
+                self.selected = 0
+                self.select()
+        elif selected:
+            message.Message(self.cfg, "No Items.", self.register, self.deregister)
+                                                                                                                                 
     def __select_nearest_valid(self, j, oldk):
         self.__select_topoftag(j)
         if self.map[self.selected][0] != j:
@@ -132,8 +148,6 @@ class Gui :
             if self.selected == l - 1:
                 if j:
                     self.__select_topoftag(j - 1)
-                else:
-                    self.selected = -1
                 break
             self.selected += 1
         self.select()
@@ -151,14 +165,17 @@ class Gui :
         return 0
 
     def draw_elements(self):
-        self.__check_scroll()
-        row = -1 * self.offset
-        for i,j,r,l,f in self.map :
-            if r + l > self.offset :
-                if r > self.lines + self.offset :
-                    break
-                f(self.list[i], row, self)
-            row += l
+        if self.items >= 0:
+            self.__check_scroll()
+            row = -1 * self.offset
+            for i,j,r,l,f in self.map :
+                if r + l > self.offset :
+                    if r > self.lines + self.offset :
+                        break
+                    f(self.list[i], row, self)
+                row += l
+        else:
+            row = -1
         
         for i in range(len(self.window_list)) :
             if i * self.cfg.height > row:
