@@ -79,8 +79,7 @@ def main():
     feeds = cPickle.load(f)
     f.close()
 
-    for handle,url,update,rate in feeds:
-        newfeed = feedparser.parse(url)
+    for handle,url,update,keep in feeds:
 
         fpath = path + "/" + handle.replace("/", " ")
         if os.path.exists(fpath):
@@ -88,9 +87,16 @@ def main():
             curfeed = cPickle.load(f)
             f.close()
         else:
-            curfeed = {"canto_state":[], "entries":[]}
+            curfeed = {"canto_state":[], "entries":[], "canto_update":0}
 
+        if time.time() - curfeed["canto_update"] < update * 60 and not force:
+            continue
+        elif verbose:
+            print "Updating %s" % handle
+
+        newfeed = feedparser.parse(url)
         newfeed["canto_state"] = curfeed["canto_state"]
+        newfeed["canto_update"] = time.time()
 
         for entry in newfeed["entries"] :
             if not entry.has_key("id"):
@@ -118,7 +124,6 @@ def main():
                 if type(entry[key]) in [unicode,str]:
                     entry[key] = entry[key].encode("UTF-8")
             
-
         f = open(fpath, "wb")
         cPickle.dump(newfeed, f)
         f.close()
