@@ -13,8 +13,10 @@ import os
 import sys
 import feedparser
 
-def log(path, str, mode="a"):
-    """Simple append log"""
+def log(path, str, verbose, mode="a"):
+    if verbose:
+        print str
+
     try :
         f = codecs.open(path, mode, "UTF-8", "ignore")
         try:
@@ -71,15 +73,22 @@ def main():
         elif opt in ["-f", "--force"]:
             force = 1
     
-    log(log_file, "Canto-fetch v %d.%d.%d\n" % (MAJOR,MINOR,REV), "w")
-    log(log_file, "Started execution: %s\n" % time.asctime(time.localtime()), "a")
-    log_func = lambda x : log(log_file, x, "a")
+    log(log_file, "Canto-fetch v %d.%d.%d\n" % (MAJOR,MINOR,REV), 0, "w")
+    log(log_file, "Started execution: %s\n" % time.asctime(time.localtime()),0, "a")
+    log_func = lambda x : log(log_file, x, verbose, "a")
   
     f = open(conf, "r")
     feeds = cPickle.load(f)
     f.close()
 
     for handle,url,update,keep in feeds:
+        fpath = path + "/" + handle.replace("/", " ")
+        lpath = fpath + ".lock"
+        try:
+            lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
+        except OSError:
+            log_func("Failed to get lock for %s." % handle)
+            continue
 
         fpath = path + "/" + handle.replace("/", " ")
         if os.path.exists(fpath):
@@ -90,6 +99,7 @@ def main():
             curfeed = {"canto_state":[], "entries":[], "canto_update":0}
 
         if time.time() - curfeed["canto_update"] < update * 60 and not force:
+            os.unlink(lpath)
             continue
         elif verbose:
             print "Updating %s" % handle
@@ -133,6 +143,8 @@ def main():
         f = open(fpath, "wb")
         cPickle.dump(newfeed, f)
         f.close()
+
+        os.unlink(lpath)
     
     log_func("Gracefully exiting Canto-fetch.\n")
     sys.exit(0)

@@ -23,6 +23,7 @@ class Feed(tag.Tag):
         self.ufp = None
 
         self.path = dirpath
+        self.lpath = dirpath + ".lock"
         self.safetag = self.tag.replace("/", " ")
         self.URL = URL
         self.cfg = cfg
@@ -35,35 +36,52 @@ class Feed(tag.Tag):
         self.keep = keep
         self.changed = 0
     
+    def lock(self):
+        try:
+            os.open(self.lpath, os.O_CREAT|os.O_EXCL)
+        except OSError:
+            return 0
+        return 1
+
+    def unlock(self):
+        os.unlink(self.lpath)
+
     def update(self):
         if not os.path.exists(self.path):
-            return
+            return 0
 
+        if not self.lock():
+            return 0
         f = open(self.path, "rb")
         self.ufp = cPickle.load(f)
         f.close()
+        self.unlock()
 
         self.clear()
         for entry in self.ufp["entries"]:
             self.append(story.Story(entry, self.has_changed))
+        return 1
 
     def has_changed(self):
         self.changed = 1
 
     def todisk(self):
+        if not self.lock():
+            return 0
         f = open(self.path, "wb")
         cPickle.dump(self.ufp, f)
         f.close()
+        self.changed = 0
+        self.unlock()
+        return 1
 
     def tick(self):
         if self.changed:
             self.todisk()
-            self.changed = 0
 
         self.time -= 1
         if self.time <= 0:
-            self.update()
-            if len(self) == 0 :
+            if not self.update() or len(self) == 0 :
                 self.time = 1
             else:
                 self.time = self.rate

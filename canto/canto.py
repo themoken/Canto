@@ -210,10 +210,10 @@ class Main():
         curses.endwin()
 
         for feed in self.cfg.feeds:
-            if feed.changed:
+            while feed.changed:
                 feed.todisk()
-        print "Flushed to disk."
 
+        print "Flushed to disk."
         sys.exit(0)
 
     def winch(self, a=None, b=None):
