@@ -98,22 +98,23 @@ def main():
         newfeed["canto_state"] = curfeed["canto_state"]
         newfeed["canto_update"] = time.time()
 
-        for entry in newfeed["entries"] :
-            if not entry.has_key("id"):
-                if entry.has_key("link"):
-                    entry["id"] = entry["link"]
-                elif entry.has_key("title"):
-                    entry["id"] = entry["title"]
+        for i in range(len(newfeed["entries"])) :
+            if not newfeed["entries"][i].has_key("id"):
+                if newfeed["entries"][i].has_key("link"):
+                    newfeed["entries"][i]["id"] = newfeed["entries"][i]["link"]
+                elif newfeed["entries"][i].has_key("title"):
+                    newfeed["entries"][i]["id"] = newfeed["entries"][i]["title"]
                 else:
-                    entry["id"] = None
+                    newfeed["entries"][i]["id"] = None
 
-            for centry in curfeed["entries"] :
-                if entry["id"] == centry["id"]:
-                    entry["canto_state"] = centry["canto_state"]
+            for j in range(len(curfeed["entries"])) :
+                if newfeed["entries"][i]["id"] == curfeed["entries"][j]["id"]:
+                    newfeed["entries"][i]["canto_state"] = curfeed["entries"][j]["canto_state"]
+                    curfeed["entries"].remove(curfeed["entries"][j])
                     break
 
-            if not entry.has_key("canto_state"):
-                entry["canto_state"] = [ handle,"unread", "*"]
+            if not newfeed["entries"][i].has_key("canto_state"):
+                newfeed["entries"][i]["canto_state"] = [ handle,"unread", "*"]
 
         for entry in newfeed["entries"]:
             if entry.has_key("content"):
@@ -123,7 +124,12 @@ def main():
             for key in entry.keys():
                 if type(entry[key]) in [unicode,str]:
                     entry[key] = entry[key].encode("UTF-8")
-            
+        
+        if len(newfeed["entries"]) < keep:
+            newfeed["entries"] += curfeed["entries"][:keep - len(newfeed["entries"])]
+        else:
+            newfeed["entries"] = newfeed["entries"][:keep]
+
         f = open(fpath, "wb")
         cPickle.dump(newfeed, f)
         f.close()
