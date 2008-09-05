@@ -252,6 +252,14 @@ class Gui :
         reader.Reader(self.cfg, self.list[j][k], self.register, self.deregister) 
         return 1
 
+    def next_filter(self):
+        self.cfg.next_filter()
+        return 4
+
+    def prev_filter(self):
+        self.cfg.prev_filter()
+        return 4
+
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \
                 self.__do_inline_search, self.register, self.deregister)

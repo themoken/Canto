@@ -44,6 +44,8 @@ class Cfg:
                          "KEY_LEFT" : "just_unread",
                          "KEY_NPAGE" : "next_tag",
                          "KEY_PPAGE" : "prev_tag",
+                         "[" : "prev_filter",
+                         "]" : "next_filter",
                          "l" : "next_tag",
                          "o" : "prev_tag",
                          "g" : "goto",
@@ -93,6 +95,9 @@ class Cfg:
         self.width = 0
 
         self.resize_hook = None
+
+        self.item_filters = [None]
+        self.cur_item_filter = 0
         self.item_filter = None
 
         try :
@@ -186,8 +191,13 @@ class Cfg:
 
         if locals.has_key("resize_hook"):
             self.resize_hook = locals["resize_hook"]
-        if locals.has_key("item_filter"):
-            self.item_filter = locals["item_filter"]
+        if locals.has_key("item_filters"):
+            self.item_filters = locals["item_filters"]
+            self.cur_item_filter = 0
+            self.item_filter = self.item_filters[0]
+        if locals.has_key("cur_item_filter"):
+            self.cur_item_filter = locals["cur_item_filter"]
+            self.item_filter = self.item_filters[self.cur_item_filter]
 
     def gen_serverconf(self):
         l = []
@@ -197,3 +207,13 @@ class Cfg:
         fsock = codecs.open(self.sconf, "w", "UTF-8", "ignore")
         cPickle.dump(l, fsock)
         fsock.close()
+
+    def next_filter(self):
+        if self.cur_item_filter < len(self.item_filters) - 1:
+            self.cur_item_filter += 1
+            self.item_filter = self.item_filters[self.cur_item_filter]
+
+    def prev_filter(self):
+        if self.cur_item_filter > 0:
+            self.cur_item_filter -= 1
+            self.item_filter = self.item_filters[self.cur_item_filter]

@@ -259,4 +259,4 @@ class Main():
         if self.cfg.item_filter:
             self.stories.extend(filter(lambda x: self.cfg.item_filter(t,x), t))
         else:
-            self.stories.extend(map(story.Story, t))
+            self.stories.extend(t)
