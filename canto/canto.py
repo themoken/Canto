@@ -7,6 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import *
 import signal
 import cfg
 import locale
@@ -20,11 +21,6 @@ import traceback
 import utility
 import tag
 import gui
-
-ONLY_CONF = 1
-UPDATE_FIRST = 2
-CHECK_NEW = 4
-FEED_LIST = 8
 
 def print_usage():
     print "USAGE: canto [-hvgulanDCLF]"
@@ -193,18 +189,20 @@ class Main():
 
             while t:
                 r = self.key_handlers[-1].key(t)
-                if r == 1:
+                if r == REFRESH_ALL:
                     self.refresh()
-                elif r == 2:
+                elif r == READER_NEXT:
                     self.key_handlers[-1].next_item()
                     self.key_handlers[-1].reader()
-                elif r == 3:
+                elif r == READER_PREV:
                     self.key_handlers[-1].prev_item()
                     self.key_handlers[-1].reader()
-                elif r == 4:
+                elif r == ALARM:
                     self.alarm()
-                elif r == 5:
+                elif r == KEY_PASSTHRU:
                     continue
+                elif r == REDRAW_ALL:
+                    self.key_handlers[-1].draw_elements()
                 break
 
         curses.endwin()

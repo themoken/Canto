@@ -7,6 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import *
 import interface_draw
 import utility
 import curses
@@ -53,17 +54,17 @@ class Reader :
         self.show_links = not self.show_links
 
         if not self.show_links:
-            return 1
+            return REDRAW_ALL
         else: 
             self.refresh()
 
     def reader_next(self):
         self.destroy()
-        return 2
+        return READER_NEXT
  
     def reader_prev(self):
         self.destroy()
-        return 3
+        return READER_PREV
 
     def scroll_down(self):
         if self.more > 0 :
@@ -109,14 +110,14 @@ class Reader :
 
         elif t != (curses.KEY_RESIZE, 0):
             self.destroy()
-            return 5
+            return KEY_PASSTHRU
 
     def alarm(self, stories):
         pass
 
     def quit(self):
         self.destroy()
-        return 1
+        return REDRAW_ALL
 
     def destroy(self):
         self.deregister()

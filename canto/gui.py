@@ -7,6 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import *
 import os
 import cfg
 import curses
@@ -97,7 +98,7 @@ class Gui :
 
     def help(self):
         utility.silentfork("man canto", 1)
-        return 1
+        return REDRAW_ALL
 
     def alarm(self, listobj):
         if self.items >= 0:
@@ -250,20 +251,20 @@ class Gui :
         j,k,r,l,f = self.map[self.selected]
         self.list[j].set_read(k)
         reader.Reader(self.cfg, self.list[j][k], self.register, self.deregister) 
-        return 1
+        return REDRAW_ALL
 
     def next_filter(self):
         if self.cfg.next_filter():
-            return 4
+            return ALARM
 
     def prev_filter(self):
         if self.cfg.prev_filter():
-            return 4
+            return ALARM
 
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \
                 self.__do_inline_search, self.register, self.deregister)
-        return 1
+        return REDRAW_ALL
 
     def __do_inline_search(self, s) :
         if s:
@@ -288,7 +289,7 @@ class Gui :
         if f() == status:
             self.selected = newcursor
             self.select()
-            return 1
+            return REDRAW_ALL
         return 0
 
     def __next_attr(self, attr, status) :
@@ -352,7 +353,7 @@ class Gui :
     def force_update(self):
         for f in self.cfg.feeds :
             f.time = 1
-        return 4
+        return ALARM
 
     def tag_read(self):
         self.list[self.map[self.selected][0]].all_read()
