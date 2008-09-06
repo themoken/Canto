@@ -77,7 +77,7 @@ class Renderer :
         return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
     def reader_head(self, story):
-        title = self.__do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
         return [("%1%B" + title, " ", " "),("┌","─","┐%C")]
 
     def reader_foot(self, story):
@@ -149,7 +149,7 @@ class Renderer :
 
         return row + line
 
-    def __do_regex(self, target, l):
+    def do_regex(self, target, l):
         s = target
         for rlist in l:
             for rgx,rep in rlist:
@@ -157,7 +157,7 @@ class Renderer :
         return s.lstrip()
     
     def story(self, tag, story, row, height, width, window_list):
-        title = self.__do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
 
         if story.idx == 0:
             row = self.simple_out(self.tag_head(tag),\
@@ -185,7 +185,7 @@ class Renderer :
         else:
             s = story["description"]
 
-        s = self.__do_regex(s, [self.reader_rgx, self.common_rgx])
+        s = self.do_regex(s, [self.reader_rgx, self.common_rgx])
 
         l = s.split("\n")
         if show_links:

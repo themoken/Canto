@@ -253,12 +253,12 @@ class Gui :
         return 1
 
     def next_filter(self):
-        self.cfg.next_filter()
-        return 4
+        if self.cfg.next_filter():
+            return 4
 
     def prev_filter(self):
-        self.cfg.prev_filter()
-        return 4
+        if self.cfg.prev_filter():
+            return 4
 
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \

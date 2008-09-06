@@ -26,10 +26,6 @@ class ConfigError(Exception):
         return repr(self.value)
 
 class Cfg:
-    """Cfg() is the class encompassing the configuration of Canto. It contains
-    all of the options and functions required to drive the actual GUI. Input
-    and signals are all routed to here and dispatched as necessary."""
-
     def __init__(self, conf, sconf, feed_dir):
         self.browser_path = "firefox \"%u\""
         self.text_browser = 0
@@ -138,12 +134,12 @@ class Cfg:
         else:
             rate = self.default_rate
 
-        if kwargs.has_key("title_key"):
-            title_key = kwargs["title_key"]
+        if kwargs.has_key("renderer"):
+            renderer = kwargs["renderer"]
         else:
-            title_key = self.default_title_key
+            renderer = self.render
 
-        return self.feeds.append(feed.Feed(self, self.feed_dir + tag.replace("/", " "), tag, URL, rate, keep, title_key))
+        return self.feeds.append(feed.Feed(self, self.feed_dir + tag.replace("/", " "), tag, URL, rate, keep, renderer))
 
     def set_default_rate(self, rate):
         self.default_rate = rate
@@ -212,8 +208,12 @@ class Cfg:
         if self.cur_item_filter < len(self.item_filters) - 1:
             self.cur_item_filter += 1
             self.item_filter = self.item_filters[self.cur_item_filter]
+            return 1
+        return 0
 
     def prev_filter(self):
         if self.cur_item_filter > 0:
             self.cur_item_filter -= 1
             self.item_filter = self.item_filters[self.cur_item_filter]
+            return 1
+        return 0

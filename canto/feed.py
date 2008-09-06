@@ -18,15 +18,15 @@ import os
 import cPickle
 
 class Feed(tag.Tag):
-    def __init__(self, cfg, dirpath, t, URL, rate, keep, title_key):
+    def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer):
         tag.Tag.__init__(self, t)
         self.ufp = None
 
         self.path = dirpath
         self.lpath = dirpath + ".lock"
-        self.safetag = self.tag.replace("/", " ")
         self.URL = URL
         self.cfg = cfg
+        self.renderer = renderer
 
         if self.path :
             self.update()
@@ -59,7 +59,7 @@ class Feed(tag.Tag):
 
         self.clear()
         for entry in self.ufp["entries"]:
-            self.append(story.Story(entry, self.has_changed))
+            self.append(story.Story(entry, self.has_changed, self.renderer))
         return 1
 
     def has_changed(self):

@@ -14,12 +14,13 @@ import re
 import codecs
 
 class Story():
-    def __init__(self, ufp, update):
+    def __init__(self, ufp, update, renderer):
         self.idx = 0
         self.last = 0
         self.ufp = ufp
         self.update = update
         self.sel = 0
+        self.renderer = renderer
 
     def __eq__(self, other):
         if self.ufp["id"] != other.ufp["id"]:
@@ -69,4 +70,4 @@ class Story():
         self.sel = 0
 
     def print_item(self, tag, row, i):
-        return i.cfg.render.story(tag, self, row, i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)
+        return self.renderer.story(tag, self, row, i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)
