@@ -130,10 +130,12 @@ def main():
             if entry.has_key("content"):
                 for c in entry["content"]:
                     c["value"] = c["value"].encode("UTF-8")
+                    c["value"] = c["value"].replace("%", "\\%")
 
             for key in entry.keys():
                 if type(entry[key]) in [unicode,str]:
                     entry[key] = entry[key].encode("UTF-8")
+                    entry[key] = entry[key].replace("%", "\\%")
         
         if len(newfeed["entries"]) < keep:
             newfeed["entries"] += curfeed["entries"][:keep - len(newfeed["entries"])]
