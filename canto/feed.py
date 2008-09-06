@@ -58,8 +58,7 @@ class Feed(tag.Tag):
         self.unlock()
 
         self.clear()
-        for entry in self.ufp["entries"]:
-            self.append(story.Story(entry, self.has_changed, self.renderer))
+        self.extend([story.Story(entry, self.has_changed, self.renderer) for entry in self.ufp["entries"]])
         return 1
 
     def has_changed(self):

@@ -109,18 +109,20 @@ class Main():
                 print f.tag
             sys.exit(0)
 
+        self.stories = []
         if flags & UPDATE_FIRST:
             utility.silentfork("canto-fetch -Vf " +\
                "-C \"" + serv_file + \
                "\" -F \"" + feed_dir + \
                "\" -L \"" + conf_dir + "slog\"", 1)
             
-            self.stories = []
             for f in self.cfg.feeds :
                 f.time = 1
                 f.tick()
                 self.filter_extend(f)
-
+        else:
+            for f in self.cfg.feeds:
+                self.filter_extend(f)
 
         if flags & CHECK_NEW:
             if feed_ct:
@@ -131,18 +133,11 @@ class Main():
                 else:
                     print "Feed not found."
             else:
-                count = 0
-                for f in self.cfg.feeds:
-                    count += f.unread
-                print count
+                print sum([f.unread for f in self.cfg.feeds])
             sys.exit(0)
 
         self.cfg.key_list = utility.conv_key_list(self.cfg.key_list)
         self.cfg.reader_key_list = utility.conv_key_list(self.cfg.reader_key_list)
-
-        self.stories = []
-        for f in self.cfg.feeds:
-            self.filter_extend(f)
 
         self.cfg.stdscr = curses.initscr()
         curses.noecho()
