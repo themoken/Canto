@@ -84,7 +84,7 @@ class Gui :
 
     def key(self, t):
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
-            if self.items < 0 and self.cfg.key_list[t] not in ["help", "quit"]:
+            if self.items < 0 and self.cfg.key_list[t] not in ["help", "quit", "next_filter","prev_filter"]:
                 if not self.message:
                     self.message = message.Message(self.cfg, "No Items.")
                 return
@@ -289,7 +289,7 @@ class Gui :
         if f() == status:
             self.selected = newcursor
             self.select()
-            return REDRAW_ALL
+            return 1
         return 0
 
     def __next_attr(self, attr, status) :
