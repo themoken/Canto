@@ -28,7 +28,10 @@ class Story():
         return 1
 
     def __getitem__(self, key):
-        return self.ufp[key]
+        if self.ufp.has_key(key):
+            return self.ufp[key]
+        else:
+            return ""
 
     def has_key(self, key):
         return self.ufp.has_key(key)
