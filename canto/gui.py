@@ -226,7 +226,7 @@ class Gui :
             self.selected = self.selected.next
         if self.selected.next_feed:
             self.selected = self.selected.next_feed
-        self.offset = min(self.selected.row,self.max_offset)
+        self.offset = -1 * min(self.selected.row,self.max_offset)
 
     def just_read(self):
         self.list[self.selected.feed_idx].set_read(self.selected.idx)
