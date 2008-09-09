@@ -21,6 +21,7 @@ import interface_draw
 import traceback
 import time
 import cPickle
+
 class ConfigError(Exception):
     def __str__(self):
         return repr(self.value)
@@ -120,6 +121,10 @@ class Cfg:
 
         self.feeds = []
         self.parse()
+
+        self.key_list = utility.conv_key_list(self.key_list)
+        self.reader_key_list = utility.conv_key_list(self.reader_key_list)
+
         self.gen_serverconf()
 
     def feedwrap(self, tag, URL, **kwargs):

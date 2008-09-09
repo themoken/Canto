@@ -107,6 +107,16 @@ def main():
         newfeed = feedparser.parse(url)
         newfeed["canto_state"] = curfeed["canto_state"]
         newfeed["canto_update"] = time.time()
+        for entry in newfeed["entries"]:
+            if entry.has_key("content"):
+                for c in entry["content"]:
+                    c["value"] = c["value"].encode("UTF-8")
+                    c["value"] = c["value"].replace("%", "\\%")
+
+            for key in entry.keys():
+                if type(entry[key]) in [unicode,str]:
+                    entry[key] = entry[key].encode("UTF-8")
+                    entry[key] = entry[key].replace("%", "\\%")
 
         for i in range(len(newfeed["entries"])) :
             if not newfeed["entries"][i].has_key("id"):
@@ -126,16 +136,6 @@ def main():
             if not newfeed["entries"][i].has_key("canto_state"):
                 newfeed["entries"][i]["canto_state"] = [ handle,"unread", "*"]
 
-        for entry in newfeed["entries"]:
-            if entry.has_key("content"):
-                for c in entry["content"]:
-                    c["value"] = c["value"].encode("UTF-8")
-                    c["value"] = c["value"].replace("%", "\\%")
-
-            for key in entry.keys():
-                if type(entry[key]) in [unicode,str]:
-                    entry[key] = entry[key].encode("UTF-8")
-                    entry[key] = entry[key].replace("%", "\\%")
         
         if len(newfeed["entries"]) < keep:
             newfeed["entries"] += curfeed["entries"][:keep - len(newfeed["entries"])]

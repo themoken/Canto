@@ -107,8 +107,7 @@ class Reader :
                 if not r:
                     self.draw_elements()
                 return r
-
-        elif t != (curses.KEY_RESIZE, 0):
+        else:
             self.destroy()
             return KEY_PASSTHRU
 

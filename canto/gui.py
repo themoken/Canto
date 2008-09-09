@@ -20,16 +20,24 @@ import sys
 import tag
 import message
 
+# Gui() is the class encompassing the basic view of canto,
+# the list of feeds (tags) and items.
+
+# Gui()'s main data structure is the map[] list. Similar
+# to the 
+
 class Gui :
     def __init__(self, cfg, list, tags, register, deregister):
         self.cfg = cfg
         
         self.lines = 0
         self.window_list = []
-        self.map = []
+        self.map = list
         self.selected = 0
         self.items = 0
+
         self.offset = 0
+        self.max_offset = 0
 
         self.message = None
 
@@ -43,6 +51,7 @@ class Gui :
 
         for t in self.list :
             if len(t):
+                self.selected = t[0]
                 t[0].select()
                 break
         else:
@@ -60,31 +69,50 @@ class Gui :
             window.bkgdset(curses.color_pair(1))
         self.lines = self.cfg.columns * self.cfg.height
         self.__map_items()
-        if self.message:
-            self.message.refresh()
+        self.draw_elements()
 
-    def __map_filter(self, i,j,row):
-        if self.list[i].collapsed and j != 0:
-            return None
-        f = self.list[i][j].print_item
-        l = f(self.list[i], row[0], self) - row[0]
-        if not l :
-            return None
-        r = (i,j,row[0],l,f)
-        row[0] += l
-        return r
+    def __map_items(self):
+        row = 0
+        prev = None
+        prev_feed_item = None
 
-    def __map_items(self, d = 1):
-        row = [0]
-        self.map = filter(lambda x: x != None, 
-                [self.__map_filter(i, j, row) for i in range(len(self.list)) for j in range(len(self.list[i]))])
-        self.items = len(self.map) - 1
-        if d:
-            self.draw_elements()
+        self.items = 0
+
+        for i, feed in enumerate(self.list):
+            for item in feed:
+                if feed.collapsed and item.idx != 0:
+                    item.visible = 0
+                else:
+                    item.lines = item.print_item(feed, 0, self)
+                    if not item.lines:
+                        item.visible = 0
+                    else:
+                        item.visible = 1
+                        item.feed_idx = i
+                        item.row = row
+                        
+                        if prev:
+                            if i != prev.feed_idx:
+                                item.prev_feed = prev_feed_item
+                                prev.next_feed = item
+                                prev_feed_item = item
+                            else:
+                                item.prev_feed = None
+                                prev.next_feed = None
+
+                            prev.next = item
+
+                        item.prev = prev
+                        prev = item
+                        self.items += 1
+                        row += item.lines
+
+        if prev:
+            self.max_offset = prev.row + prev.lines - self.lines
 
     def key(self, t):
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
-            if self.items < 0 and self.cfg.key_list[t] not in ["help", "quit", "next_filter","prev_filter"]:
+            if not self.items and self.cfg.key_list[t] not in ["help", "quit", "next_filter","prev_filter"]:
                 if not self.message:
                     self.message = message.Message(self.cfg, "No Items.")
                 return
@@ -101,86 +129,67 @@ class Gui :
         return REDRAW_ALL
 
     def alarm(self, listobj):
-        if self.items >= 0:
-            j,k,r,l,f = self.map[self.selected]
-            selected = self.list[j][k]
-            self.unselect()
-        else:
-            selected = None
-
         for t in self.list:
             t.clear()
             t.extend(listobj)
-        self.__map_items(0) 
+        self.__map_items() 
 
-        if self.items >= 0:
-            if selected:
-                r = self.list[j].search_stories(selected)
+        if self.items > 0:
+            if self.selected:
+                r = self.list[self.selected.feed_idx].search_stories(self.selected)
                 if r != -1  :
-                    self.selected = 0
-                    while self.map[self.selected][0:2] != (j,r):
-                        self.selected += 1
-                    self.select()
+                    self.selected = self.list[self.selected.feed_idx][r]
+                    self.selected.select()
                 else:
-                    self.__select_nearest_valid(j, k)
+                    self.__select_topoftag(self.selected.feed_idx)
             else:
-                self.message = None
-                self.selected = 0
-                self.select()
-        elif selected and not self.message:
+                self.__select_topoftag(0)
+        elif self.selected and not self.message:
             self.message = message.Message(self.cfg, "No Items.")
-                                                                                                                                 
-    def __select_nearest_valid(self, j, oldk):
-        self.__select_topoftag(j)
-        if self.map[self.selected][0] != j:
-            return
+            self.selected = None
+        self.draw_elements()
+    
+    def change_selected(fn):
+        def dec(self, *args):
+            if self.selected:
+                self.selected.unselect()
+            fn(self, *args)
+            if self.selected:
+                self.selected.select()
+        return dec
 
-        self.unselect()
-        l = len(self.map)
-        while self.map[self.selected][1] < oldk and\
-                self.selected < l and\
-                self.map[self.selected][0] == j:
-            self.selected += 1
-
-        if self.map[self.selected][0] > j \
-            and self.map[self.selected - 1][0] == j:
-                self.selected -= 1
-
-        self.select()
-
-    def __select_topoftag(self, j=0):
-        self.selected = 0
-        l = len(self.map)
-        while self.map[self.selected][0] < j:
-            if self.selected == l - 1:
-                if j:
-                    self.__select_topoftag(j - 1)
-                break
-            self.selected += 1
-        self.select()
+    @change_selected
+    def __select_topoftag(self, f=0):
+        for feed in self.list[f:]:
+            for item in feed:
+                if item.visible:
+                    self.selected = item
+                    return
 
     def __check_scroll(self) :
-        i,j,r,l,f = self.map[self.selected]
-        
-        if r < self.offset :
-            self.offset = r
+        if self.selected.row < self.offset :
+            self.offset = self.selected.row
             return 1
 
-        if r + l > self.lines + self.offset :
-            self.offset = r + l - self.lines
+        if self.selected.row + self.selected.lines > self.lines + self.offset :
+            self.offset = self.selected.row + self.selected.lines - self.lines
             return 1
         return 0
 
     def draw_elements(self):
-        if self.items >= 0:
+        if self.items > 0:
             self.__check_scroll()
             row = -1 * self.offset
-            for i,j,r,l,f in self.map :
-                if r + l > self.offset :
-                    if r > self.lines + self.offset :
-                        break
-                    f(self.list[i], row, self)
-                row += l
+            for feed in self.list:
+                for item in feed:
+                    if item.row + item.lines > self.offset:
+                        if item.row > self.lines + self.offset:
+                            break
+                        item.print_item(feed, row, self)
+                    row += item.lines
+                else:
+                    continue
+                break
         else:
             row = -1
         
@@ -191,66 +200,48 @@ class Gui :
                 self.window_list[i].clrtobot()
             self.window_list[i].noutrefresh()
         curses.doupdate()
+        if self.message:
+            self.message.refresh()
 
-    def __change_item(self, val):
-        self.unselect()
-        self.selected += val
-        self.select()
-
+    @change_selected
     def next_item(self):
-        if self.selected < self.items :
-            self.__change_item(1)
-
+        if self.selected.next :
+            self.selected = self.selected.next
+    
+    @change_selected
     def prev_item(self):
-        if self.selected > 0:
-            self.__change_item(-1)
+        if self.selected.prev :
+            self.selected = self.selected.prev
 
+    @change_selected
     def prev_tag(self) :
-        self.unselect()
-        j = self.map[self.selected][0]
-
-        while self.selected > 0:
-            j2,k2 = self.map[self.selected][0:2]
-            if j2 < j and k2 == 0 :
-                break
-            self.selected -= 1
-
-        self.select()
-
+        while self.selected.prev and not self.selected.prev_feed:
+            self.selected = self.selected.prev
+        if self.selected.prev_feed:
+            self.selected = self.selected.prev_feed
+    
+    @change_selected
     def next_tag(self) :
-        j = self.map[self.selected][0]
-        self.unselect()
-
-        while self.selected < self.items:
-            if self.map[self.selected][0] > j:
-                break
-            self.selected += 1
-
-        row = self.map[self.selected][2]
-        lastrow = self.map[-1][2]
-        lastlines = self.map[-1][3]
-
-        self.offset = min(row,max(0,lastrow + lastlines - self.lines))
-        self.select()
+        while self.selected.next and not self.selected.next_feed:
+            self.selected = self.selected.next
+        if self.selected.next_feed:
+            self.selected = self.selected.next_feed
+        self.offset = min(self.selected.row,self.max_offset)
 
     def just_read(self):
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_read(k)
+        self.list[self.selected.feed_idx].set_read(self.selected.idx)
 
     def just_unread(self):
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_unread(k)
+        self.list[self.selected.feed_idx].set_unread(self.selected.idx)
 
-    def goto(self) :
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_read(k)
+    def goto(self) :        
+        self.list[self.selected.feed_idx].set_read(self.selected.idx)
         self.draw_elements()
-        utility.goto(self.list[j][k]["link"], self.cfg)
+        utility.goto(self.selected["link"], self.cfg)
 
     def reader(self) :
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_read(k)
-        reader.Reader(self.cfg, self.list[j][k], self.register, self.deregister) 
+        self.list[self.selected.feed_idx].set_read(self.selected.idx)
+        reader.Reader(self.cfg, self.selected, self.register, self.deregister) 
         return REDRAW_ALL
 
     def next_filter(self):
@@ -279,36 +270,23 @@ class Gui :
         self.next_mark()
         self.draw_elements()
 
-    def __select_if_attr(self, newcursor, attr, status) :
-        j,k,r,l,f = self.map[newcursor]
-        f = getattr(self.list[j][k], attr, None)
-
-        if not f:
-            return
-
-        if f() == status:
-            self.selected = newcursor
-            self.select()
-            return 1
-        return 0
-
+    @change_selected
     def __next_attr(self, attr, status) :
-        self.unselect()
-        newcursor = self.selected + 1
-        while newcursor < self.items :
-            if self.__select_if_attr(newcursor, attr, status):
-                return
-            newcursor += 1
-        self.select()
+        cursor = self.selected
+        while cursor.next:
+            if getattr(cursor.next, attr)() == status:
+                self.selected = cursor.next
+                break
+            cursor = cursor.next
 
+    @change_selected
     def __prev_attr(self, attr, status) :
-        self.unselect()
-        newcursor = self.selected - 1
-        while newcursor >= 0:
-            if self.__select_if_attr(newcursor, attr, status):
-                return
-            newcursor -= 1
-        self.select()
+        cursor = self.selected
+        while cursor.prev:
+            if getattr(cursor.prev, attr)() == status:
+                self.selected = cursor.prev
+                break
+            cursor = cursor.prev
 
     def next_mark(self):
         self.__next_attr("marked", 1)
@@ -323,26 +301,22 @@ class Gui :
         self.__prev_attr("wasread", 0)
 
     def toggle_mark(self):
-        j,k,r,l,f = self.map[self.selected]
-        if self.list[j][k].marked() :
-            self.list[j][k].unmark()
+        if self.selected.marked() :
+            self.selected.unmark()
         else:
-            self.list[j][k].mark()
+            self.selected.mark()
 
     def toggle_collapse_tag(self):
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].collapsed = not self.list[j].collapsed
-        self.unselect()
-        self.__map_items(0)
-        self.__select_topoftag(j)
+        self.list[self.selected.feed_idx].collapsed = not self.list[self.selected.feed_idx].collapsed
+        self.selected.unselect()
+        self.__map_items()
+        self.__select_topoftag(self.selected.feed_idx)
 
     def __collapse_all(self, c):
-        j,k,r,l,f = self.map[self.selected]
         for t in self.list:
             t.collapsed = c
-        self.unselect()
-        self.__map_items(0)
-        self.__select_topoftag(j)
+        self.__map_items()
+        self.__select_topoftag(self.selected.feedidx)
 
     def set_collapse_all(self):
         self.__collapse_all(1)
@@ -356,31 +330,18 @@ class Gui :
         return ALARM
 
     def tag_read(self):
-        self.list[self.map[self.selected][0]].all_read()
+        self.list[self.selected.feed_idx].all_read()
 
     def all_read(self):
         for t in self.list:
             t.all_read()
 
     def tag_unread(self):
-        self.list[self.map[self.selected][0]].all_unread()
+        self.list[self.selected.feed_idx].all_unread()
 
     def all_unread(self):
         for t in self.list :
             t.all_unread()
-
-    def __change_select(self, val):
-        j,k,r,l,f = self.map[self.selected]
-        if val == 0 :
-            self.list[j][k].unselect()
-        else:
-            self.list[j][k].select()
-
-    def unselect(self) :
-        self.__change_select(0)
-
-    def select(self) :
-        self.__change_select(1)
 
     def quit(self):
         self.deregister()

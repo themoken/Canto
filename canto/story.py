@@ -15,8 +15,19 @@ import codecs
 
 class Story():
     def __init__(self, ufp, update, renderer):
+        self.feed_idx = 0
         self.idx = 0
         self.last = 0
+
+        self.row = 0
+        self.lines = 0
+        
+        self.prev_feed = None
+        self.next_feed = None
+
+        self.next = None
+        self.prev = None
+
         self.ufp = ufp
         self.update = update
         self.sel = 0
