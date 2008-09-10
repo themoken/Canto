@@ -112,7 +112,7 @@ class Reader :
             return KEY_PASSTHRU
 
     def alarm(self, stories):
-        pass
+        self.draw_elements()
 
     def quit(self):
         self.destroy()
