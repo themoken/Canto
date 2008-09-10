@@ -29,7 +29,7 @@ import message
 class Gui :
     def __init__(self, cfg, list, tags, register, deregister):
         self.cfg = cfg
-        
+        self.safe_attrs = ["help","quit","next_filter","prev_filter"] 
         self.lines = 0
         self.window_list = []
         self.map = list
@@ -112,13 +112,13 @@ class Gui :
 
     def key(self, t):
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
-            if not self.items and self.cfg.key_list[t] not in ["help", "quit", "next_filter","prev_filter"]:
+            if self.items:
+                if self.message:
+                    self.message = None
+            elif self.cfg.key_list[t] not in self.safe_attrs:
                 if not self.message:
                     self.message = message.Message(self.cfg, "No Items.")
                 return
-
-            if self.message:
-                self.message = None
 
             f = getattr(self, self.cfg.key_list[t], None)
             if f:
@@ -138,6 +138,8 @@ class Gui :
         self.__map_items() 
 
         if self.items > 0:
+            if self.message:
+                self.message = None
             if self.selected:
                 r = self.list[self.selected.feed_idx].search_stories(self.selected)
                 if r != -1  :
