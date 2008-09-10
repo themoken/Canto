@@ -117,6 +117,9 @@ class Gui :
                     self.message = message.Message(self.cfg, "No Items.")
                 return
 
+            if self.message:
+                self.message = None
+
             f = getattr(self, self.cfg.key_list[t], None)
             if f:
                 r = f()
