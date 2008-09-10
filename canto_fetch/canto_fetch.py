@@ -87,13 +87,23 @@ def main():
         try:
             lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
         except OSError:
-            log_func("Failed to get lock for %s." % handle)
-            continue
+            if time.time() - os.stat(lpath).st_ctime > 60:
+                os.unlink(lpath)
+                log_func("Deleted stale lock for %s." % handle)
+                try:
+                    lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
+                except:
+                    log_func("Failed to get lock for %s." % handle)
+                    continue
 
         fpath = path + "/" + handle.replace("/", " ")
         if os.path.exists(fpath):
             f = open(fpath, "rb")
-            curfeed = cPickle.load(f)
+            try:
+                curfeed = cPickle.load(f)
+            except:
+                log_func("cPickle load exception on %s" % fpath)
+                raise
             f.close()
         else:
             curfeed = {"canto_state":[], "entries":[], "canto_update":0}
@@ -105,6 +115,10 @@ def main():
             print "Updating %s" % handle
 
         newfeed = feedparser.parse(url)
+        if newfeed.has_key("bozo_exception"):
+            log_func("Recoverable error in feed %s: %s" % (handle, newfeed["bozo_exception"]))
+            newfeed["bozo_exception"] = None
+
         newfeed["canto_state"] = curfeed["canto_state"]
         newfeed["canto_update"] = time.time()
         for entry in newfeed["entries"]:
@@ -143,7 +157,11 @@ def main():
             newfeed["entries"] = newfeed["entries"][:keep]
 
         f = open(fpath, "wb")
-        cPickle.dump(newfeed, f)
+        try:
+            cPickle.dump(newfeed, f)
+        except:
+            log_func("cPickle dump exception on %s" % fpath)
+            raise
         f.close()
 
         os.unlink(lpath)
