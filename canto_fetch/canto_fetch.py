@@ -84,6 +84,22 @@ def main():
 
     if not os.path.exists(path):
         os.mkdir(path)
+    elif not os.path.isdir(path):
+        os.unlink(path)
+        os.mkdir(path)
+
+    for file in os.listdir(path):
+        file = path  + file
+        for handle in [f[0] for f in feeds]:
+            valid = path + handle.replace("/", " ")
+            if file == valid or file == valid + ".lock":
+                break
+        else:
+            log_func("Deleted extraneous file: %s\n" % file)
+            try:
+                os.unlink(file)
+            except:
+                pass
 
     for handle,url,update,keep in feeds:
         fpath = path + "/" + handle.replace("/", " ")
@@ -91,7 +107,7 @@ def main():
         try:
             lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
         except OSError:
-            if time.time() - os.stat(lpath).st_ctime > 60:
+            if time.time() - os.stat(lpath).st_ctime > 120:
                 os.unlink(lpath)
                 log_func("Deleted stale lock for %s." % handle)
                 try:
