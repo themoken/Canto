@@ -1,9 +1,11 @@
 0.5.0 TODO
 
-- Proper locking between canto/canto-fetch
-- Switch filter (filter-next, filter-prev, filters 1-9)
+- Switch to filter n (filter 1-9)
 - Support lists of keybinds
 - Delete feeds
-- Per feed renderer selection / config option
-- Hooks : (resize, new-item, on-read, on-mark, arbitrary)
-- Redocument
+- Hooks : (new-item, on-read, on-mark, arbitrary)
+- Redocument / logging
+
+FUTURE
+
+- Per feed GUI / binds (reddit-up, reddit-down)
