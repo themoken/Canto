@@ -12,6 +12,7 @@ import time
 import os
 import sys
 import feedparser
+import shutil
 
 def log(path, str, verbose, mode="a"):
     if verbose:
@@ -81,6 +82,9 @@ def main():
     feeds = cPickle.load(f)
     f.close()
 
+    if not os.path.exists(path):
+        os.mkdir(path)
+
     for handle,url,update,keep in feeds:
         fpath = path + "/" + handle.replace("/", " ")
         lpath = fpath + ".lock"
@@ -98,13 +102,22 @@ def main():
 
         fpath = path + "/" + handle.replace("/", " ")
         if os.path.exists(fpath):
-            f = open(fpath, "rb")
-            try:
-                curfeed = cPickle.load(f)
-            except:
-                log_func("cPickle load exception on %s" % fpath)
-                raise
-            f.close()
+            if os.path.isfile(fpath):
+                f = open(fpath, "rb")
+                try:
+                    curfeed = cPickle.load(f)
+                except:
+                    log_func("cPickle load exception on %s" % fpath)
+                    raise
+                f.close()
+            else:
+                log_func("%s is not normal file, old format?" % fpath)
+                log_func("  Deleting...")
+                if os.path.isdir(fpath):
+                    shutil.rmtree(fpath)
+                else:
+                    os.unlink(fpath)
+                curfeed = {"canto_state":[], "entries":[], "canto_update":0}
         else:
             curfeed = {"canto_state":[], "entries":[], "canto_update":0}
 

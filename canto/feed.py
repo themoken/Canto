@@ -27,10 +27,6 @@ class Feed(tag.Tag):
         self.URL = URL
         self.cfg = cfg
         self.renderer = renderer
-
-        if self.path :
-            self.update()
-
         self.rate = rate
         self.time = 1
         self.keep = keep
@@ -47,9 +43,6 @@ class Feed(tag.Tag):
         os.unlink(self.lpath)
 
     def update(self):
-        if not os.path.exists(self.path):
-            return 0
-
         if not self.lock():
             return 0
         f = open(self.path, "rb")

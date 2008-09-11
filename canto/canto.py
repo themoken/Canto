@@ -142,17 +142,11 @@ class Main():
                "\" -F \"" + feed_dir + \
                "\" -L \"" + conf_dir + "slog\"", 1)
             
-            # Force an update from disk
-            for f in self.cfg.feeds :
-                f.time = 1
-                f.tick()
-                self.filter_extend(f)
-        else:
-            # Otherwise populate Main.stories with entries already
-            # parsed when Cfg() instantiate the Feed() classes.
-
-            for f in self.cfg.feeds:
-                self.filter_extend(f)
+        # Force an update from disk
+        for f in self.cfg.feeds :
+            f.time = 1
+            f.tick()
+            self.filter_extend(f)
 
         # Handle -a/-n flags (print number of new items)
 
