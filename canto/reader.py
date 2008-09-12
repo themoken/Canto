@@ -37,13 +37,16 @@ class Reader :
         self.links = [(self.story["link"], "main link")]
         self.links.extend(utility.getlinks(self.story["description"]))
 
-        self.lines = self.story.renderer.reader(self.story, self.cfg.width, self.links, self.show_links, None)
+        self.lines = self.story.renderer.reader(self.story, \
+                self.cfg.width, self.links, self.show_links, None)
 
-        self.height, self.width = min(self.lines, self.cfg.height), self.cfg.width
+        self.height, self.width = min(self.lines, self.cfg.height),\
+                self.cfg.width
         self.window = curses.newpad(self.lines, self.cfg.width)
         self.window.bkgdset(curses.color_pair(1))
 
-        self.story.renderer.reader(self.story, self.cfg.width, self.links, self.show_links, self.window)
+        self.story.renderer.reader(self.story, self.cfg.width, \
+                self.links, self.show_links, self.window)
         self.draw_elements()
 
     def draw_elements(self):
@@ -96,7 +99,8 @@ class Reader :
         self.draw_elements()
 
     def goto(self):
-        input.Input(self.cfg, " Link Number ", self.__dogoto, self.register, self.deregister)
+        input.Input(self.cfg, " Link Number ", self.__dogoto, \
+                self.register, self.deregister)
         return 1
     
     def key(self, t):
