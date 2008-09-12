@@ -108,7 +108,12 @@ class Gui :
         
         # Because of B, you can perform filtering in a Renderer().
 
+        # We keep track of the virtual row to keep offsets in line.
+        # It doesn't actually map to the row it's printed to on the
+        # screen.
+
         self.map = []
+        row = 0
         for i, feed in enumerate(self.list):
             for item in feed:
                 if not feed.collapsed or item.idx == 0:
@@ -117,6 +122,8 @@ class Gui :
                         # item.feed_idx is the story's only reference
                         # to its current Tag()
                         item.feed_idx = i
+                        item.row = row
+                        row += item.lines
                         self.map.append(item)
         
         self.items = len(self.map)
