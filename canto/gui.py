@@ -52,6 +52,7 @@ class Gui :
         for t in self.list :
             if len(t):
                 self.selected = t[0]
+                self.sel_idx = 0
                 t[0].select()
                 break
         else:
@@ -76,26 +77,15 @@ class Gui :
         self.map = []
         for i, feed in enumerate(self.list):
             for item in feed:
-                if feed.collapsed and item.idx != 0:
-                    item.visible = 0
-                else:
+                if not feed.collapsed or item.idx == 0:
                     item.lines = item.print_item(feed, 0, self)
-                    if not item.lines:
-                        item.visible = 0
-                    else:
-                        item.visible = 1
+                    if item.lines:
                         item.feed_idx = i
                         item.row = row
                         row += item.lines
                         self.map.append(item)
         
         self.items = len(self.map)
-        for i in xrange(self.items - 1):
-            self.map[i].prev = self.map[i - 1]
-            self.map[i].next = self.map[i + 1]
-        self.map[0].prev = None
-        self.map[-1].next = None
-
         if self.items:
             self.max_offset = self.map[-1].row + self.map[-1].lines - self.lines
 
@@ -103,16 +93,12 @@ class Gui :
         if self.items > 0:
             self.__check_scroll()
             row = -1 * self.offset
-            for feed in self.list:
-                for item in feed:
-                    if item.row + item.lines > self.offset:
-                        if item.row > self.lines + self.offset:
-                            break
-                        item.print_item(feed, row, self)
-                    row += item.lines
-                else:
-                    continue
-                break
+            for item in self.map:
+                if item.row + item.lines > self.offset:
+                    if item.row > self.lines + self.offset:
+                        break
+                    item.print_item(self.list[item.feed_idx], row, self)
+                row += item.lines
         else:
             row = -1
         
@@ -178,44 +164,44 @@ class Gui :
 
     def change_selected(fn):
         def dec(self, *args):
-            if self.selected:
-                self.selected.unselect()
-            fn(self, *args)
-            if self.selected:
-                self.selected.select()
+            self.selected.unselect()
+            r = fn(self, *args)
+            self.selected = self.map[self.sel_idx]
+            self.selected.select()
+            return r
         return dec
 
     @change_selected
     def __select_topoftag(self, f=0):
         for feed in self.list[f:]:
             for item in feed:
-                if item.visible:
+                if item in self.map:
                     self.selected = item
                     return
 
     @change_selected
     def next_item(self):
-        if self.selected.next :
-            self.selected = self.selected.next
-    
+        if self.sel_idx < self.items :
+            self.sel_idx += 1
+
     @change_selected
     def prev_item(self):
-        if self.selected.prev :
-            self.selected = self.selected.prev
+        if self.sel_idx > 0 :
+            self.sel_idx -= 1
 
-    @change_selected
     def prev_tag(self) :
-        while self.selected.prev and self.selected.feed_idx > self.selected.prev.feed_idx:
-            self.prev_item()
-        self.prev_item()
-        while self.selected.prev and self.selected.idx != 0:
+        curtag = self.selected.feed_idx
+        while not self.sel_idx == 0 :
+            if curtag != self.selected.feed_idx and self.selected.idx == 0:
+                break
             self.prev_item()
 
-    @change_selected
     def next_tag(self) :
-        while self.selected.next and self.selected.feed_idx == self.selected.next.feed_idx:
+        curtag = self.selected.feed_idx
+        while not self.sel_idx == self.items :
+            if curtag != self.selected.feed_idx:
+                break
             self.next_item()
-        self.next_item()
         self.offset = min(self.selected.row, max(0, self.max_offset))
 
     @change_selected
