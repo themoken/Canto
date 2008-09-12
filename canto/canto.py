@@ -54,7 +54,8 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         try :
-            optlist, arglist = getopt.getopt(sys.argv[1:], 'hvgaln:D:C:L:S:O:F:u',\
+            optlist, arglist = getopt.getopt(sys.argv[1:],\
+                    'hvgaln:D:C:L:S:O:F:u',\
                     ["help","version","gensconf","update","list","checkall",\
                      "checknew=", "dir=", "conf=","log=","fdir="])
         except getopt.GetoptError, e:
@@ -198,7 +199,8 @@ class Main():
         tag_list = [tag.Tag(x.tag) for x in self.cfg.feeds]
 
         # Instantiate the base Gui class
-        gui.Gui(self.cfg, self.stories, tag_list, self.push_handler, self.pop_handler)
+        gui.Gui(self.cfg, self.stories, tag_list, self.push_handler, \
+                self.pop_handler)
 
         # Signal handling
         signal.signal(signal.SIGWINCH, self.winch)
