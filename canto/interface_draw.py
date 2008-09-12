@@ -164,7 +164,8 @@ class Renderer :
                 row, height, width, window_list)
 
         if not tag.collapsed:
-            row = self.out([[title, (self.firsts(story), self.mids(story), self.ends(story))]],
+            row = self.out([[title, (self.firsts(story), self.mids(story), \
+                    self.ends(story))]],
                     row, height, width, window_list)
             
             if story.last:
@@ -175,7 +176,8 @@ class Renderer :
 
     def message(self, message, width, window):
         row = self.simple_out([("%B┌","─","┐")], 0, -1, width, [window])
-        row = self.out([[message, [("%B│%b%1 ", " ", " %1%B│%b")]*3]], row, -1, width, [window])
+        row = self.out([[message, [("%B│%b%1 ", " ", " %1%B│%b")]*3]], \
+                row, -1, width, [window])
         row = self.simple_out([("└","─","┘%C")], row, -1, width, [window])
         return row
 
@@ -194,12 +196,14 @@ class Renderer :
                 l.append(self.reader_link(idx, link))
 
         row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
-        row = self.out([[x, (self.rfirsts(story), self.rmids(story), self.rends(story))] for x in l], row, -1, width, [window])
+        row = self.out([[x, (self.rfirsts(story), self.rmids(story),
+            self.rends(story))] for x in l], row, -1, width, [window])
         row = self.simple_out(self.reader_foot(story), row, -1, width, [window])
         return row
 
     def box(self, caption, width, window):
-        row = self.simple_out([("%B┌" + caption,"─","┐")], 0, -1, width, [window])
+        row = self.simple_out([("%B┌" + caption,"─","┐")], \
+                0, -1, width, [window])
         row = self.simple_out([("│"," ","│")], row, -1, width, [window])
         row = self.simple_out([("└","─","┘%C")], row, -1, width, [window])
         return row
