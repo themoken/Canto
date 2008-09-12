@@ -21,7 +21,7 @@ def log(path, str, verbose, mode="a"):
     try :
         f = codecs.open(path, mode, "UTF-8", "ignore")
         try:
-            f.write(str)
+            f.write(str + "\n")
         finally:
             f.close()
     except IOError:
@@ -82,6 +82,8 @@ def main():
     feeds = cPickle.load(f)
     f.close()
 
+    emptyfeed = {"canto_state":[], "entries":[], "canto_update":0, "canto_version":(MAJOR,MINOR,REV)}
+
     if not os.path.exists(path):
         os.mkdir(path)
     elif not os.path.isdir(path):
@@ -95,15 +97,16 @@ def main():
             if file == valid or file == valid + ".lock":
                 break
         else:
-            log_func("Deleted extraneous file: %s\n" % file)
+            log_func("Deleted extraneous file: %s" % file)
             try:
                 os.unlink(file)
             except:
                 pass
 
     for handle,url,update,keep in feeds:
-        fpath = path + "/" + handle.replace("/", " ")
+        fpath = path + handle.replace("/", " ")
         lpath = fpath + ".lock"
+
         try:
             lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
         except OSError:
@@ -113,10 +116,12 @@ def main():
                 try:
                     lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
                 except:
-                    log_func("Failed to get lock for %s." % handle)
+                    log_func("Failed twice to get lock for %s." % handle)
                     continue
+            else:
+                log_func("Failed once to get lock for %s." % handle)
+                continue
 
-        fpath = path + "/" + handle.replace("/", " ")
         if os.path.exists(fpath):
             if os.path.isfile(fpath):
                 f = open(fpath, "rb")
@@ -133,9 +138,9 @@ def main():
                     shutil.rmtree(fpath)
                 else:
                     os.unlink(fpath)
-                curfeed = {"canto_state":[], "entries":[], "canto_update":0}
+                curfeed = emptyfeed
         else:
-            curfeed = {"canto_state":[], "entries":[], "canto_update":0}
+            curfeed = emptyfeed
 
         if time.time() - curfeed["canto_update"] < update * 60 and not force:
             os.unlink(lpath)
@@ -195,5 +200,5 @@ def main():
 
         os.unlink(lpath)
     
-    log_func("Gracefully exiting Canto-fetch.\n")
+    log_func("Gracefully exiting Canto-fetch.")
     sys.exit(0)
