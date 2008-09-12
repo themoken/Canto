@@ -25,6 +25,19 @@ import message
 
 # Gui()'s main data structure is self.list, which is a list
 # of arbitrary Tag() objects, each being a list of stories.
+# A corresponding list is self.map, which maps out the visible
+# stories in order of appearance.
+
+# Self.map may seem redundant, but it's mostly for convenience.
+# For example, if the items are globally sorted, then iterating
+# over self.list won't work. Or if you're testing membership
+# of a story in the self. list (see __select_topoftag).
+# Or if your iterating over all visible items (see draw_elements)
+
+# Self.list is still useful though, when dealing with things
+# like tag based sorting, or setting the attributes of a Tag()
+# since each story doesn't have access to its Tag() object
+# directly.
 
 class Gui :
     def __init__(self, cfg, list, tags, register, deregister):
