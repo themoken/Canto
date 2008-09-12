@@ -41,10 +41,15 @@ import message
 
 class Gui :
     def __init__(self, cfg, list, tags, register, deregister):
-        self.cfg = cfg
         self.safe_attrs = ["help","quit","next_filter","prev_filter"] 
-        self.lines = 0
         self.window_list = []
+        self.map = []
+
+        self.cfg = cfg
+        self.register = register
+        self.deregister = deregister
+
+        self.lines = 0
         self.sel = 0
         self.items = 0
 
@@ -54,13 +59,15 @@ class Gui :
         self.message = None
 
         register(self)
-        self.register = register
-        self.deregister = deregister
 
-        self.map = []
+        # Populate the Tag() objects provided with
+        # stories from the list given.
+
         self.list = tags
         for t in self.list:
             t.extend(list)
+
+        # Select the first visible feed.
 
         for t in self.list :
             if len(t):
@@ -75,40 +82,62 @@ class Gui :
         self.refresh()
 
     def refresh(self):
+        # Generate all of the columns
         self.window_list = [curses.newwin(self.cfg.height + 1, \
                     self.cfg.width / self.cfg.columns, 0, \
                     (self.cfg.width / self.cfg.columns) * i) \
                     for i in range(0, self.cfg.columns)]
 
+        # Setup the backgrounds.
         for window in self.window_list:
             window.bkgdset(curses.color_pair(1))
+
+        # Self.lines is the maximum number of visible lines on the screen
+        # at any given time. Used for scroll detection.
+
         self.lines = self.cfg.columns * self.cfg.height
+
         self.__map_items()
         self.draw_elements()
 
     def __map_items(self):
-        row = 0
+
+        # This for loop populates self.map with all stories that
+        #   A - are first in a collapsed feed or not in one at all.
+        #   B - that actually manage to print something to the screen.
+        
+        # Because of B, you can perform filtering in a Renderer().
+
         self.map = []
         for i, feed in enumerate(self.list):
             for item in feed:
                 if not feed.collapsed or item.idx == 0:
                     item.lines = item.print_item(feed, 0, self)
                     if item.lines:
+                        # item.feed_idx is the story's only reference
+                        # to its current Tag()
                         item.feed_idx = i
-                        item.row = row
-                        row += item.lines
                         self.map.append(item)
         
         self.items = len(self.map)
+
+        # Set max_offset, this is how we know not to recenter the
+        # screen when it would leave unused space at the end.
         if self.items:
             self.max_offset = self.map[-1].row + self.map[-1].lines - self.lines
 
     def draw_elements(self):
+        # Print all stories in self.map
+        # Row increments always, because the drawing logic automatically
+        # converts a row into a row in the proper window.
+
         if self.items > 0:
             self.__check_scroll()
             row = -1 * self.offset
             for item in self.map:
+                # If row is not offscreen up
                 if item.row + item.lines > self.offset:
+                    # If row is offscreen down
                     if item.row > self.lines + self.offset:
                         break
                     item.print_item(self.list[item.feed_idx], row, self)
@@ -116,6 +145,7 @@ class Gui :
         else:
             row = -1
         
+        # Actually perform curses screen update.
         for i in range(len(self.window_list)) :
             if i * self.cfg.height > row:
                 self.window_list[i].clear()
@@ -123,58 +153,82 @@ class Gui :
                 self.window_list[i].clrtobot()
             self.window_list[i].noutrefresh()
         curses.doupdate()
+
+        # If we've got a sub-window message open, refresh that.
         if self.message:
             self.message.refresh()
 
     def __check_scroll(self) :
+        # If our current item is offscreen up, ret 1
         if self.sel.row < self.offset :
             self.offset = self.sel.row
             return 1
 
+        # If our current item is offscreen down, ret 1
         if self.sel.row + self.sel.lines > self.lines + self.offset :
             self.offset = self.sel.row + self.sel.lines - self.lines
             return 1
         return 0
 
     def alarm(self, listobj):
+        # Clear all of the tags and repopulate with the new listobj.
+        # At this point, self.sel and self.sel_idx may be invalid
+
         for t in self.list:
             t.clear()
             t.extend(listobj)
         self.__map_items() 
 
         if self.items > 0:
+            # If we have items, alarm() kills message.
             if self.message:
                 self.message = None
+
+            # Attempt to update sel_idx, if the item is still
+            # visible (in self.map), otherwise just select
+            # the top of the current (or first previous feed).
+
             if self.sel:
-                r = self.list[self.sel.feed_idx].search_stories(self.sel)
-                if r != -1  :
-                    self.sel = self.list[self.sel.feed_idx][r]
-                    self.sel.select()
+                if self.sel in self.map:
+                    self.sel_idx = self.map.index(self.sel)
                 else:
                     self.__select_topoftag(self.sel.feed_idx)
             else:
                 self.__select_topoftag(0)
+
+        # If we had a selection, and now no items, fire up a message.
         elif self.sel and not self.message:
             self.message = message.Message(self.cfg, "No Items.")
             self.sel = None
+
+        # Redraw with new self.map
         self.draw_elements()
     
     def key(self, t):
+        # Gui() has key t, and it's not None
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
+            # Clear message, if we have items
             if self.items:
                 if self.message:
                     self.message = None
+
+            # Set a message and bail, if the bind isn't "safe"
             elif self.cfg.key_list[t] not in self.safe_attrs:
                 if not self.message:
                     self.message = message.Message(self.cfg, "No Items.")
                 return
 
+            # Dispatch and return value from keybind.
             f = getattr(self, self.cfg.key_list[t], None)
             if f:
                 r = f()
                 if not r:
                     self.draw_elements()
                 return r
+
+    # This decorator lets the bind just change sel_idx and
+    # have self.sel set automatically and the story's state
+    # synced.
 
     def change_selected(fn):
         def dec(self, *args):
@@ -217,6 +271,10 @@ class Gui :
             if curtag != self.sel.feed_idx:
                 break
             self.next_item()
+
+        # Next_tag should try to keep the top of the tag at
+        # the top of the screen (as prev_tag does inherently)
+        # so that the user's eye isn't lost.
         self.offset = min(self.sel.row, max(0, self.max_offset))
 
     @change_selected
