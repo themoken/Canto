@@ -84,4 +84,5 @@ class Story():
         self.sel = 0
 
     def print_item(self, tag, row, i):
-        return self.renderer.story(tag, self, row, i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)
+        return self.renderer.story(tag, self, row, \
+                i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)
