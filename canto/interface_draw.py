@@ -9,7 +9,6 @@ class Renderer :
 
         self.reader_rgx = [
             # Strip out newlines for formatting.
-            (re.compile("\\\n"), " "),
             (re.compile("<img.*?>"), "[image]"),
             (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
 
@@ -29,7 +28,7 @@ class Renderer :
             (re.compile("<.*?>"), ""),
 
             # Consolidate more than two linebreaks.
-            (re.compile("(\\\n|\s){3,}"), "\n\n"),
+            (re.compile("(\\\n){3,}"), "\n\n"),
 
             # Add spaces for splitting.
             (re.compile("\\\n"), "\n ")]
@@ -154,7 +153,7 @@ class Renderer :
         for rlist in l:
             for rgx,rep in rlist:
                 s = rgx.sub(rep,s)
-        return s.lstrip()
+        return s
     
     def story(self, tag, story, row, height, width, window_list):
         title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
