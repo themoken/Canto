@@ -82,7 +82,8 @@ def main():
     feeds = cPickle.load(f)
     f.close()
 
-    emptyfeed = {"canto_state":[], "entries":[], "canto_update":0, "canto_version":(MAJOR,MINOR,REV)}
+    emptyfeed = {"canto_state":[], "entries":[], "canto_update":0, 
+                    "canto_version":(MAJOR,MINOR,REV)}
 
     if not os.path.exists(path):
         os.mkdir(path)
@@ -150,7 +151,8 @@ def main():
 
         newfeed = feedparser.parse(url)
         if newfeed.has_key("bozo_exception"):
-            log_func("Recoverable error in feed %s: %s" % (handle, newfeed["bozo_exception"]))
+            log_func("Recoverable error in feed %s: %s" % 
+                        (handle, newfeed["bozo_exception"]))
             newfeed["bozo_exception"] = None
 
         newfeed["canto_state"] = curfeed["canto_state"]
@@ -166,23 +168,23 @@ def main():
                     entry[key] = entry[key].encode("UTF-8")
                     entry[key] = entry[key].replace("%", "\\%")
 
-        for i in range(len(newfeed["entries"])) :
-            if not newfeed["entries"][i].has_key("id"):
-                if newfeed["entries"][i].has_key("link"):
-                    newfeed["entries"][i]["id"] = newfeed["entries"][i]["link"]
-                elif newfeed["entries"][i].has_key("title"):
-                    newfeed["entries"][i]["id"] = newfeed["entries"][i]["title"]
+        for entry in newfeed["entries"]:
+            if not entry.has_key("id"):
+                if entry.has_key("link"):
+                    entry["id"] = entry["link"]
+                elif entry.has_key("title"):
+                    entry["id"] = entry["title"]
                 else:
-                    newfeed["entries"][i]["id"] = None
+                    entry["id"] = None
 
-            for j in range(len(curfeed["entries"])) :
-                if newfeed["entries"][i]["id"] == curfeed["entries"][j]["id"]:
-                    newfeed["entries"][i]["canto_state"] = curfeed["entries"][j]["canto_state"]
-                    curfeed["entries"].remove(curfeed["entries"][j])
+            for centry in curfeed["entries"]:
+                if entry["id"] == centry["id"]:
+                    entry["canto_state"] = centry["canto_state"]
+                    curfeed["entries"].remove(centry)
                     break
 
-            if not newfeed["entries"][i].has_key("canto_state"):
-                newfeed["entries"][i]["canto_state"] = [ handle,"unread", "*"]
+            if not entry.has_key("canto_state"):
+                entry["canto_state"] = [ handle,"unread", "*"]
 
         
         if len(newfeed["entries"]) < keep:
