@@ -191,6 +191,7 @@ class Gui :
             for item in feed:
                 if item in self.map:
                     self.sel = item
+                    self.sel_idx = self.map.index(self.sel)
                     return
 
     @change_selected
