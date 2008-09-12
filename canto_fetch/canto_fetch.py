@@ -75,7 +75,8 @@ def main():
             force = 1
     
     log(log_file, "Canto-fetch v %d.%d.%d\n" % (MAJOR,MINOR,REV), 0, "w")
-    log(log_file, "Started execution: %s\n" % time.asctime(time.localtime()),0, "a")
+    log(log_file, "Started execution: %s\n" % 
+            time.asctime(time.localtime()),0, "a")
     log_func = lambda x : log(log_file, x, verbose, "a")
   
     f = open(conf, "r")
@@ -188,7 +189,8 @@ def main():
 
         
         if len(newfeed["entries"]) < keep:
-            newfeed["entries"] += curfeed["entries"][:keep - len(newfeed["entries"])]
+            newfeed["entries"] += \
+                curfeed["entries"][:keep - len(newfeed["entries"])]
         else:
             newfeed["entries"] = newfeed["entries"][:keep]
 
