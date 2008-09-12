@@ -257,7 +257,7 @@ class Gui :
 
     @change_selected
     def next_item(self):
-        if self.sel_idx < self.items :
+        if self.sel_idx < self.items - 1:
             self.sel_idx += 1
 
     @change_selected
@@ -274,7 +274,7 @@ class Gui :
 
     def next_tag(self) :
         curtag = self.sel.feed_idx
-        while not self.sel_idx == self.items :
+        while not self.sel_idx == self.items - 1:
             if curtag != self.sel.feed_idx:
                 break
             self.next_item()
