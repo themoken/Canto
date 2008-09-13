@@ -132,7 +132,8 @@ class Gui :
         # Set max_offset, this is how we know not to recenter the
         # screen when it would leave unused space at the end.
         if self.items:
-            self.max_offset = self.map[-1].row + self.map[-1].lines - self.lines
+            self.max_offset = self.map[-1].row + \
+                    self.map[-1].lines - self.lines
 
     def draw_elements(self):
         # Print all stories in self.map
@@ -187,6 +188,7 @@ class Gui :
             t.extend(listobj)
         self.__do_new_hook()
         self.__map_items() 
+        self.sel_idx = min(self.sel_idx, self.items - 1)
 
         if self.items > 0:
             # If we have items, alarm() kills message.
