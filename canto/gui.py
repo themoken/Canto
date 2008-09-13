@@ -213,6 +213,10 @@ class Gui :
         # Redraw with new self.map
         self.draw_elements()
 
+    # Use the new_hook on any "new" items.
+    # The new attribute is never accessible from the
+    # renderer, and is only used for the hook.
+
     def __do_new_hook(self):
         if self.cfg.new_hook:
             for t in self.list:
