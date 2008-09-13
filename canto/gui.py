@@ -186,10 +186,14 @@ class Gui :
         for t in self.list:
             t.clear()
             t.extend(listobj)
+
         self.__do_new_hook()
         self.__map_items() 
-        self.sel_idx = min(self.sel_idx, self.items - 1)
 
+        # sel_idx may no longer be valid, because the item
+        # list could shrink arbitrarily.
+        self.sel_idx = min(self.sel_idx, self.items - 1)
+        
         if self.items > 0:
             # If we have items, alarm() kills message.
             if self.message:
@@ -202,6 +206,8 @@ class Gui :
             if self.sel:
                 if self.sel in self.map:
                     self.sel_idx = self.map.index(self.sel)
+                    self.sel = self.map[self.sel_idx]
+                    self.sel.select()
                 else:
                     self.__select_topoftag(self.sel.feed_idx)
             else:
