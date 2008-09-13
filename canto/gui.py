@@ -300,21 +300,21 @@ class Gui :
 
     @change_selected
     def __next_attr(self, attr, status) :
-        cursor = self.sel
-        while cursor.next:
-            if getattr(cursor.next, attr)() == status:
-                self.sel = cursor.next
+        cursor = self.sel_idx + 1
+        while not cursor >= self.items - 1:
+            if getattr(self.map[cursor], attr)() == status:
+                self.sel_idx = cursor
                 break
-            cursor = cursor.next
+            cursor += 1
 
     @change_selected
     def __prev_attr(self, attr, status) :
-        cursor = self.sel
-        while cursor.prev:
-            if getattr(cursor.prev, attr)() == status:
-                self.sel = cursor.prev
+        cursor = self.sel_idx - 1
+        while not cursor <= 0:
+            if getattr(self.map[cursor], attr)() == status:
+                self.sel_idx = cursor
                 break
-            cursor = cursor.prev
+            cursor -= 1
 
     def next_mark(self):
         self.__next_attr("marked", 1)
