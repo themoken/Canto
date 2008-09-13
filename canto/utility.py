@@ -90,7 +90,7 @@ def silentfork(path, text):
     return pid
 
 def goto(URL, cfg):
-    s = re.sub("%u", URL, cfg.browser_path)
+    s = re.sub("%u", URL, cfg.browser)
     silentfork(s, cfg.text_browser)
 
 def getlinks(string):

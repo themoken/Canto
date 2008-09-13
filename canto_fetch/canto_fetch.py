@@ -185,7 +185,7 @@ def main():
                     break
 
             if not entry.has_key("canto_state"):
-                entry["canto_state"] = [ handle,"unread", "*"]
+                entry["canto_state"] = [ handle,"unread", "*", "new"]
 
         
         if len(newfeed["entries"]) < keep:

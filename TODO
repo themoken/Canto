@@ -3,7 +3,7 @@
 - Switch to filter n (filter 1-9)
 - Support lists of keybinds
 - Delete feeds
-- Hooks : (new-item, on-read, on-mark, arbitrary)
+- Hooks : (on-read, on-mark, arbitrary)
 - Redocument / logging
 
 FUTURE

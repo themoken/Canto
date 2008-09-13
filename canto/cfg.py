@@ -28,7 +28,7 @@ class ConfigError(Exception):
 
 class Cfg:
     def __init__(self, conf, sconf, feed_dir):
-        self.browser_path = "firefox \"%u\""
+        self.browser = "firefox \"%u\""
         self.text_browser = 0
         self.render = interface_draw.Renderer()
 
@@ -92,6 +92,7 @@ class Cfg:
         self.width = 0
 
         self.resize_hook = None
+        self.new_hook = None
 
         self.item_filters = [None]
         self.cur_item_filter = 0
@@ -168,7 +169,7 @@ class Cfg:
         locals = {"addfeed":self.feedwrap,
             "height" : self.height,
             "width" : self.width,
-            "browser" : self.browser_path,
+            "browser" : self.browser,
             "text_browser" : self.text_browser,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
@@ -192,21 +193,18 @@ class Cfg:
         # execfile cannot modify basic type
         # locals directly, so we do it by hand.
 
-        self.browser_path = locals["browser"]
-        self.text_browser = locals["text_browser"]
-        self.render = locals["render"]
-        if locals["columns"] > 0:
-            self.columns = locals["columns"]
+        for attr in ["resize_hook", "new_hook", "item_filters",\
+                "cur_item_filter", "browser", "text_browser", "render",\
+                "columns"]:
+            if locals.has_key(attr):
+                setattr(self, attr, locals[attr])
 
-        if locals.has_key("resize_hook"):
-            self.resize_hook = locals["resize_hook"]
-        if locals.has_key("item_filters"):
-            self.item_filters = locals["item_filters"]
+        if not self.columns:
+            self.columns = 1
+
+        if self.cur_item_filter >= len(self.item_filters):
             self.cur_item_filter = 0
-            self.item_filter = self.item_filters[0]
-        if locals.has_key("cur_item_filter"):
-            self.cur_item_filter = locals["cur_item_filter"]
-            self.item_filter = self.item_filters[self.cur_item_filter]
+        self.item_filter = self.item_filters[0]
 
     def gen_serverconf(self):
         l = []

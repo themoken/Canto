@@ -74,6 +74,15 @@ class Story():
     def unmark(self):
         self.__tagwrap("marked", -1)
 
+    def isnew(self):
+        return self.__tagwrap("new", 0)
+
+    def new(self):
+        self.__tagwrap("new", 1)
+
+    def old(self):
+        self.__tagwrap("new", -1)
+
     def selected(self):
         return self.sel
 

@@ -66,6 +66,7 @@ class Gui :
         self.list = tags
         for t in self.list:
             t.extend(list)
+        self.__do_new_hook()
 
         # Select the first visible feed.
 
@@ -184,6 +185,7 @@ class Gui :
         for t in self.list:
             t.clear()
             t.extend(listobj)
+        self.__do_new_hook()
         self.__map_items() 
 
         if self.items > 0:
@@ -210,7 +212,15 @@ class Gui :
 
         # Redraw with new self.map
         self.draw_elements()
-    
+
+    def __do_new_hook(self):
+        if self.cfg.new_hook:
+            for t in self.list:
+                for item in t:
+                    if item.isnew():
+                        self.cfg.new_hook(t, item)
+                        item.old()
+
     def key(self, t):
         # Gui() has key t, and it's not None
         if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
