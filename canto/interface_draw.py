@@ -24,17 +24,17 @@ class Renderer :
             (re.compile("<li.*?>"), "• "),
             (re.compile("</li.*?>"), "\n"),
 
-            # Strip out any remaining unescaped HTML
-            (re.compile("<.*?>"), ""),
-
             # Consolidate more than two linebreaks.
             (re.compile("(\\\n){3,}"), "\n\n"),
 
             # Add spaces for splitting.
             (re.compile("\\\n"), "\n ")]
 
-        # Currently just used to strip html entities from all content.
         self.common_rgx = [
+            # Strip any remaining HTML
+            (re.compile("<.*?>"), ""),
+
+            # Replace any HTML entities
             (re.compile("&(\w{1,8});"), utility.getentity),
             (re.compile("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"), utility.getchar)]
    
