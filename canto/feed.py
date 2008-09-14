@@ -34,7 +34,8 @@ class Feed(tag.Tag):
     
     def lock(self):
         try:
-            os.open(self.lpath, os.O_CREAT|os.O_EXCL)
+            f = os.open(self.lpath, os.O_CREAT|os.O_EXCL)
+            os.close(f)
         except OSError:
             return 0
         return 1

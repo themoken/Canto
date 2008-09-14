@@ -123,6 +123,7 @@ def main():
             else:
                 log_func("Failed once to get lock for %s." % handle)
                 continue
+        os.close(lock)
 
         if os.path.exists(fpath):
             if os.path.isfile(fpath):
