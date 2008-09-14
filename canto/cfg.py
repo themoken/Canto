@@ -359,7 +359,9 @@ class Cfg:
             try :
                 for f in self.feeds:
                     fsock.write(u"add \"%s\" \"%s\" \"%d\" \"%d\" \"%d\"\n" \
-                            % (f.tag, f.URL, f.rate, f.keep, f.title_key))
+                            % (f.tag.decode("UTF-8"), 
+                               f.URL.decode("UTF-8"),
+                               f.rate, f.keep, f.title_key))
             finally :
                 fsock.close()
         except IOError:
