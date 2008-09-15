@@ -9,16 +9,16 @@
 
 import interface_draw
 
-class Slashdot_renderer(interface_draw.Renderer):
+class slashdot_renderer(interface_draw.Renderer):
     def reader_head(self, story):
         title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
         return [("%1%B" + title, " ", " "),\
                 ("%bfrom the " + story["slash_department"] +\
                 " department%B", " ", " "),("┌","─","┐%C")]
 
-class Filter_unread():
+class show_unread():
     def __init__(self):
-        self.name = "Filter read."
+        self.name = "Show unread."
 
     def __call__(self, tag, item):
         return not item.wasread()

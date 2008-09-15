@@ -179,6 +179,27 @@ class Gui :
             return 1
         return 0
 
+    # This decorator lets the bind just change sel_idx and
+    # have self.sel set automatically and the story's state
+    # synced.
+
+    def change_selected(fn):
+        def dec(self, *args):
+            if self.sel_idx >= 0:
+                if self.cfg.unselect_hook:
+                    self.cfg.unselect_hook(self.list[self.sel.tag_idx],
+                            self.sel)
+                self.sel.unselect()
+            r = fn(self, *args)
+            if self.sel_idx >= 0:
+                self.sel = self.map[self.sel_idx]
+                self.sel.select()
+                if self.cfg.select_hook:
+                    self.cfg.select_hook(self.list[self.sel.tag_idx], self.sel)
+            return r
+        return dec
+
+    @change_selected
     def alarm(self, listobj):
         # Clear all of the tags and repopulate with the new listobj.
         # At this point, self.sel and self.sel_idx may be invalid
@@ -206,8 +227,6 @@ class Gui :
             if self.sel:
                 if self.sel in self.map:
                     self.sel_idx = self.map.index(self.sel)
-                    self.sel = self.map[self.sel_idx]
-                    self.sel.select()
                 else:
                     self.__select_topoftag(self.sel.tag_idx)
             else:
@@ -218,8 +237,7 @@ class Gui :
             self.message = message.Message(self.cfg, "No Items.")
             self.sel = None
 
-        # Redraw with new self.map
-        self.draw_elements()
+        return 1
 
     # Use the new_hook on any "new" items.
     # The new attribute is never accessible from the
@@ -254,20 +272,6 @@ class Gui :
                 if not r:
                     self.draw_elements()
                 return r
-
-    # This decorator lets the bind just change sel_idx and
-    # have self.sel set automatically and the story's state
-    # synced.
-
-    def change_selected(fn):
-        def dec(self, *args):
-            if self.sel:
-                self.sel.unselect()
-            r = fn(self, *args)
-            self.sel = self.map[self.sel_idx]
-            self.sel.select()
-            return r
-        return dec
 
     @change_selected
     def __select_topoftag(self, f=0):

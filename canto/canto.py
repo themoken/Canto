@@ -300,7 +300,8 @@ class Main():
         
         # Notify all gui objects of (potentially) new items.
         for handler in self.key_handlers:
-            handler.alarm(self.stories)
+            if handler.alarm(self.stories):
+                handler.draw_elements()
 
         # Setup the signal again.
         signal.alarm(60)

@@ -21,7 +21,7 @@ import interface_draw
 import traceback
 import time
 import cPickle
-
+import extra
 class ConfigError(Exception):
     def __str__(self):
         return repr(self.value)
@@ -96,6 +96,8 @@ class Cfg:
 
         self.resize_hook = None
         self.new_hook = None
+        self.select_hook = None
+        self.unselect_hook = None
 
         self.item_filters = [None]
         self.cur_item_filter = 0
@@ -224,9 +226,9 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["resize_hook", "new_hook", "item_filters",\
-                "cur_item_filter", "browser", "text_browser", "render",\
-                "columns"]:
+        for attr in ["resize_hook", "new_hook", "select_hook", \
+                "unselect_hook", "item_filters", "cur_item_filter", "browser",\
+                "text_browser", "render", "columns"]:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
 
@@ -253,13 +255,11 @@ class Cfg:
     def next_filter(self):
         if self.cur_item_filter < len(self.item_filters) - 1:
             self.cur_item_filter += 1
-            self.item_filter = self.item_filters[self.cur_item_filter]
             return 1
         return 0
 
     def prev_filter(self):
         if self.cur_item_filter > 0:
             self.cur_item_filter -= 1
-            self.item_filter = self.item_filters[self.cur_item_filter]
             return 1
         return 0
