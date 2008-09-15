@@ -328,6 +328,7 @@ class Main():
 
         if self.cfg.resize_hook:
             self.cfg.resize_hook(self.cfg)
+        self.cfg.columns = max(self.cfg.columns, 1)
 
         for g in self.key_handlers :
             g.refresh()

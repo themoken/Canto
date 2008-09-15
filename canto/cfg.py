@@ -258,7 +258,6 @@ class Cfg:
     def next_filter(self):
         if self.cur_item_filter < len(self.item_filters) - 1:
             self.cur_item_filter += 1
->>>>>>> experimental:canto/cfg.py
             return 1
         return 0
 
