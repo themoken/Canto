@@ -24,7 +24,7 @@ def log(path, str, verbose, mode="a"):
             f.write(str.decode("UTF-8") + "\n")
         finally:
             f.close()
-    except IOError:
+    except: # These clearly shouldn't be fatal...
         pass
 
 def print_usage():
@@ -38,7 +38,7 @@ def print_usage():
     print "--log     -L [path] Set log file (~/.canto/slog)"
 
 def main():
-    MAJOR,MINOR,REV = (0,5,0)
+    MAJOR,MINOR,REV = VERSION_TUPLE
     
     home = os.getenv("HOME")
     conf = home + "/.canto/fconf"
@@ -74,13 +74,26 @@ def main():
         elif opt in ["-f", "--force"]:
             force = 1
     
-    log(log_file, "Canto-fetch v %d.%d.%d\n" % (MAJOR,MINOR,REV), 0, "w")
-    log(log_file, "Started execution: %s\n" % 
+    log(log_file, "Canto-fetch v %d.%d.%d" % (MAJOR,MINOR,REV), 0, "w")
+    log(log_file, "Started execution: %s" % 
             time.asctime(time.localtime()),0, "a")
     log_func = lambda x : log(log_file, x, verbose, "a")
-  
-    f = open(conf, "r")
-    feeds = cPickle.load(f)
+
+    try:
+        f = open(conf, "r")
+    except:
+        log_func("Couldn't open conf: %s" % conf)
+        log_func("BT: %s" % sys.exc_info())
+        sys.exit(-1)
+
+    try:
+        feeds = cPickle.load(f)
+    except:
+        log_func("Unable to unpickle conf. Need to run `canto -g`?")
+        log_func("BT: %s" % sys.exc_info())
+        f.close()
+        sys.exit(-1)
+
     f.close()
 
     emptyfeed = {"canto_state":[], "entries":[], "canto_update":0, 
@@ -132,7 +145,8 @@ def main():
                     curfeed = cPickle.load(f)
                 except:
                     log_func("cPickle load exception on %s" % fpath)
-                    raise
+                    os.unlink(lpath)
+                    continue
                 f.close()
             else:
                 log_func("%s is not normal file, old format?" % fpath)
