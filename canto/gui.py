@@ -396,6 +396,11 @@ class Gui :
         else:
             self.sel.mark()
 
+    def all_unmarked(self):
+        for item in self.map:
+            if item.marked():
+                item.unmark()
+
     def toggle_collapse_tag(self):
         self.list[self.sel.feed_idx].collapsed =\
                 not self.list[self.sel.feed_idx].collapsed

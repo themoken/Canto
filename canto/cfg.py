@@ -58,6 +58,7 @@ class Cfg:
                          "C" : "set_collapse_all",
                          "V" : "unset_collapse_all",
                          "m" : "toggle_mark",
+                         "M" : "all_unmarked",
                          "r" : "tag_read",
                          "R" : "all_read",
                          "u" : "tag_unread",
@@ -98,7 +99,6 @@ class Cfg:
 
         self.item_filters = [None]
         self.cur_item_filter = 0
-        self.item_filter = None
 
         try :
             os.stat(self.path)
@@ -212,7 +212,6 @@ class Cfg:
 
         if self.cur_item_filter >= len(self.item_filters):
             self.cur_item_filter = 0
-        self.item_filter = self.item_filters[0]
 
     def gen_serverconf(self):
         l = []
