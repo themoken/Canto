@@ -120,9 +120,9 @@ class Gui :
                 if not feed.collapsed or item.idx == 0:
                     item.lines = item.print_item(feed, 0, self)
                     if item.lines:
-                        # item.feed_idx is the story's only reference
+                        # item.tag_idx is the story's only reference
                         # to its current Tag()
-                        item.feed_idx = i
+                        item.tag_idx = i
                         item.row = row
                         row += item.lines
                         self.map.append(item)
@@ -149,7 +149,7 @@ class Gui :
                     # If row is offscreen down
                     if item.row > self.lines + self.offset:
                         break
-                    item.print_item(self.list[item.feed_idx], row, self)
+                    item.print_item(self.list[item.tag_idx], row, self)
                 row += item.lines
         else:
             row = -1
@@ -209,7 +209,7 @@ class Gui :
                     self.sel = self.map[self.sel_idx]
                     self.sel.select()
                 else:
-                    self.__select_topoftag(self.sel.feed_idx)
+                    self.__select_topoftag(self.sel.tag_idx)
             else:
                 self.__select_topoftag(0)
 
@@ -289,16 +289,16 @@ class Gui :
             self.sel_idx -= 1
 
     def prev_tag(self) :
-        curtag = self.sel.feed_idx
+        curtag = self.sel.tag_idx
         while not self.sel_idx == 0 :
-            if curtag != self.sel.feed_idx and self.sel.idx == 0:
+            if curtag != self.sel.tag_idx and self.sel.idx == 0:
                 break
             self.prev_item()
 
     def next_tag(self) :
-        curtag = self.sel.feed_idx
+        curtag = self.sel.tag_idx
         while not self.sel_idx == self.items - 1:
-            if curtag != self.sel.feed_idx:
+            if curtag != self.sel.tag_idx:
                 break
             self.next_item()
 
@@ -338,13 +338,13 @@ class Gui :
         self.__prev_attr("wasread", 0)
 
     def just_read(self):
-        self.list[self.sel.feed_idx].set_read(self.sel.idx)
+        self.list[self.sel.tag_idx].set_read(self.sel.idx)
 
     def just_unread(self):
-        self.list[self.sel.feed_idx].set_unread(self.sel.idx)
+        self.list[self.sel.tag_idx].set_unread(self.sel.idx)
 
     def goto(self) :        
-        self.list[self.sel.feed_idx].set_read(self.sel.idx)
+        self.list[self.sel.tag_idx].set_read(self.sel.idx)
         self.draw_elements()
         utility.goto(self.sel["link"], self.cfg)
 
@@ -353,7 +353,7 @@ class Gui :
         return REDRAW_ALL
 
     def reader(self) :
-        self.list[self.sel.feed_idx].set_read(self.sel.idx)
+        self.list[self.sel.tag_idx].set_read(self.sel.idx)
         reader.Reader(self.cfg, self.sel, self.register, self.deregister) 
         return REDRAW_ALL
 
@@ -403,17 +403,17 @@ class Gui :
                 item.unmark()
 
     def toggle_collapse_tag(self):
-        self.list[self.sel.feed_idx].collapsed =\
-                not self.list[self.sel.feed_idx].collapsed
+        self.list[self.sel.tag_idx].collapsed =\
+                not self.list[self.sel.tag_idx].collapsed
         self.sel.unselect()
         self.__map_items()
-        self.__select_topoftag(self.sel.feed_idx)
+        self.__select_topoftag(self.sel.tag_idx)
 
     def __collapse_all(self, c):
         for t in self.list:
             t.collapsed = c
         self.__map_items()
-        self.__select_topoftag(self.sel.feed_idx)
+        self.__select_topoftag(self.sel.tag_idx)
 
     def set_collapse_all(self):
         self.__collapse_all(1)
@@ -427,14 +427,14 @@ class Gui :
         return ALARM
 
     def tag_read(self):
-        self.list[self.sel.feed_idx].all_read()
+        self.list[self.sel.tag_idx].all_read()
 
     def all_read(self):
         for t in self.list:
             t.all_read()
 
     def tag_unread(self):
-        self.list[self.sel.feed_idx].all_unread()
+        self.list[self.sel.tag_idx].all_unread()
 
     def all_unread(self):
         for t in self.list :

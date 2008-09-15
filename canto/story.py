@@ -13,21 +13,24 @@ import struct
 import re
 import codecs
 
+# Story() controls a single story and is always contained in a feed().
+# Like Feed(), it contains a self.ufp variable that holds a verbatim copy of
+# the data returned by the UFP. The class then mostly serves as a soft wrapper
+# around that data.
+
+# Data that is persistent (everything except being selected) is appended to
+# the canto_state key in self.ufp and is written to disk by the Feed() object
+# automatically.
+
 class Story():
     def __init__(self, ufp, feed, renderer):
-        self.feed_idx = 0
+        self.tag_idx = 0
         self.idx = 0
         self.last = 0
 
         self.row = 0
         self.lines = 0
         
-        self.prev_feed = None
-        self.next_feed = None
-
-        self.next = None
-        self.prev = None
-
         self.ufp = ufp
         self.feed = feed
         self.sel = 0
