@@ -13,68 +13,51 @@ import struct
 import re
 import codecs
 
-class Story(dict):
-    """Story() handles a single story. It parses the story
-    file into a dictionary, modifies that story file to
-    reflect read/unread status and performs the printing
-    for a single story."""
+# Story() controls a single story and is always contained in a feed().
+# Like Feed(), it contains a self.ufp variable that holds a verbatim copy of
+# the data returned by the UFP. The class then mostly serves as a soft wrapper
+# around that data.
 
-    def __init__(self, story_path):
-        dict.__init__(self)
-        self["name"] = story_path
+# Data that is persistent (everything except being selected) is appended to
+# the canto_state key in self.ufp and is written to disk by the Feed() object
+# automatically.
+
+class Story():
+    def __init__(self, ufp, feed, renderer):
+        self.tag_idx = 0
         self.idx = 0
         self.last = 0
 
-    def __parse(self, item):
-        try:
-            fsock = codecs.open(item, "r", "UTF-8", "ignore")
-            try:
-                data = fsock.read().split("\00")[:-1]
-            finally:
-                fsock.close()
-
-            self["tags"] = data.pop().split(',')
-            for tag in ["descr", "link", "title"]:
-                self[tag] = utility.stripchars(data.pop()).encode("UTF-8")
-
-        except IOError:
-            pass
-
-    def __update(self):
-        try:
-            fsock = open(self["name"], "r+")
-            try:
-                fsock.seek(fsock.read().rfind("\00", 0, -1) + 1)
-                fsock.write(','.join(filter(lambda x : x not in ["selected", "marked"], self["tags"])) + "\00")
-                fsock.truncate()
-            finally:
-                fsock.close()
-        except IOError:
-            pass
-
-    def __setitem__(self, key, item):
-        if key == "name" and item:
-            self.__parse(item)
-        dict.__setitem__(self, key, item)
+        self.row = 0
+        self.lines = 0
+        
+        self.ufp = ufp
+        self.feed = feed
+        self.sel = 0
+        self.renderer = renderer
 
     def __eq__(self, other):
-        if self["title"] != other["title"]:
-            return 0
-        if self["link"] != other["link"]:
-            return 0
-        if self["descr"] != other["descr"]:
+        if self.ufp["id"] != other.ufp["id"]:
             return 0
         return 1
 
+    def __getitem__(self, key):
+        if self.ufp.has_key(key):
+            return self.ufp[key]
+        else:
+            return ""
+
+    def has_key(self, key):
+        return self.ufp.has_key(key)
+
     def __tagwrap(self, tag, i):
         if i == 0:
-            return tag in self["tags"]
-        elif i == 1 and not tag in self["tags"]:
-            self["tags"].append(tag)
-        elif i == -1 and tag in self["tags"]:
-            self["tags"].remove(tag)
-        if tag not in ["marked", "selected"]:
-            self.__update()
+            return tag in self.ufp["canto_state"]
+        elif i == 1 and not tag in self.ufp["canto_state"]:
+            self.ufp["canto_state"].append(tag)
+        elif i == -1 and tag in self.ufp["canto_state"]:
+            self.ufp["canto_state"].remove(tag)
+        self.feed.has_changed()
 
     def wasread(self):
         return self.__tagwrap("read", 0)
@@ -94,14 +77,24 @@ class Story(dict):
     def unmark(self):
         self.__tagwrap("marked", -1)
 
+    def isnew(self):
+        return self.__tagwrap("new", 0)
+
+    def new(self):
+        self.__tagwrap("new", 1)
+
+    def old(self):
+        self.__tagwrap("new", -1)
+
     def selected(self):
-        return self.__tagwrap("selected", 0)
+        return self.sel
 
     def select(self):
-        self.__tagwrap("selected", 1)
+        self.sel = 1
 
     def unselect(self):
-        self.__tagwrap("selected", -1)
+        self.sel = 0
 
     def print_item(self, tag, row, i):
-        return i.cfg.render.story(tag, self, row, i.height, i.width / i.cfg.columns, i.window_list)
+        return self.renderer.story(tag, self, row, \
+                i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)

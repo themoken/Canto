@@ -9,7 +9,6 @@ class Renderer :
 
         self.reader_rgx = [
             # Strip out newlines for formatting.
-            (re.compile("\\\n"), " "),
             (re.compile("<img.*?>"), "[image]"),
             (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
 
@@ -25,17 +24,17 @@ class Renderer :
             (re.compile("<li.*?>"), "• "),
             (re.compile("</li.*?>"), "\n"),
 
-            # Strip out any remaining unescaped HTML
-            (re.compile("<.*?>"), ""),
-
             # Consolidate more than two linebreaks.
-            (re.compile("(\\\n|\s){3,}"), "\n\n"),
+            (re.compile("(\\\n){3,}"), "\n\n"),
 
             # Add spaces for splitting.
             (re.compile("\\\n"), "\n ")]
 
-        # Currently just used to strip html entities from all content.
         self.common_rgx = [
+            # Strip any remaining HTML
+            (re.compile("<.*?>"), ""),
+
+            # Replace any HTML entities
             (re.compile("&(\w{1,8});"), utility.getentity),
             (re.compile("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"), utility.getchar)]
    
@@ -77,7 +76,7 @@ class Renderer :
         return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
     def reader_head(self, story):
-        title = self.__do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
         return [("%1%B" + title, " ", " "),("┌","─","┐%C")]
 
     def reader_foot(self, story):
@@ -149,22 +148,23 @@ class Renderer :
 
         return row + line
 
-    def __do_regex(self, target, l):
+    def do_regex(self, target, l):
         s = target
         for rlist in l:
             for rgx,rep in rlist:
                 s = rgx.sub(rep,s)
-        return s.lstrip()
+        return s
     
     def story(self, tag, story, row, height, width, window_list):
-        title = self.__do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
 
         if story.idx == 0:
             row = self.simple_out(self.tag_head(tag),\
                 row, height, width, window_list)
 
         if not tag.collapsed:
-            row = self.out([[title, (self.firsts(story), self.mids(story), self.ends(story))]],
+            row = self.out([[title, (self.firsts(story), self.mids(story), \
+                    self.ends(story))]],
                     row, height, width, window_list)
             
             if story.last:
@@ -173,10 +173,20 @@ class Renderer :
     
         return row
 
-    def reader(self, story, width, links, show_links, window):
-        s = self.__do_regex(story["descr"], [self.reader_rgx, self.common_rgx])
+    def message(self, message, width, window):
+        row = self.simple_out([("%B┌","─","┐")], 0, -1, width, [window])
+        row = self.out([[message, [("%B│%b%1 ", " ", " %1%B│%b")]*3]], \
+                row, -1, width, [window])
+        row = self.simple_out([("└","─","┘%C")], row, -1, width, [window])
+        return row
 
-        row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
+    def reader(self, story, width, links, show_links, window):
+        if story.has_key("content"):
+            s = story["content"][0]["value"]
+        else:
+            s = story["description"]
+
+        s = self.do_regex(s, [self.reader_rgx, self.common_rgx])
 
         l = s.split("\n")
         if show_links:
@@ -184,12 +194,15 @@ class Renderer :
             for idx,link in enumerate(links):
                 l.append(self.reader_link(idx, link))
 
-        row = self.out([[x, (self.rfirsts(story), self.rmids(story), self.rends(story))] for x in l], row, -1, width, [window])
+        row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
+        row = self.out([[x, (self.rfirsts(story), self.rmids(story),
+            self.rends(story))] for x in l], row, -1, width, [window])
         row = self.simple_out(self.reader_foot(story), row, -1, width, [window])
         return row
 
     def box(self, caption, width, window):
-        row = self.simple_out([("%B┌" + caption,"─","┐")], 0, -1, width, [window])
+        row = self.simple_out([("%B┌" + caption,"─","┐")], \
+                0, -1, width, [window])
         row = self.simple_out([("│"," ","│")], row, -1, width, [window])
         row = self.simple_out([("└","─","┘%C")], row, -1, width, [window])
         return row

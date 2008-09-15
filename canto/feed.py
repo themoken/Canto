@@ -15,57 +15,107 @@ import re
 import codecs
 import tag
 import os
+import cPickle
+
+# Feed() controls a single feed and implements all of the update functionality
+# on top of Tag() (which is the generic class for lists of items). Feed() is
+# also the lowest granule for custom renderers because the renderers are
+# most likely using information specific to the XML, rather than information
+# specific to an arbitrary list.
+
+# Each feed has a self.ufp item that contains a verbatim copy of the data
+# returned by the feedparser.
+
+# Each feed will also only write its status back to disk on tick() and only if
+# has_changed() has been called by one of the Story() items Feed() contains.
 
 class Feed(tag.Tag):
-    """Feed() encapsulates a feed directory and handles
-    all updates in that feed directory when ticked()"""
-
-    def __init__(self, cfg, dirpath, t, URL, rate, keep, title_key):
+    def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist):
         tag.Tag.__init__(self, t)
+        self.ufp = None
+
         self.path = dirpath
-        self.safetag = self.tag.replace("/", " ")
+        self.lpath = dirpath + ".lock"
         self.URL = URL
         self.cfg = cfg
-        self.title_key = title_key
-
-        if self.path :
-            self.update()
-
+        self.renderer = renderer
         self.rate = rate
         self.time = 1
         self.keep = keep
-        
+        self.changed = 0
+        self.filterlist = filterlist
+        self.filter_idx = 0
+    
+    # Simple traditional Unix file lock.
+    def lock(self):
+        try:
+            f = os.open(self.lpath, os.O_CREAT|os.O_EXCL)
+            os.close(f)
+        except:
+            return 0
+        return 1
+
+    def unlock(self):
+        os.unlink(self.lpath)
+
     def update(self):
-        """Invoke an update, reading all of the stories
-        from the disk."""
+        if not self.lock():
+            return 0
 
-        if not os.path.exists(self.path):
-            return
+        f = open(self.path, "rb")
+        self.ufp = cPickle.load(f)
+        f.close()
 
-        newlist = []
-        fsock = codecs.open(self.path + "/../" + self.safetag + ".idx", "r", "UTF-8", "ignore")
-        data = fsock.read().split("\00")[:-1]
-        fsock.close()
+        self.unlock()
+        self.__do_extend()
+        return 1
 
-        for item in data:
-            path = self.path + "/" + item.replace("/", " ")
-            s = story.Story(path)
-            newlist.append(s)
+    # __do_extend creates a Story() object out of each of the
+    # ["entries"] in the UFP item. It's important to note that
+    # .extend is overridden by Tag() which Feed() inherits from.
 
-        for i in range(len(newlist)):
-            r = self.search_stories(newlist[i], self.title_key)
-            if r != -1 :
-                newlist[i] = self[r]
-        
-        for i in range(len(self)):
-            self.pop()
-        self.extend(newlist)
+    def __do_extend(self):
+        self.clear()
+        self.extend(filter(self.filterlist[self.filter_idx],\
+                [story.Story(entry, self, self.renderer)\
+                for entry in self.ufp["entries"]]))
+
+    def next_filter(self):
+        if self.filter_idx < len(self.filterlist) - 1:
+            self.filter_idx += 1
+            self.__do_extend()
+            return 1
+        return 0
+
+    def prev_filter(self):
+        if self.filter_idx > 0:
+            self.filter_idx -= 1
+            self.__do_extend()
+            return 1
+        return 0
+
+    def has_changed(self):
+        self.changed = 1
+
+    def todisk(self):
+        if not self.lock():
+            return 0
+
+        f = open(self.path, "wb")
+        cPickle.dump(self.ufp, f)
+        f.close()
+        self.changed = 0
+
+        self.unlock()
+        return 1
 
     def tick(self):
+        if self.changed:
+            self.todisk()
+
         self.time -= 1
         if self.time <= 0:
-            self.update()
-            if len(self) == 0 :
+            if not self.update() or len(self) == 0 :
                 self.time = 1
             else:
                 self.time = self.rate

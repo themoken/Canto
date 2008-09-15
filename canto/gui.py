@@ -7,6 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import *
 import os
 import cfg
 import curses
@@ -17,247 +18,369 @@ import feed
 import reader
 import sys
 import tag
+import message
+
+# Gui() is the class encompassing the basic view of canto,
+# the list of feeds (tags) and items.
+
+# Gui()'s main data structure is self.list, which is a list
+# of arbitrary Tag() objects, each being a list of stories.
+# A corresponding list is self.map, which maps out the visible
+# stories in order of appearance.
+
+# Self.map may seem redundant, but it's mostly for convenience.
+# For example, if the items are globally sorted, then iterating
+# over self.list won't work. Or if you're testing membership
+# of a story in the self. list (see __select_topoftag).
+# Or if your iterating over all visible items (see draw_elements)
+
+# Self.list is still useful though, when dealing with things
+# like tag based sorting, or setting the attributes of a Tag()
+# since each story doesn't have access to its Tag() object
+# directly.
 
 class Gui :
-    def __init__(self, cfg, height, width, list, tags):
-        """Gui() handles all of the display and navigation logic.
-        It is based around the self.map list that contains information
-        about each printed line.
-        
-        Each function in Gui() can be tied to a key in Cfg()'s key_list
-        unless it's private. As such, all functions that shouldn't
-        be called by the user are prefixed with __. Key() and alarm()
-        are exceptions, being called by Cfg()."""
-
-        self.cfg = cfg
-        self.lines = 0
-        self.height = height
-        self.width = width
+    def __init__(self, cfg, list, tags, register, deregister):
+        self.safe_attrs = ["help","quit","next_filter","prev_filter"] 
         self.window_list = []
         self.map = []
-        self.selected = 0
+
+        self.cfg = cfg
+        self.register = register
+        self.deregister = deregister
+
+        self.lines = 0
+        self.sel = 0
         self.items = 0
+
         self.offset = 0
+        self.max_offset = 0
+
+        self.message = None
+
+        register(self)
+
+        # Populate the Tag() objects provided with
+        # stories from the list given.
 
         self.list = tags
         for t in self.list:
             t.extend(list)
+        self.__do_new_hook()
+
+        # Select the first visible feed.
 
         for t in self.list :
             if len(t):
+                self.sel = t[0]
+                self.sel_idx = 0
                 t[0].select()
                 break
         else:
-            raise IndexError
+            self.message = message.Message(self.cfg, "No Items.")
+            return
 
-        self.cfg.key_handlers.append(self)
-        self.refresh(self.height, self.width)
+        self.refresh()
 
-    def refresh(self, height=0, width=0):
-        """Recreate all windows and recalculate map to fit the
-        new size of the terminal."""
+    def refresh(self):
+        # Generate all of the columns
+        self.window_list = [curses.newwin(self.cfg.height + 1, \
+                    self.cfg.width / self.cfg.columns, 0, \
+                    (self.cfg.width / self.cfg.columns) * i) \
+                    for i in range(0, self.cfg.columns)]
 
-        if height and width :
-            self.height, self.width = height, width
-        self.window_list = [curses.newwin(self.height + 1, \
-                    self.width / self.cfg.columns, 0, \
-                    (self.width / self.cfg.columns) * i) for i in range(0, self.cfg.columns)]
-
+        # Setup the backgrounds.
         for window in self.window_list:
             window.bkgdset(curses.color_pair(1))
-        self.lines = self.cfg.columns * self.height
+
+        # Self.lines is the maximum number of visible lines on the screen
+        # at any given time. Used for scroll detection.
+
+        self.lines = self.cfg.columns * self.cfg.height
+
         self.__map_items()
+        self.draw_elements()
 
-    def __map_filter(self, i,j,row):
-        """Map filter takes self.list[i][j] and returns a tuple
-        for use in map. If the item shouldn't be visible, it returns
-        None to be filtered out in __map_items."""
+    def __map_items(self):
 
-        if self.list[i].collapsed and j != 0:
-            return None
-        f = self.list[i][j].print_item
-        l = f(self.list[i], row[0], self) - row[0]
-        if not l :
-            return None
-        r = (i,j,row[0],l,f)
-        row[0] += l
-        return r
-
-    def __map_items(self, d = 1):
-        """Refresh self.map, and (by default) redraw the items. If
-        necessary (d = 0), drawing can be foregone when mapping causes
-        a drastic change in item order (i.e. collapsing)"""
-
-        row = [0]
-        self.map = filter(lambda x: x != None, 
-                [self.__map_filter(i, j, row) for i in range(len(self.list)) for j in range(len(self.list[i]))])
-        self.items = len(self.map) - 1
-        if d:
-            self.draw_elements()
-
-    def key(self, t):
-        """A function dispatcher based on a key from key_list."""
-        if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
-            f = getattr(self, self.cfg.key_list[t], None)
-            if f and not f():
-                self.draw_elements()
-
-    def help(self):
-        """Help() will silent fork the canto man page."""
-        utility.silentfork("man canto", 1)
-        self.cfg.alarm()
-        self.cfg.refresh()
-
-    def alarm(self, listobj):
-        """Rebuild map, attempt to change self.selected to 
-        persist with the the same object."""
-
-        j,k,r,l,f = self.map[self.selected]
-        selected = self.list[j][k]
-
-        self.unselect()
-        for t in self.list:
-            t.clear()
-            t.extend(listobj)
-        self.__map_items(0) 
-
-        r = self.list[j].search_stories(selected)
-        if r != -1  :
-            self.selected = 0
-            while self.map[self.selected][0:2] != (j,r):
-                self.selected += 1
-            self.select()
-        else:
-            self.__select_topoftag(j)
-
-        self.cfg.key_handlers[-1].draw_elements()
-   
-    def __select_topoftag(self, j=0):
-        """Select the first item in a tag, useful if the 
-        selected story no longer exists, or if the tag
-        is collapsed."""
-
-        self.selected = 0
-        while self.map[self.selected][0] != j:
-            self.selected += 1
-        self.select()
-
-    def __check_scroll(self) :
-        """Change offset to keep cursor visible."""
-        i,j,r,l,f = self.map[self.selected]
+        # This for loop populates self.map with all stories that
+        #   A - are first in a collapsed feed or not in one at all.
+        #   B - that actually manage to print something to the screen.
         
-        if r < self.offset :
-            self.offset = r
-            return 1
+        # Because of B, you can perform filtering in a Renderer().
 
-        if r + l > self.lines + self.offset :
-            self.offset = r + l - self.lines
-            return 1
-        return 0
+        # We keep track of the virtual row to keep offsets in line.
+        # It doesn't actually map to the row it's printed to on the
+        # screen.
+
+        self.map = []
+        row = 0
+        for i, feed in enumerate(self.list):
+            for item in feed:
+                if not feed.collapsed or item.idx == 0:
+                    item.lines = item.print_item(feed, 0, self)
+                    if item.lines:
+                        # item.tag_idx is the story's only reference
+                        # to its current Tag()
+                        item.tag_idx = i
+                        item.row = row
+                        row += item.lines
+                        self.map.append(item)
+        
+        self.items = len(self.map)
+
+        # Set max_offset, this is how we know not to recenter the
+        # screen when it would leave unused space at the end.
+        if self.items:
+            self.max_offset = self.map[-1].row + \
+                    self.map[-1].lines - self.lines
 
     def draw_elements(self):
-        """Actually print to the ncurses screen each of
-        the visible items, then provoke a screen update."""
+        # Print all stories in self.map
+        # Row increments always, because the drawing logic automatically
+        # converts a row into a row in the proper window.
 
-        self.__check_scroll()
-        row = -1 * self.offset
-        for i,j,r,l,f in self.map :
-            if r + l > self.offset :
-                if r > self.lines + self.offset :
-                    break
-                f(self.list[i], row, self)
-            row += l
+        if self.items > 0:
+            self.__check_scroll()
+            row = -1 * self.offset
+            for item in self.map:
+                # If row is not offscreen up
+                if item.row + item.lines > self.offset:
+                    # If row is offscreen down
+                    if item.row > self.lines + self.offset:
+                        break
+                    item.print_item(self.list[item.tag_idx], row, self)
+                row += item.lines
+        else:
+            row = -1
         
+        # Actually perform curses screen update.
         for i in range(len(self.window_list)) :
-            if i * self.height > row:
+            if i * self.cfg.height > row:
                 self.window_list[i].clear()
             else:
                 self.window_list[i].clrtobot()
             self.window_list[i].noutrefresh()
         curses.doupdate()
 
-    def __change_item(self, val):
-        self.unselect()
-        self.selected += val
-        self.select()
+        # If we've got a sub-window message open, refresh that.
+        if self.message:
+            self.message.refresh()
 
+    def __check_scroll(self) :
+        # If our current item is offscreen up, ret 1
+        if self.sel.row < self.offset :
+            self.offset = self.sel.row
+            return 1
+
+        # If our current item is offscreen down, ret 1
+        if self.sel.row + self.sel.lines > self.lines + self.offset :
+            self.offset = self.sel.row + self.sel.lines - self.lines
+            return 1
+        return 0
+
+    # This decorator lets the bind just change sel_idx and
+    # have self.sel set automatically and the story's state
+    # synced.
+
+    def change_selected(fn):
+        def dec(self, *args):
+            if self.sel_idx >= 0:
+                if self.cfg.unselect_hook:
+                    self.cfg.unselect_hook(self.list[self.sel.tag_idx],
+                            self.sel)
+                self.sel.unselect()
+            r = fn(self, *args)
+            if self.sel_idx >= 0:
+                self.sel = self.map[self.sel_idx]
+                self.sel.select()
+                if self.cfg.select_hook:
+                    self.cfg.select_hook(self.list[self.sel.tag_idx], self.sel)
+            return r
+        return dec
+
+    @change_selected
+    def alarm(self, listobj):
+        # Clear all of the tags and repopulate with the new listobj.
+        # At this point, self.sel and self.sel_idx may be invalid
+
+        for t in self.list:
+            t.clear()
+            t.extend(listobj)
+
+        self.__do_new_hook()
+        self.__map_items() 
+
+        # sel_idx may no longer be valid, because the item
+        # list could shrink arbitrarily.
+        self.sel_idx = min(self.sel_idx, self.items - 1)
+        
+        if self.items > 0:
+            # If we have items, alarm() kills message.
+            if self.message:
+                self.message = None
+
+            # Attempt to update sel_idx, if the item is still
+            # visible (in self.map), otherwise just select
+            # the top of the current (or first previous feed).
+
+            if self.sel:
+                if self.sel in self.map:
+                    self.sel_idx = self.map.index(self.sel)
+                else:
+                    self.__select_topoftag(self.sel.tag_idx)
+            else:
+                self.__select_topoftag(0)
+
+        # If we had a selection, and now no items, fire up a message.
+        elif self.sel and not self.message:
+            self.message = message.Message(self.cfg, "No Items.")
+            self.sel = None
+
+        return 1
+
+    # Use the new_hook on any "new" items.
+    # The new attribute is never accessible from the
+    # renderer, and is only used for the hook.
+
+    def __do_new_hook(self):
+        if self.cfg.new_hook:
+            for t in self.list:
+                for item in t:
+                    if item.isnew():
+                        self.cfg.new_hook(t, item)
+                        item.old()
+
+    def key(self, t):
+        # Gui() has key t, and it's not None
+        if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
+            # Clear message, if we have items
+            if self.items:
+                if self.message:
+                    self.message = None
+
+            # Set a message and bail, if the bind isn't "safe"
+            elif self.cfg.key_list[t] not in self.safe_attrs:
+                if not self.message:
+                    self.message = message.Message(self.cfg, "No Items.")
+                return
+
+            # Dispatch and return value from keybind.
+            f = getattr(self, self.cfg.key_list[t], None)
+            if f:
+                r = f()
+                if not r:
+                    self.draw_elements()
+                return r
+
+    @change_selected
+    def __select_topoftag(self, f=0):
+        for feed in self.list[f:]:
+            for item in feed:
+                if item in self.map:
+                    self.sel = item
+                    self.sel_idx = self.map.index(self.sel)
+                    return
+
+    @change_selected
     def next_item(self):
-        if self.selected < self.items :
-            self.__change_item(1)
+        if self.sel_idx < self.items - 1:
+            self.sel_idx += 1
 
+    @change_selected
     def prev_item(self):
-        if self.selected > 0:
-            self.__change_item(-1)
+        if self.sel_idx > 0 :
+            self.sel_idx -= 1
 
     def prev_tag(self) :
-        self.unselect()
-        j,k,r,l,f = self.map[self.selected]
-
-        if j == 0:
-            self.selected = 0
-        else:
-            while 1:
-                self.selected -= 1
-                j2,k2,r2,l2,f2 = self.map[self.selected]
-                if j2 < j and k2 == 0 :
-                    break
-
-        self.select()
+        curtag = self.sel.tag_idx
+        while not self.sel_idx == 0 :
+            if curtag != self.sel.tag_idx and self.sel.idx == 0:
+                break
+            self.prev_item()
 
     def next_tag(self) :
-        j,k,r,l,f = self.map[self.selected]
+        curtag = self.sel.tag_idx
+        while not self.sel_idx == self.items - 1:
+            if curtag != self.sel.tag_idx:
+                break
+            self.next_item()
 
-        if j != len(self.list) - 1  :
-            self.unselect()
+        # Next_tag should try to keep the top of the tag at
+        # the top of the screen (as prev_tag does inherently)
+        # so that the user's eye isn't lost.
+        self.offset = min(self.sel.row, max(0, self.max_offset))
 
-            while 1:
-                self.selected += 1
-                j2,k2,r2,l2,f2 = self.map[self.selected]
-                if j2 > j :
-                    break
+    @change_selected
+    def __next_attr(self, attr, status) :
+        cursor = self.sel_idx + 1
+        while not cursor >= self.items - 1:
+            if getattr(self.map[cursor], attr)() == status:
+                self.sel_idx = cursor
+                break
+            cursor += 1
 
-            self.offset = min(r2,max(0,self.map[-1][2] + self.map[-1][3] - self.lines))
-            self.select()
+    @change_selected
+    def __prev_attr(self, attr, status) :
+        cursor = self.sel_idx - 1
+        while not cursor <= 0:
+            if getattr(self.map[cursor], attr)() == status:
+                self.sel_idx = cursor
+                break
+            cursor -= 1
+
+    def next_mark(self):
+        self.__next_attr("marked", 1)
+
+    def prev_mark(self):
+        self.__prev_attr("marked", 1)
+
+    def next_unread(self):
+        self.__next_attr("wasread", 0)
+
+    def prev_unread(self):
+        self.__prev_attr("wasread", 0)
 
     def just_read(self):
-        # Added for binding
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_read(k)
+        self.list[self.sel.tag_idx].set_read(self.sel.idx)
 
     def just_unread(self):
-        # Added for binding.
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_unread(k)
+        self.list[self.sel.tag_idx].set_unread(self.sel.idx)
 
-    def goto(self) :
-        """Simple item wrapper around Cfg().goto()."""
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_read(k)
+    def goto(self) :        
+        self.list[self.sel.tag_idx].set_read(self.sel.idx)
         self.draw_elements()
-        self.cfg.goto(self.list[j][k]["link"])
+        utility.goto(self.sel["link"], self.cfg)
+
+    def help(self):
+        utility.silentfork("man canto", 1)
+        return REDRAW_ALL
 
     def reader(self) :
-        """Instantiate the reader."""
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].set_read(k)
-        reader.Reader(self.list[j][k], self.height, self.width, self.cfg)
-        return 1
+        self.list[self.sel.tag_idx].set_read(self.sel.idx)
+        reader.Reader(self.cfg, self.sel, self.register, self.deregister) 
+        return REDRAW_ALL
+
+    def next_filter(self):
+        if self.cfg.next_filter():
+            return ALARM
+
+    def next_feed_filter(self):
+        if self.sel.feed.next_filter():
+            return ALARM
+
+    def prev_filter(self):
+        if self.cfg.prev_filter():
+            return ALARM
+
+    def prev_feed_filter(self):
+        if self.sel.feed.prev_filter():
+            return ALARM
 
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \
-                self.__do_inline_search, self.height, self.width, self.cfg.log)
-        return 1
-
-    def search(self):
-        search.Search(self.cfg, " Collect Search ", \
-                self.__do_search, self.height, self.width, self.cfg.log)
-        return 1
-
-    def __do_search(self, s) :
-        if s:
-            items = [y for x in self.list for y in x if s.match(y["title"])]
-            if items :
-                Gui(self.cfg, self.height, self.width, items, [tag.Tag("*")])
+                self.__do_inline_search, self.register, self.deregister)
+        return REDRAW_ALL
 
     def __do_inline_search(self, s) :
         if s:
@@ -272,70 +395,29 @@ class Gui :
         self.next_mark()
         self.draw_elements()
 
-    def __select_if_attr(self, newcursor, attr, status) :
-        j,k,r,l,f = self.map[newcursor]
-        f = getattr(self.list[j][k], attr, None)
-
-        if not f:
-            return
-
-        if f() == status:
-            self.selected = newcursor
-            self.select()
-            return 1
-        return 0
-
-    def __next_attr(self, attr, status) :
-        self.unselect()
-        newcursor = self.selected + 1
-        while newcursor < self.items :
-            if self.__select_if_attr(newcursor, attr, status):
-                return
-            newcursor += 1
-        self.select()
-
-    def __prev_attr(self, attr, status) :
-        self.unselect()
-        newcursor = self.selected - 1
-        while newcursor >= 0:
-            if self.__select_if_attr(newcursor, attr, status):
-                return
-            newcursor -= 1
-        self.select()
-
-    def next_mark(self):
-        self.__next_attr("marked", 1)
-
-    def prev_mark(self):
-        self.__prev_attr("marked", 1)
-
-    def next_unread(self):
-        self.__next_attr("wasread", 0)
-
-    def prev_unread(self):
-        self.__prev_attr("wasread", 0)
-
     def toggle_mark(self):
-        j,k,r,l,f = self.map[self.selected]
-        if self.list[j][k].marked() :
-            self.list[j][k].unmark()
+        if self.sel.marked() :
+            self.sel.unmark()
         else:
-            self.list[j][k].mark()
+            self.sel.mark()
+
+    def all_unmarked(self):
+        for item in self.map:
+            if item.marked():
+                item.unmark()
 
     def toggle_collapse_tag(self):
-        j,k,r,l,f = self.map[self.selected]
-        self.list[j].collapsed = not self.list[j].collapsed
-        self.unselect()
-        self.__map_items(0)
-        self.__select_topoftag(j)
+        self.list[self.sel.tag_idx].collapsed =\
+                not self.list[self.sel.tag_idx].collapsed
+        self.sel.unselect()
+        self.__map_items()
+        self.__select_topoftag(self.sel.tag_idx)
 
     def __collapse_all(self, c):
-        j,k,r,l,f = self.map[self.selected]
         for t in self.list:
             t.collapsed = c
-        self.unselect()
-        self.__map_items(0)
-        self.__select_topoftag(j)
+        self.__map_items()
+        self.__select_topoftag(self.sel.tag_idx)
 
     def set_collapse_all(self):
         self.__collapse_all(1)
@@ -344,38 +426,24 @@ class Gui :
         self.__collapse_all(0)
 
     def force_update(self):
-        self.cfg.log("Forcing update\n")
         for f in self.cfg.feeds :
             f.time = 1
-        self.cfg.alarm()
+        return ALARM
 
     def tag_read(self):
-        self.list[self.map[self.selected][0]].all_read()
+        self.list[self.sel.tag_idx].all_read()
 
     def all_read(self):
         for t in self.list:
             t.all_read()
 
     def tag_unread(self):
-        self.list[self.map[self.selected][0]].all_unread()
+        self.list[self.sel.tag_idx].all_unread()
 
     def all_unread(self):
         for t in self.list :
             t.all_unread()
 
-    def __change_select(self, val):
-        j,k,r,l,f = self.map[self.selected]
-        if val == 0 :
-            self.list[j][k].unselect()
-        else:
-            self.list[j][k].select()
-
-    def unselect(self) :
-        self.__change_select(0)
-
-    def select(self) :
-        self.__change_select(1)
-
     def quit(self):
-        self.cfg.pop_handler()
-        return 1
+        self.deregister()
+        return -1

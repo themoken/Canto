@@ -75,6 +75,10 @@ RIGHT / LEFT
 Set item unread or read (just_unread) (just_read)
 
 .TP
+[ / ]
+Cycle through defined filters (prev_filter) (next_filter)
+
+.TP
 h
 Display this man page. (help)
 
@@ -161,7 +165,11 @@ browser="elinks \\"%u\\""
 text_browser = 1
 
 keys["z"] = "goto"
-columns = 2
+
+def my_resize_hook(cfg):
+    cfg.columns = cfg.width / 70
+
+resize_hook = my_resize_hook
 
 # Set defaults
 default_rate(10)

@@ -5,81 +5,26 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import sys
-import re
-import os
-import feed
-import time
-import signal
-import errno
+import cPickle
 import codecs
 import getopt
-import stat
+import time
+import os
+import sys
+import feedparser
+import shutil
 
-class Cfg(list):
-    """A basic holster for the config and all of its options.
-       pass it a log function, a path to the canto-fetch conf and
-       a feed directory and it will populate itself with feeds."""
+def log(path, str, verbose, mode="a"):
+    if verbose:
+        print str
 
-    def __init__(self, log_func, conf, feed_dir, verbose, force):
-        list.__init__(self)
-        self.verbose = verbose
-        self.force = force
-        self.path = conf
-        self.log = log_func
-
-        self.__safe_mkdir(feed_dir)
-        self.feed_dir = feed_dir
-
-        self.handlers = [(re.compile("^add\s\"(.*?)\"\s\"(.*?)\"\s\"([0-9]+?)\"\s\"([0-9]+?)\"\s\"([0-9]+?)\""), self.__add_feed)]
-
-    def parse(self):
-        try:
-            fsock = codecs.open(self.path, "r", "UTF-8", "ignore")
-            try:
-                for line in fsock.readlines():
-                    for rgx, f in self.handlers:
-                        m = rgx.match(line)
-                        if m :
-                            f(m.groups())
-            finally:
-                fsock.close()
-        except:
-            raise
-
-    def __safe_mkdir(self, path):
-        if os.path.exists(path) and os.path.isdir(path):
-            return
-        os.mkdir(path)
-
-    def __add_feed(self, (handle, URL, rate, keep, title_key)):
-        self.log("Add Feed %s\n" % handle)
-        dir = self.feed_dir + handle.replace("/", " ")
-        self.__safe_mkdir(dir)
-        self.append(feed.Feed(dir, handle, URL, int(rate), int(keep),\
-                self.log, self.verbose, self.force, int(title_key)))
-
-    def cleanup(self):
-        handles = [x.path for x in self]
-        for i in os.listdir(self.feed_dir):
-            i = self.feed_dir + i
-            if stat.S_ISDIR(os.stat(i).st_mode):
-                if i not in handles:
-                    for path in os.listdir(i):
-                        os.unlink(i + '/' + path)
-                    os.rmdir(i)
-            elif i.endswith(".idx") and i[:-4] not in handles:
-                os.unlink(i)
-
-def log(path, str, mode="a"):
-    """Simple append log"""
     try :
         f = codecs.open(path, mode, "UTF-8", "ignore")
         try:
-            f.write(str)
+            f.write(str.decode("UTF-8") + "\n")
         finally:
             f.close()
-    except IOError:
+    except: # These clearly shouldn't be fatal...
         pass
 
 def print_usage():
@@ -96,9 +41,9 @@ def main():
     MAJOR,MINOR,REV = VERSION_TUPLE
     
     home = os.getenv("HOME")
-    conf = home + "/.canto/sconf"
+    conf = home + "/.canto/fconf"
     path = home + "/.canto/feeds/"
-    log_file = home + "/.canto/slog"
+    log_file = home + "/.canto/flog"
     verbose = 0
     force = 0
 
@@ -129,16 +74,150 @@ def main():
         elif opt in ["-f", "--force"]:
             force = 1
     
-    log(log_file, "Canto-fetch v %d.%d.%d\n" % (MAJOR,MINOR,REV), "w")
-    log(log_file, "Started execution: %s\n" % time.asctime(time.localtime()), "a")
-    log_func = lambda x : log(log_file, x, "a")
-    
-    cfg = Cfg(log_func, conf, path, verbose, force)
-    cfg.parse()
-    cfg.cleanup()
-    
-    for f in cfg:
-        f.tick()
+    log(log_file, "Canto-fetch v %d.%d.%d" % (MAJOR,MINOR,REV), 0, "w")
+    log(log_file, "Started execution: %s" % 
+            time.asctime(time.localtime()),0, "a")
+    log_func = lambda x : log(log_file, x, verbose, "a")
+
+    try:
+        f = open(conf, "r")
+    except:
+        log_func("Couldn't open conf: %s" % conf)
+        log_func("BT: %s" % sys.exc_info())
+        sys.exit(-1)
+
+    try:
+        feeds = cPickle.load(f)
+    except:
+        log_func("Unable to unpickle conf. Need to run `canto -g`?")
+        log_func("BT: %s" % sys.exc_info())
+        f.close()
+        sys.exit(-1)
+
+    f.close()
+
+    emptyfeed = {"canto_state":[], "entries":[], "canto_update":0, 
+                    "canto_version":(MAJOR,MINOR,REV)}
+
+    if not os.path.exists(path):
+        os.mkdir(path)
+    elif not os.path.isdir(path):
+        os.unlink(path)
+        os.mkdir(path)
+
+    for file in os.listdir(path):
+        file = path  + file
+        for handle in [f[0] for f in feeds]:
+            valid = path + handle.replace("/", " ")
+            if file == valid or file == valid + ".lock":
+                break
+        else:
+            log_func("Deleted extraneous file: %s" % file)
+            try:
+                os.unlink(file)
+            except:
+                pass
+
+    for handle,url,update,keep in feeds:
+        fpath = path + handle.replace("/", " ")
+        lpath = fpath + ".lock"
+
+        try:
+            lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
+        except OSError:
+            if time.time() - os.stat(lpath).st_ctime > 120:
+                os.unlink(lpath)
+                log_func("Deleted stale lock for %s." % handle)
+                try:
+                    lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
+                except:
+                    log_func("Failed twice to get lock for %s." % handle)
+                    continue
+            else:
+                log_func("Failed once to get lock for %s." % handle)
+                continue
+        os.close(lock)
+
+        if os.path.exists(fpath):
+            if os.path.isfile(fpath):
+                f = open(fpath, "rb")
+                try:
+                    curfeed = cPickle.load(f)
+                except:
+                    log_func("cPickle load exception on %s" % fpath)
+                    os.unlink(lpath)
+                    continue
+                f.close()
+            else:
+                log_func("%s is not normal file, old format?" % fpath)
+                log_func("  Deleting...")
+                if os.path.isdir(fpath):
+                    shutil.rmtree(fpath)
+                else:
+                    os.unlink(fpath)
+                curfeed = emptyfeed
+        else:
+            curfeed = emptyfeed
+
+        if time.time() - curfeed["canto_update"] < update * 60 and not force:
+            os.unlink(lpath)
+            continue
+        elif verbose:
+            print "Updating %s" % handle
+
+        newfeed = feedparser.parse(url)
+        if newfeed.has_key("bozo_exception"):
+            log_func("Recoverable error in feed %s: %s" % 
+                        (handle, newfeed["bozo_exception"]))
+            newfeed["bozo_exception"] = None
+
+        newfeed["canto_state"] = curfeed["canto_state"]
+        newfeed["canto_update"] = time.time()
+        for entry in newfeed["entries"]:
+            if entry.has_key("content"):
+                for c in entry["content"]:
+                    c["value"] = c["value"].encode("UTF-8")
+                    c["value"] = c["value"].replace("%", "\\%")
+
+            for key in entry.keys():
+                if type(entry[key]) in [unicode,str]:
+                    entry[key] = entry[key].encode("UTF-8")
+                    entry[key] = entry[key].replace("%", "\\%")
+
+        for entry in newfeed["entries"]:
+            if not entry.has_key("id"):
+                if entry.has_key("link"):
+                    entry["id"] = entry["link"]
+                elif entry.has_key("title"):
+                    entry["id"] = entry["title"]
+                else:
+                    entry["id"] = None
+
+            for centry in curfeed["entries"]:
+                if entry["id"] == centry["id"]:
+                    entry["canto_state"] = centry["canto_state"]
+                    curfeed["entries"].remove(centry)
+                    break
+
+            if not entry.has_key("canto_state"):
+                entry["canto_state"] = [ handle,"unread", "*", "new"]
+
         
-    log_func("Gracefully exiting Canto-fetch.\n")
+        if len(newfeed["entries"]) < keep:
+            newfeed["entries"] += \
+                curfeed["entries"][:keep - len(newfeed["entries"])]
+        else:
+            newfeed["entries"] = newfeed["entries"][:keep]
+
+        f = open(fpath, "wb")
+        try:
+            cPickle.dump(newfeed, f)
+        except:
+            log_func("cPickle dump exception on %s" % fpath)
+            raise
+        f.close()
+
+        os.unlink(lpath)
+    
+    log_func("Gracefully exiting Canto-fetch.")
     sys.exit(0)

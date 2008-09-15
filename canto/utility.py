@@ -12,9 +12,61 @@ import sys
 import os
 import signal 
 import htmlentitydefs
+import curses
+
+def convcolor(c):
+    colordir = {"default" : -1, 
+            "black" : 0, 
+            "white" : 7, 
+            "red" : 1, 
+            "green" : 2, 
+            "yellow" : 3, 
+            "blue" : 4, 
+            "magenta" : 5, 
+            "pink" : 5, 
+            "cyan" : 6}
+
+    if type(c) == int:
+        if 0 <= c <= 7:
+            return c
+        else:
+            return 0
+    elif type(c) == str:
+        if colordir.has_key(c):
+            return colordir[c]
+    return 0
+
+def convkey(s):
+    if len(s) == 1:
+        return (ord(s),0)
+    elif s.startswith("C-"):
+        k, m = convkey(s[2:])
+        
+        # & 0x1F indicates CTRL status.
+        return (k & 0x1F, m) 
+
+    elif s.startswith("M-"):
+        k, m = self.convkey(s[2:])
+        return (k, 1)
+
+    #For some reason, RETURN isn't in curses
+    elif s == "KEY_RETURN":
+        return (10, 0)
+    else:
+        return (getattr(curses, s), 0)
+
+def conv_key_list(dict):
+    ret = {}
+    for key in dict:
+        try:
+            newkey = convkey(key)
+        except AttributeError:
+            continue
+
+        ret[newkey] = dict[key]
+    return ret
 
 def silentfork(path, text):
-    """Fork/exec a path with args, ensure it's quiet."""
 
     pid = os.fork()
     if not pid :
@@ -37,15 +89,16 @@ def silentfork(path, text):
 
     return pid
 
+def goto(URL, cfg):
+    s = re.sub("%u", URL, cfg.browser)
+    silentfork(s, cfg.text_browser)
+
 def getlinks(string):
-    """Convert entities and escaped chars into unicode, grab links"""
     s = re.sub("\\\n", " ", string[:])
     links = re.findall("<a\s+href=\"(.*?)\".*?>(.*?)</\s*a\s*>", s)
     return links 
 
 def stripchars(string):
-    """Make strings safe for inclusion in a t_print 
-       statement."""
     string = string.replace("\\","\\\\")
     string = string.replace("%", "\\%")
     return string
