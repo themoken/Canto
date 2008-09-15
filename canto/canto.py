@@ -121,6 +121,9 @@ class Main():
         except cfg.ConfigError:
             sys.exit(-1)
 
+        # If self.cfg had to generate a config, make sure we
+        # update first.
+
         if self.cfg.no_conf:
             flags |= UPDATE_FIRST
 
