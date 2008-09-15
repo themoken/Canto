@@ -152,8 +152,13 @@ class Cfg:
         else:
             renderer = self.render
 
+        if kwargs.has_key("filter"):
+            filter = kwargs["filter"]
+        else:
+            filter = None
+
         return self.feeds.append(feed.Feed(self, self.feed_dir +\
-                tag.replace("/", " "), tag, URL, rate, keep, renderer))
+                tag.replace("/", " "), tag, URL, rate, keep, renderer, filter))
 
     def set_default_rate(self, rate):
         self.default_rate = rate
