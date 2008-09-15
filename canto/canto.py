@@ -121,6 +121,9 @@ class Main():
         except cfg.ConfigError:
             sys.exit(-1)
 
+        if self.cfg.no_conf:
+            flags |= UPDATE_FIRST
+
         # We've already generated the fetch config, bail
         if flags & ONLY_CONF:
             sys.exit(0)
@@ -139,7 +142,7 @@ class Main():
 
         if flags & UPDATE_FIRST:
             utility.silentfork("canto-fetch -Vf " +\
-               "-C \"" + serv_file + \
+               "-C \"" + fconf_file + \
                "\" -F \"" + feed_dir + \
                "\" -L \"" + conf_dir + "slog\"", 1)
             

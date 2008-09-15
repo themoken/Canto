@@ -102,16 +102,18 @@ class Cfg:
         self.item_filters = [None]
         self.cur_item_filter = 0
 
+        self.no_conf = 0
+
         # If we can't stat self.path, generate a default config
         # and toss a message about making your own.
 
         try :
             os.stat(self.path)
         except :
-            print "Unable to find config file. Generating and \
-                    using ~/.canto/conf.example"
-            print "You will keep getting this until you create your\
-                    own ~/.canto/conf"
+            print "Unable to find config file. Generating and "\
+                    "using ~/.canto/conf.example"
+            print "You will keep getting this until you create your "\
+                    "own ~/.canto/conf"
             print "\nRemember: it's 'h' for help.\n"
 
             newpath = os.getenv("HOME") + "/.canto/"
@@ -133,6 +135,7 @@ class Cfg:
                     "http://codezen.org/canto/feeds/latest")\n""")
             f.write("\n")
             f.close()
+            self.no_conf = 1
 
         self.feeds = []
         self.parse()
