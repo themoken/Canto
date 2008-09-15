@@ -18,7 +18,7 @@ import os
 import cPickle
 
 class Feed(tag.Tag):
-    def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filter):
+    def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist):
         tag.Tag.__init__(self, t)
         self.ufp = None
 
@@ -31,7 +31,8 @@ class Feed(tag.Tag):
         self.time = 1
         self.keep = keep
         self.changed = 0
-        self.filter = filter
+        self.filterlist = filterlist
+        self.filter_idx = 0
     
     def lock(self):
         try:
@@ -51,12 +52,28 @@ class Feed(tag.Tag):
         self.ufp = cPickle.load(f)
         f.close()
         self.unlock()
-
-        self.clear()
-        self.extend(filter(self.filter,\
-                [story.Story(entry, self.has_changed, self.renderer)\
-                for entry in self.ufp["entries"]]))
+        self.__do_extend()
         return 1
+
+    def __do_extend(self):
+        self.clear()
+        self.extend(filter(self.filterlist[self.filter_idx],\
+                [story.Story(entry, self, self.renderer)\
+                for entry in self.ufp["entries"]]))
+
+    def next_filter(self):
+        if self.filter_idx < len(self.filterlist) - 1:
+            self.filter_idx += 1
+            self.__do_extend()
+            return 1
+        return 0
+
+    def prev_filter(self):
+        if self.filter_idx > 0:
+            self.filter_idx -= 1
+            self.__do_extend()
+            return 1
+        return 0
 
     def has_changed(self):
         self.changed = 1

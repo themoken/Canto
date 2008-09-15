@@ -14,7 +14,7 @@ import re
 import codecs
 
 class Story():
-    def __init__(self, ufp, update, renderer):
+    def __init__(self, ufp, feed, renderer):
         self.feed_idx = 0
         self.idx = 0
         self.last = 0
@@ -29,7 +29,7 @@ class Story():
         self.prev = None
 
         self.ufp = ufp
-        self.update = update
+        self.feed = feed
         self.sel = 0
         self.renderer = renderer
 
@@ -54,7 +54,7 @@ class Story():
             self.ufp["canto_state"].append(tag)
         elif i == -1 and tag in self.ufp["canto_state"]:
             self.ufp["canto_state"].remove(tag)
-        self.update()
+        self.feed.has_changed()
 
     def wasread(self):
         return self.__tagwrap("read", 0)

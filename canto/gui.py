@@ -360,8 +360,16 @@ class Gui :
         if self.cfg.next_filter():
             return ALARM
 
+    def next_feed_filter(self):
+        if self.sel.feed.next_filter():
+            return ALARM
+
     def prev_filter(self):
         if self.cfg.prev_filter():
+            return ALARM
+
+    def prev_feed_filter(self):
+        if self.sel.feed.prev_filter():
             return ALARM
 
     def inline_search(self):

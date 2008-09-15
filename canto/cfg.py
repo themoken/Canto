@@ -43,6 +43,8 @@ class Cfg:
                          "KEY_PPAGE" : "prev_tag",
                          "[" : "prev_filter",
                          "]" : "next_filter",
+                         "{" : "prev_feed_filter",
+                         "}" : "next_feed_filter",
                          "l" : "next_tag",
                          "o" : "prev_tag",
                          "g" : "goto",
@@ -152,13 +154,14 @@ class Cfg:
         else:
             renderer = self.render
 
-        if kwargs.has_key("filter"):
-            filter = kwargs["filter"]
+        if kwargs.has_key("filterlist"):
+            filterlist = kwargs["filterlist"]
         else:
-            filter = None
+            filterlist = [None]
 
         return self.feeds.append(feed.Feed(self, self.feed_dir +\
-                tag.replace("/", " "), tag, URL, rate, keep, renderer, filter))
+                tag.replace("/", " "), tag, URL, rate, keep, renderer,
+                filterlist))
 
     def set_default_rate(self, rate):
         self.default_rate = rate
