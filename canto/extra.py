@@ -8,6 +8,7 @@
 #   published by the Free Software Foundation.
 
 import interface_draw
+import os
 
 class slashdot_renderer(interface_draw.Renderer):
     def reader_head(self, story):
@@ -22,3 +23,10 @@ class show_unread():
 
     def __call__(self, tag, item):
         return not item.wasread()
+
+def set_xterm_title(tag, item):
+    # Don't use print!
+    os.write(1, "\033]0; %s - %s\007" % (tag.tag, item["title"]))
+
+def clear_xterm_title(tag, item):
+    os.write(1, "\033]2;\007")
