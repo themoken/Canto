@@ -27,7 +27,7 @@ class ConfigError(Exception):
         return repr(self.value)
 
 class Cfg:
-    def __init__(self, conf, sconf, feed_dir):
+    def __init__(self, conf, fconf, feed_dir):
         self.browser = "firefox \"%u\""
         self.text_browser = 0
         self.render = interface_draw.Renderer()
@@ -87,7 +87,7 @@ class Cfg:
         self.default_title_key = 1
 
         self.path = conf
-        self.sconf = sconf
+        self.fconf = fconf
         self.feed_dir = feed_dir
 
         self.columns = 1
@@ -99,6 +99,9 @@ class Cfg:
 
         self.item_filters = [None]
         self.cur_item_filter = 0
+
+        # If we can't stat self.path, generate a default config
+        # and toss a message about making your own.
 
         try :
             os.stat(self.path)
@@ -132,12 +135,22 @@ class Cfg:
         self.feeds = []
         self.parse()
 
+        # Convert all of the C-M-blah (human readable) keys into
+        # key tuples used in the main loop.
+
         self.key_list = utility.conv_key_list(self.key_list)
         self.reader_key_list = utility.conv_key_list(self.reader_key_list)
 
-        self.gen_serverconf()
+        # Generate a new canto-fetch config, regardless of whether
+        # it's changed or not.
+    
+        self.gen_fetchconf()
 
-    def feedwrap(self, tag, URL, **kwargs):
+    # Addfeed is a wrapper that's called as the config is exec'd
+    # so that subsequent commands can reference it ASAP, and
+    # so that set defaults are applied at that point.
+
+    def addfeed(self, tag, URL, **kwargs):
 
         if kwargs.has_key("keep"):
             keep = kwargs["keep"]
@@ -174,7 +187,12 @@ class Cfg:
 
     def parse(self):
 
-        locals = {"addfeed":self.feedwrap,
+        locals = {"addfeed":self.addfeed,
+
+            # height and width are kept for legacy reasons
+            # and will always be 0 at config time. Configs
+            # should use resize_hook instead.
+
             "height" : self.height,
             "width" : self.width,
             "browser" : self.browser,
@@ -189,6 +207,11 @@ class Cfg:
             "columns" : self.columns,
             "colors" : self.colors}
 
+        # The entirety of the config is read in first (rather
+        # than using execfile) because the config could be in
+        # some strange encoding, and execfile would choke attempting
+        # to coerce some character into ASCII.
+
         data = codecs.open(self.path, "r").read()
 
         try :
@@ -198,7 +221,7 @@ class Cfg:
             traceback.print_exc()
             raise ConfigError
 
-        # execfile cannot modify basic type
+        # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
         for attr in ["resize_hook", "new_hook", "item_filters",\
@@ -207,21 +230,26 @@ class Cfg:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
 
+        # Ensure we have at least one column
         if not self.columns:
             self.columns = 1
 
+        # And that the user didn't set cur_item_filter invalidly.
         if self.cur_item_filter >= len(self.item_filters):
             self.cur_item_filter = 0
 
-    def gen_serverconf(self):
+    def gen_fetchconf(self):
         l = []
         for f in self.feeds:
             l.append((f.tag, f.URL, f.rate, f.keep))
 
-        fsock = codecs.open(self.sconf, "w", "UTF-8", "ignore")
+        # The fetchconf is just a list of tuples, each tuple
+        # describing one feed, cPickled.
+        fsock = codecs.open(self.fconf, "w", "UTF-8", "ignore")
         cPickle.dump(l, fsock)
         fsock.close()
 
+    # Key-binds for feed based filtering.
     def next_filter(self):
         if self.cur_item_filter < len(self.item_filters) - 1:
             self.cur_item_filter += 1

@@ -261,7 +261,8 @@ class Gui :
 
     def change_selected(fn):
         def dec(self, *args):
-            self.sel.unselect()
+            if self.sel:
+                self.sel.unselect()
             r = fn(self, *args)
             self.sel = self.map[self.sel_idx]
             self.sel.select()

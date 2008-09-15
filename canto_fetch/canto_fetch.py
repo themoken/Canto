@@ -21,7 +21,7 @@ def log(path, str, verbose, mode="a"):
     try :
         f = codecs.open(path, mode, "UTF-8", "ignore")
         try:
-            f.write(str + "\n")
+            f.write(str.decode("UTF-8") + "\n")
         finally:
             f.close()
     except IOError:
@@ -41,9 +41,9 @@ def main():
     MAJOR,MINOR,REV = (0,5,0)
     
     home = os.getenv("HOME")
-    conf = home + "/.canto/sconf"
+    conf = home + "/.canto/fconf"
     path = home + "/.canto/feeds/"
-    log_file = home + "/.canto/slog"
+    log_file = home + "/.canto/flog"
     verbose = 0
     force = 0
 

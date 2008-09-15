@@ -80,7 +80,7 @@ class Main():
 
         log_file = conf_dir + "log"
         conf_file = conf_dir + "conf"
-        serv_file = conf_dir + "sconf"
+        fconf_file = conf_dir + "fconf"
         feed_dir = conf_dir + "feeds/"
         flags = 0 
         
@@ -117,7 +117,7 @@ class Main():
         # regenerate the fetch config.
 
         try :
-            self.cfg = cfg.Cfg(conf_file, serv_file, feed_dir)
+            self.cfg = cfg.Cfg(conf_file, fconf_file, feed_dir)
         except cfg.ConfigError:
             sys.exit(-1)
 
