@@ -217,7 +217,7 @@ class Cfg:
         # some strange encoding, and execfile would choke attempting
         # to coerce some character into ASCII.
 
-        data = codecs.open(self.path, "r").read()
+        data = codecs.open(self.path, "r", "UTF-8", "ignore").read()
 
         try :
             exec(data, {}, locals)
