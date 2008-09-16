@@ -22,6 +22,8 @@ import traceback
 import time
 import cPickle
 import extra
+import chardet
+
 class ConfigError(Exception):
     def __str__(self):
         return repr(self.value)
@@ -217,7 +219,15 @@ class Cfg:
         # some strange encoding, and execfile would choke attempting
         # to coerce some character into ASCII.
 
-        data = codecs.open(self.path, "r", "UTF-8", "ignore").read()
+        try:
+            data = codecs.open(self.path, "r", "UTF-8").read()
+        except UnicodeDecodeError:
+            # If the Python built-in decoders can't figure it
+            # out, it might need some help from chardet.
+
+            data = codecs.open(self.path, "r").read()
+            enc = chardet.detect(data)["encoding"]
+            data = unicode(data, enc).encode("UTF-8")
 
         try :
             exec(data, {}, locals)
