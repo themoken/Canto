@@ -179,9 +179,14 @@ class Cfg:
         else:
             filterlist = [None]
 
-        return self.feeds.append(feed.Feed(self, self.feed_dir +\
-                tag.replace("/", " "), tag, URL, rate, keep, renderer,
-                filterlist))
+        # The tag is the only thing that has to be unique, so we ignore
+        # any duplicate feed names, or everything  will break.
+
+        if not tag in [f.tag for f in self.feeds]:
+            return self.feeds.append(feed.Feed(self, self.feed_dir +\
+                    tag.replace("/", " "), tag, URL, rate, keep, renderer,
+                    filterlist))
+        return -1
 
     def set_default_rate(self, rate):
         self.default_rate = rate
