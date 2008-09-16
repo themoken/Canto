@@ -35,7 +35,7 @@ def print_usage():
     print "--force   -f        Force update, even if timestamp is too recent."
     print "--conf    -C [path] Set configuration file. (~/.canto/sconf)"
     print "--fdir    -F [path] Set feed directory. (~/.canto/feeds/)"
-    print "--log     -L [path] Set log file (~/.canto/slog)"
+    print "--log     -L [path] Set log file (~/.canto/flog)"
 
 def main():
     MAJOR,MINOR,REV = VERSION_TUPLE

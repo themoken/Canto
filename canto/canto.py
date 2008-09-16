@@ -147,7 +147,7 @@ class Main():
             utility.silentfork("canto-fetch -Vf " +\
                "-C \"" + fconf_file + \
                "\" -F \"" + feed_dir + \
-               "\" -L \"" + conf_dir + "slog\"", 1)
+               "\" -L \"" + conf_dir + "flog\"", 1)
             
         # Force an update from disk
         for f in self.cfg.feeds :
