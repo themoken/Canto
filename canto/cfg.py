@@ -29,10 +29,11 @@ class ConfigError(Exception):
         return repr(self.value)
 
 class Cfg:
-    def __init__(self, conf, fconf, feed_dir):
+    def __init__(self, conf, log_file, feed_dir):
         self.browser = "firefox \"%u\""
         self.text_browser = 0
         self.render = interface_draw.Renderer()
+        self.log_file = log_file
 
         self.key_list = {"q" : "quit",
                          "KEY_DOWN" : "next_item",
@@ -89,7 +90,6 @@ class Cfg:
         self.default_title_key = 1
 
         self.path = conf
-        self.fconf = fconf
         self.feed_dir = feed_dir
 
         self.columns = 1
@@ -148,10 +148,15 @@ class Cfg:
         self.key_list = utility.conv_key_list(self.key_list)
         self.reader_key_list = utility.conv_key_list(self.reader_key_list)
 
-        # Generate a new canto-fetch config, regardless of whether
-        # it's changed or not.
-    
-        self.gen_fetchconf()
+    # Simple append log.
+
+    def log(self, message, mode="a"):
+        try:
+            f = open(self.log_file, mode)
+            f.write(message + "\n")
+            f.close()
+        except:
+            pass
 
     # Addfeed is a wrapper that's called as the config is exec'd
     # so that subsequent commands can reference it ASAP, and
@@ -257,17 +262,6 @@ class Cfg:
         # And that the user didn't set cur_item_filter invalidly.
         if self.cur_item_filter >= len(self.item_filters):
             self.cur_item_filter = 0
-
-    def gen_fetchconf(self):
-        l = []
-        for f in self.feeds:
-            l.append((f.tag, f.URL, f.rate, f.keep))
-
-        # The fetchconf is just a list of tuples, each tuple
-        # describing one feed, cPickled.
-        fsock = codecs.open(self.fconf, "w", "UTF-8", "ignore")
-        cPickle.dump(l, fsock)
-        fsock.close()
 
     # Key-binds for feed based filtering.
     def next_filter(self):

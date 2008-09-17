@@ -10,105 +10,36 @@ import codecs
 import getopt
 import time
 import os
-import sys
 import feedparser
 import shutil
 
-def log(path, str, verbose, mode="a"):
-    if verbose:
-        print str
 
-    try :
-        f = codecs.open(path, mode, "UTF-8", "ignore")
-        try:
-            f.write(str.decode("UTF-8") + "\n")
-        finally:
-            f.close()
-    except: # These clearly shouldn't be fatal...
-        pass
-
-def print_usage():
-    print "USAGE: canto-fetch [-hvfVCFL]"
-    print "--help    -h        Print this help."
-    print "--version -v        Print version info."
-    print "--verbose -V        Print status while updating."
-    print "--force   -f        Force update, even if timestamp is too recent."
-    print "--conf    -C [path] Set configuration file. (~/.canto/sconf)"
-    print "--fdir    -F [path] Set feed directory. (~/.canto/feeds/)"
-    print "--log     -L [path] Set log file (~/.canto/flog)"
-
-def main():
-    MAJOR,MINOR,REV = VERSION_TUPLE
-    
-    home = os.getenv("HOME")
-    conf = home + "/.canto/fconf"
-    path = home + "/.canto/feeds/"
-    log_file = home + "/.canto/flog"
-    verbose = 0
-    force = 0
-
-    try:
-        optlist, arglist = getopt.getopt(sys.argv[1:], 'hvfVC:F:L:',\
-                ["verbose","conf=","fdir=","log=", "help", "force"])
-    except getopt.GetoptError, e:
-        print "Error: %s" % e.msg
-        sys.exit(-1)
+def main(cfg, optlist, verbose=False, force=False):
 
     for opt, arg in optlist:
-        if opt in ["-v","--version"]:
-            print "Canto-fetch v %d.%d.%d" % (MAJOR,MINOR,REV)
-            sys.exit(0)
         if opt in ["-V","--verbose"]:
-            verbose = 1
-        elif opt in ["-h","--help"]:
-            print_usage()
-            sys.exit(0)
-        elif opt in ["-C", "--conf"]:
-            conf = arg
-        elif opt in ["-F", "--fdir"]:
-            path = arg
-            if path[-1] != '/':
-                path += '/'
-        elif opt in ["-L", "--log"]:
-            log_file = arg
-        elif opt in ["-f", "--force"]:
-            force = 1
-    
-    log(log_file, "Canto-fetch v %d.%d.%d" % (MAJOR,MINOR,REV), 0, "w")
-    log(log_file, "Started execution: %s" % 
-            time.asctime(time.localtime()),0, "a")
-    log_func = lambda x : log(log_file, x, verbose, "a")
+            verbose = True
+        elif opt in ["-f","--force"]:
+            force = True
 
-    try:
-        f = open(conf, "r")
-    except:
-        log_func("Couldn't open conf: %s" % conf)
-        log_func("BT: %s" % sys.exc_info())
-        sys.exit(-1)
-
-    try:
-        feeds = cPickle.load(f)
-    except:
-        log_func("Unable to unpickle conf. Need to run `canto -g`?")
-        log_func("BT: %s" % sys.exc_info())
-        f.close()
-        sys.exit(-1)
-
-    f.close()
+    def log_func(x):
+        if verbose:
+            print x
+        cfg.log(x)
 
     emptyfeed = {"canto_state":[], "entries":[], "canto_update":0, 
-                    "canto_version":(MAJOR,MINOR,REV)}
+                    "canto_version":VERSION_TUPLE}
 
-    if not os.path.exists(path):
-        os.mkdir(path)
-    elif not os.path.isdir(path):
-        os.unlink(path)
-        os.mkdir(path)
+    if not os.path.exists(cfg.feed_dir):
+        os.mkdir(cfg.feed_dir)
+    elif not os.path.isdir(cfg.feed_dir):
+        os.unlink(cfg.feed_dir)
+        os.mkdir(cfg.feed_dir)
 
-    for file in os.listdir(path):
-        file = path  + file
-        for handle in [f[0] for f in feeds]:
-            valid = path + handle.replace("/", " ")
+    for file in os.listdir(cfg.feed_dir):
+        file = cfg.feed_dir + file
+        for tag in [f.tag for f in cfg.feeds]:
+            valid = cfg.feed_dir + tag.replace("/", " ")
             if file == valid or file == valid + ".lock":
                 break
         else:
@@ -118,8 +49,8 @@ def main():
             except:
                 pass
 
-    for handle,url,update,keep in feeds:
-        fpath = path + handle.replace("/", " ")
+    for fd in cfg.feeds:
+        fpath = cfg.feed_dir + fd.tag.replace("/", " ")
         lpath = fpath + ".lock"
 
         try:
@@ -127,14 +58,14 @@ def main():
         except OSError:
             if time.time() - os.stat(lpath).st_ctime > 120:
                 os.unlink(lpath)
-                log_func("Deleted stale lock for %s." % handle)
+                log_func("Deleted stale lock for %s." % fd.tag)
                 try:
                     lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
                 except:
-                    log_func("Failed twice to get lock for %s." % handle)
+                    log_func("Failed twice to get lock for %s." % fd.tag)
                     continue
             else:
-                log_func("Failed once to get lock for %s." % handle)
+                log_func("Failed once to get lock for %s." % fd.tag)
                 continue
         os.close(lock)
 
@@ -159,16 +90,15 @@ def main():
         else:
             curfeed = emptyfeed
 
-        if time.time() - curfeed["canto_update"] < update * 60 and not force:
+        if time.time() - curfeed["canto_update"] < fd.rate * 60 and not force:
             os.unlink(lpath)
             continue
-        elif verbose:
-            print "Updating %s" % handle
+        log_func("Updating %s" % fd.tag)
 
-        newfeed = feedparser.parse(url)
+        newfeed = feedparser.parse(fd.URL)
         if newfeed.has_key("bozo_exception"):
             log_func("Recoverable error in feed %s: %s" % 
-                        (handle, newfeed["bozo_exception"]))
+                        (fd.tag, newfeed["bozo_exception"]))
             newfeed["bozo_exception"] = None
 
         newfeed["canto_state"] = curfeed["canto_state"]
@@ -200,14 +130,14 @@ def main():
                     break
 
             if not entry.has_key("canto_state"):
-                entry["canto_state"] = [ handle,"unread", "*", "new"]
+                entry["canto_state"] = [ fd.tag, "unread", "*", "new"]
 
         
-        if len(newfeed["entries"]) < keep:
+        if len(newfeed["entries"]) < fd.keep:
             newfeed["entries"] += \
-                curfeed["entries"][:keep - len(newfeed["entries"])]
+                curfeed["entries"][:fd.keep - len(newfeed["entries"])]
         else:
-            newfeed["entries"] = newfeed["entries"][:keep]
+            newfeed["entries"] = newfeed["entries"][:fd.keep]
 
         f = open(fpath, "wb")
         try:
@@ -220,4 +150,4 @@ def main():
         os.unlink(lpath)
     
     log_func("Gracefully exiting Canto-fetch.")
-    sys.exit(0)
+    return 0

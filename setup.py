@@ -5,7 +5,7 @@ from distutils.command.install_data import install_data
 import os
 
 version = ['0','5','0']
-man_date = "02 September 2008"
+man_date = "16 September 2008"
 
 class Canto_install_data(install_data):
     def run(self):
@@ -15,7 +15,7 @@ class Canto_install_data(install_data):
         libdir = install_cmd.install_lib
         mandir = install_cmd.install_data + "/share/man/man1/"
 
-        for f in ["/canto/canto.py","/canto_fetch/canto_fetch.py"]:
+        for f in ["/canto/canto.py","/canto/canto_fetch.py"]:
             os.system("sed -i 's/VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + f)
 
         for m in ["canto.1","canto-fetch.1"]:
@@ -30,7 +30,7 @@ setup(name='Canto',
         url='http://codezen.org/canto',
         license='GPLv2',
         scripts=['bin/canto','bin/canto-fetch'],
-        packages=['canto','canto_fetch'],
+        packages=['canto'],
         ext_modules=[Extension('canto.widecurse', sources = ['canto/widecurse.c'], libraries = ['ncursesw'])],
         data_files = [("share/man/man1/", ["man/canto.1", "man/canto-fetch.1"])],
         cmdclass={'install_data': Canto_install_data}

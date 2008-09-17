@@ -21,17 +21,29 @@ import traceback
 import utility
 import tag
 import gui
+import canto_fetch
 
-def print_usage():
-    print "USAGE: canto [-hvgulanDCLF]"
+def print_canto_usage():
+    print "USAGE: canto [-hvulanDCLF]"
     print "--help      -h        This help."
     print "--version   -v        Print version info."
-    print "--gensconf  -g        Only generate server config."
     print "--update    -u        Fetch updates before running."
     print "--list      -l        List configured feeds."
     print "--checkall  -a        Prints number of new items."
     print "--checknew  -n [feed] Prints number of items that are new in feed."
     print ""
+    print_common_usage()
+
+def print_fetch_usage():
+    print "USAGE: canto-fetch [-hvVfDCLF]"
+    print "--help      -h        This help."
+    print "--version   -v        Print version info."
+    print "--verbose   -V        Print extra info while running."
+    print "--force     -f        Force update, regardless of timeestamps."
+    print ""
+    print_common_usage()
+
+def print_common_usage():
     print "--dir       -D [path] Set configuration directory. (~/.canto/)"
     print "--conf      -C [path] Set configuration file. (~/.canto/conf)"
     print "--log       -L [path] Set client log file. (~/.canto/log)"
@@ -47,17 +59,25 @@ def print_usage():
 
 class Main():
     def __init__(self):
-        # Set by setup.py / distutils
-        MAJOR,MINOR,REV = VERSION_TUPLE
-
         # Let locale figure itself out
         locale.setlocale(locale.LC_ALL, "")
         
+        if sys.argv[0].endswith("canto"):
+            shortopts = 'hvulan:D:C:L:F:'
+            longopts =   ["help","version","update","list","checkall",\
+                         "checknew=", "dir=", "conf=","log=","fdir="]
+            iam = "canto"
+        elif sys.argv[0].endswith("canto-fetch"):
+            shortopts = 'hvVfD:C:L:F:'
+            longopts =   ["help","version","verbose","force","dir=",\
+                         "conf=", "log=", "fdir="]
+            iam = "fetch"
+        else:
+            print "No idea how you called me..."
+            sys.exit(-1)
+
         try :
-            optlist, arglist = getopt.getopt(sys.argv[1:],\
-                    'hvgaln:D:C:L:S:O:F:u',\
-                    ["help","version","gensconf","update","list","checkall",\
-                     "checknew=", "dir=", "conf=","log=","fdir="])
+            optlist, arglist = getopt.getopt(sys.argv[1:],shortopts,longopts)
         except getopt.GetoptError, e:
             print "Error: %s" % e.msg
             sys.exit(-1)
@@ -75,12 +95,13 @@ class Main():
         if conf_dir[-1] != '/' :
             conf_dir += '/'
 
+        # Now we process the remaining common arguments.
+        if iam == "canto":
+            log_file = conf_dir + "log"
+        else:
+            log_file = conf_dir + "fetchlog"
 
-        # Now we process the remaining arguments.
-
-        log_file = conf_dir + "log"
         conf_file = conf_dir + "conf"
-        fconf_file = conf_dir + "fconf"
         feed_dir = conf_dir + "feeds/"
         flags = 0 
         
@@ -95,9 +116,29 @@ class Main():
                 feed_dir = arg
                 if feed_dir[-1] != '/' :
                     feed_dir += '/'
-            elif opt in ["-g","--gensconf"] :
-                flags |= ONLY_CONF
-            elif opt in ["-u","--update"] :
+            elif opt in ["-h","--help"] :
+                if iam == "canto":
+                    print_canto_usage()
+                else:
+                    print_fetch_usage()
+                sys.exit(0)
+            elif opt in ["-v","--version"] :
+                print "Canto v %d.%d.%d" % VERSION_TUPLE
+                sys.exit(0)
+
+        # Instantiate Cfg() using paths in args.
+
+        try :
+            self.cfg = cfg.Cfg(conf_file, log_file, feed_dir)
+        except cfg.ConfigError:
+            sys.exit(-1)
+ 
+        self.cfg.log("Canto v %d.%d.%d" % VERSION_TUPLE)
+        if iam == "fetch":
+            sys.exit(canto_fetch.main(self.cfg, optlist))
+
+        for opt, arg in optlist :
+            if opt in ["-u","--update"] :
                 flags |= UPDATE_FIRST
             elif opt in ["-n","--checknew"] :
                 flags |= CHECK_NEW
@@ -106,20 +147,6 @@ class Main():
                 flags |= CHECK_NEW
             elif opt in ["-l","--list"] :
                 flags |= FEED_LIST
-            elif opt in ["-h","--help"] :
-                print_usage()
-                sys.exit(0)
-            elif opt in ["-v","--version"] :
-                print "Canto v %d.%d.%d" % (MAJOR,MINOR,REV)
-                sys.exit(0)
-
-        # Instantiate Cfg() using paths in args. This will also
-        # regenerate the fetch config.
-
-        try :
-            self.cfg = cfg.Cfg(conf_file, fconf_file, feed_dir)
-        except cfg.ConfigError:
-            sys.exit(-1)
 
         # If self.cfg had to generate a config, make sure we
         # update first.
@@ -127,10 +154,9 @@ class Main():
         if self.cfg.no_conf:
             flags |= UPDATE_FIRST
 
-        # We've already generated the fetch config, bail
-        if flags & ONLY_CONF:
-            sys.exit(0)
-        
+        if flags & UPDATE_FIRST:
+            canto_fetch.main(self.cfg, [], True, True)
+
         # Print out a feed list, bail
         if flags & FEED_LIST:
             for f in self.cfg.feeds:
@@ -139,16 +165,6 @@ class Main():
 
         self.stories = []
 
-        # Fork `canto-fetch` pointing to all proper directories/files
-        # and surrender terminal control, so it can print progress
-        # (-V flag output).
-
-        if flags & UPDATE_FIRST:
-            utility.silentfork("canto-fetch -Vf " +\
-               "-C \"" + fconf_file + \
-               "\" -F \"" + feed_dir + \
-               "\" -L \"" + conf_dir + "flog\"", 1)
-            
         # Force an update from disk
         for f in self.cfg.feeds :
             f.time = 1

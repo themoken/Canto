@@ -7,10 +7,9 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-ONLY_CONF = 1
-UPDATE_FIRST = 2
-CHECK_NEW = 4
-FEED_LIST = 8
+UPDATE_FIRST = 1
+CHECK_NEW = 2
+FEED_LIST = 4
 
 REFRESH_ALL = 1
 READER_NEXT = 2
