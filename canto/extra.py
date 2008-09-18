@@ -24,6 +24,13 @@ class show_unread():
     def __call__(self, tag, item):
         return not item.wasread()
 
+class show_marked():
+    def __str__(self):
+        return "Show marked"
+
+    def __call__(self, tag, item):
+        return item.marked()
+
 def set_xterm_title(tag, item):
     # Don't use print!
     os.write(1, "\033]0; %s - %s\007" % (tag.tag, item["title"]))
