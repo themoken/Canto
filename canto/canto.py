@@ -133,7 +133,7 @@ class Main():
         except cfg.ConfigError:
             sys.exit(-1)
  
-        self.cfg.log("Canto v %d.%d.%d" % VERSION_TUPLE)
+        self.cfg.log("Canto v %d.%d.%d" % VERSION_TUPLE, "w")
         if iam == "fetch":
             sys.exit(canto_fetch.main(self.cfg, optlist))
 

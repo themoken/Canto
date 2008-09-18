@@ -18,7 +18,12 @@ class Message :
 
     def refresh(self):
         self.lines = self.cfg.render.message(self.message, self.cfg.width, None)
+        if self.lines == 3:
+            width = len(self.message) + 4
+        else:
+            width = self.cfg.width
         self.window = curses.newpad(self.lines, self.cfg.width)
         self.window.bkgdset(curses.color_pair(1))
-        self.cfg.render.message(self.message, self.cfg.width, self.window)
-        self.window.refresh(0,0,0,0,self.lines - 1, self.cfg.width)
+        self.cfg.render.message(self.message, width, self.window)
+        self.window.refresh(0,0,0,self.cfg.width - width,\
+                self.lines - 1,self.cfg.width - 1)
