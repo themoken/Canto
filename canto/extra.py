@@ -35,5 +35,5 @@ def set_xterm_title(tag, item):
     # Don't use print!
     os.write(1, "\033]0; %s - %s\007" % (tag.tag, item["title"]))
 
-def clear_xterm_title(tag, item):
-    os.write(1, "\033]2;\007")
+def clear_xterm_title(*args):
+    os.write(1, "\033]0; \007")
