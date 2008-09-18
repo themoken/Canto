@@ -234,10 +234,10 @@ class Cfg:
         except UnicodeDecodeError:
             # If the Python built-in decoders can't figure it
             # out, it might need some help from chardet.
-
             data = codecs.open(self.path, "r").read()
             enc = chardet.detect(data)["encoding"]
             data = unicode(data, enc).encode("UTF-8")
+            self.log("Chardet detected conf encoding: %s" % enc)
 
         try :
             exec(data, {}, locals)
@@ -257,10 +257,12 @@ class Cfg:
 
         # Ensure we have at least one column
         if not self.columns:
+            self.log("columns <1, set to 1")
             self.columns = 1
 
         # And that the user didn't set cur_item_filter invalidly.
         if self.cur_item_filter >= len(self.item_filters):
+            self.log("cur_item_filter not in range, set to 0")
             self.cur_item_filter = 0
 
     # Key-binds for feed based filtering.

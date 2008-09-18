@@ -134,6 +134,9 @@ class Main():
             sys.exit(-1)
  
         self.cfg.log("Canto v %d.%d.%d" % VERSION_TUPLE, "w")
+        self.cfg.log("Time: %s" % time.asctime())
+        self.cfg.log("Config parsed successfully.")
+
         if iam == "fetch":
             sys.exit(canto_fetch.main(self.cfg, optlist))
 
@@ -152,9 +155,11 @@ class Main():
         # update first.
 
         if self.cfg.no_conf:
+            self.cfg.log("Conf was auto-generated, adding -u")
             flags |= UPDATE_FIRST
 
         if flags & UPDATE_FIRST:
+            self.cfg.log("Pausing to update...")
             canto_fetch.main(self.cfg, [], True, True)
 
         # Print out a feed list, bail
@@ -166,6 +171,7 @@ class Main():
         self.stories = []
 
         # Force an update from disk
+        self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds :
             f.time = 1
             f.tick()
@@ -205,6 +211,8 @@ class Main():
             b = utility.convcolor(self.cfg.colors[i][1])
             curses.init_pair(i + 1, f, b)
 
+        self.cfg.log("Curses initialized.")
+    
         # Key handlers is a stack-like list that contains all "inputs"
         # that can take keys from the user. Generally, this is every
         # graphical class open at a time. The last item being the top
@@ -224,16 +232,22 @@ class Main():
         gui.Gui(self.cfg, self.stories, tag_list, self.push_handler, \
                 self.pop_handler)
 
+        self.cfg.log("GUI initialized.")
+
         # Signal handling
         signal.signal(signal.SIGWINCH, self.winch)
         signal.signal(signal.SIGALRM, self.alarm)
         signal.alarm(60)
+
+        self.cfg.log("Signals set.")
 
         # Initial draw of the screen
         self.refresh()
 
         # Main program loop, terminated when all handlers have
         # deregistered / exited.
+
+        self.cfg.log("Beginning main loop.")
 
         while 1:
             if not len(self.key_handlers):
@@ -292,12 +306,14 @@ class Main():
         # Kill curses
         curses.endwin()
 
+        self.cfg.log("Curses done.")
+
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
             while feed.changed:
                 feed.todisk()
 
-        print "Flushed to disk."
+        self.cfg.log("Flushed to disk.")
         sys.exit(0)
 
     # The reason KEY_RESIZE is used is that it's unsafe to 

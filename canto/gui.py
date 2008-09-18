@@ -379,7 +379,6 @@ class Gui :
                 return ALARM
         return dec
 
-
     @change_filter
     def next_filter(self):
         return (self.cfg.next_filter(),\
