@@ -90,6 +90,7 @@ def silentfork(path, text):
     return pid
 
 def goto(URL, cfg):
+    URL = URL.replace("\"","%22")
     s = re.sub("%u", URL, cfg.browser)
     silentfork(s, cfg.text_browser)
 
