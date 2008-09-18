@@ -270,13 +270,18 @@ class Gui :
                     self.message = message.Message(self.cfg, "No Items.")
                 return
 
-            # Dispatch and return value from keybind.
-            f = getattr(self, self.cfg.key_list[t], None)
-            if f:
-                r = f()
-                if not r:
-                    self.draw_elements()
-                return r
+            # Allows user defined functions to manipulate Gui()
+
+            if callable(self.cfg.key_list[t]):
+                r = self.cfg.key_list[t](self)
+            else:
+                f = getattr(self, self.cfg.key_list[t], None)
+                if f:
+                    r = f()
+
+            if not r:
+                self.draw_elements()
+            return r
 
     @change_selected
     def __select_topoftag(self, f=0):
