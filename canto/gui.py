@@ -232,7 +232,14 @@ class Gui :
             # the top of the current (or first previous feed).
 
             if self.sel:
-                if self.sel in self.map:
+                # Since items can show up in multiple feeds
+                # (i.e. reddit and subreddits), check that the
+                # tag_idx is the same, so we don't jump from one
+                # tag to another inadvertently.
+
+                if self.sel in self.map and \
+                        self.map[self.map.index(self.sel)].tag_idx == \
+                        self.sel.tag_idx:
                     self.sel_idx = self.map.index(self.sel)
                 else:
                     self.__select_topoftag(self.sel.tag_idx)
