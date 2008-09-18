@@ -100,6 +100,9 @@ class Cfg:
         self.new_hook = None
         self.select_hook = None
         self.unselect_hook = None
+        self.start_hook = None
+        self.end_hook = None
+        self.alarm_hook = None
 
         self.item_filters = [None]
         self.cur_item_filter = 0
@@ -249,9 +252,9 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["resize_hook", "new_hook", "select_hook", \
+        for attr in ["resize_hook", "new_hook", "select_hook", "alarm_hook"\
                 "unselect_hook", "item_filters", "cur_item_filter", "browser",\
-                "text_browser", "render", "columns"]:
+                "text_browser", "render", "columns", "start_hook", "end_hook"]:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
 

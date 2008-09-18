@@ -80,6 +80,11 @@ class Gui :
                 break
         else:
             self.message = message.Message(self.cfg, "No Items.")
+
+        if self.cfg.start_hook:
+            self.cfg.start_hook(self)
+
+        if self.message:
             return
 
         self.refresh()
@@ -242,6 +247,9 @@ class Gui :
         if self.deferred:
             self.message = message.Message(self.cfg, self.deferred)
             self.deferred = None
+
+        if self.cfg.alarm_hook:
+            self.cfg.alarm_hook(self)
 
         return 1
 
@@ -468,5 +476,7 @@ class Gui :
             t.all_unread()
 
     def quit(self):
+        if self.cfg.end_hook:
+            self.cfg.end_hook(self)
         self.deregister()
         return -1
