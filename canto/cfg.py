@@ -104,8 +104,8 @@ class Cfg:
         self.end_hook = None
         self.alarm_hook = None
 
-        self.item_filters = [None]
-        self.cur_item_filter = 0
+        self.filterlist = [None]
+        self.filter_idx = 0
 
         self.no_conf = 0
 
@@ -253,7 +253,7 @@ class Cfg:
         # locals directly, so we do it by hand.
 
         for attr in ["resize_hook", "new_hook", "select_hook", "alarm_hook",\
-                "unselect_hook", "item_filters", "cur_item_filter", "browser",\
+                "unselect_hook", "filterlist", "filter_idx", "browser",\
                 "text_browser", "render", "columns", "start_hook", "end_hook"]:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
@@ -263,20 +263,20 @@ class Cfg:
             self.log("columns <1, set to 1")
             self.columns = 1
 
-        # And that the user didn't set cur_item_filter invalidly.
-        if self.cur_item_filter >= len(self.item_filters):
-            self.log("cur_item_filter not in range, set to 0")
-            self.cur_item_filter = 0
+        # And that the user didn't set filter_idx invalidly.
+        if self.filter_idx >= len(self.filterlist):
+            self.log("filter_idx not in range, set to 0")
+            self.filter_idx = 0
 
     # Key-binds for feed based filtering.
     def next_filter(self):
-        if self.cur_item_filter < len(self.item_filters) - 1:
-            self.cur_item_filter += 1
+        if self.filter_idx < len(self.filterlist) - 1:
+            self.filter_idx += 1
             return 1
         return 0
 
     def prev_filter(self):
-        if self.cur_item_filter > 0:
-            self.cur_item_filter -= 1
+        if self.filter_idx > 0:
+            self.filter_idx -= 1
             return 1
         return 0

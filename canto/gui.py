@@ -24,14 +24,14 @@ import extra
 # Gui() is the class encompassing the basic view of canto,
 # the list of feeds (tags) and items.
 
-# Gui()'s main data structure is self.list, which is a list
+# Gui()'s main data structure is self.tags, which is a list
 # of arbitrary Tag() objects, each being a list of stories.
 # A corresponding list is self.map, which maps out the visible
 # stories in order of appearance.
 
 # Self.map may seem redundant, but it's mostly for convenience.
 # For example, if the items are globally sorted, then iterating
-# over self.list won't work. Or if you're testing membership
+# over self.tags won't work. Or if you're testing membership
 # of a story in the self. list (see __select_topoftag).
 # Or if your iterating over all visible items (see draw_elements)
 
@@ -65,14 +65,14 @@ class Gui :
         # Populate the Tag() objects provided with
         # stories from the list given.
 
-        self.list = tags
-        for t in self.list:
+        self.tags = tags
+        for t in self.tags:
             t.extend(list)
         self.__do_new_hook()
 
         # Select the first visible feed.
 
-        for t in self.list :
+        for t in self.tags :
             if len(t):
                 self.sel = t[0]
                 self.sel_idx = 0
@@ -122,7 +122,7 @@ class Gui :
 
         self.map = []
         row = 0
-        for i, feed in enumerate(self.list):
+        for i, feed in enumerate(self.tags):
             for item in feed:
                 if not feed.collapsed or item.idx == 0:
                     item.lines = item.print_item(feed, 0, self)
@@ -156,7 +156,7 @@ class Gui :
                     # If row is offscreen down
                     if item.row > self.lines + self.offset:
                         break
-                    item.print_item(self.list[item.tag_idx], row, self)
+                    item.print_item(self.tags[item.tag_idx], row, self)
                 row += item.lines
         else:
             row = -1
@@ -194,7 +194,7 @@ class Gui :
         def dec(self, *args):
             if self.sel_idx >= 0:
                 if self.cfg.unselect_hook:
-                    self.cfg.unselect_hook(self.list[self.sel.tag_idx],
+                    self.cfg.unselect_hook(self.tags[self.sel.tag_idx],
                             self.sel)
                 self.sel.unselect()
             r = fn(self, *args)
@@ -202,7 +202,7 @@ class Gui :
                 self.sel = self.map[self.sel_idx]
                 self.sel.select()
                 if self.cfg.select_hook:
-                    self.cfg.select_hook(self.list[self.sel.tag_idx], self.sel)
+                    self.cfg.select_hook(self.tags[self.sel.tag_idx], self.sel)
             return r
         return dec
 
@@ -211,7 +211,7 @@ class Gui :
         # Clear all of the tags and repopulate with the new listobj.
         # At this point, self.sel and self.sel_idx may be invalid
 
-        for t in self.list:
+        for t in self.tags:
             t.clear()
             t.extend(listobj)
 
@@ -266,7 +266,7 @@ class Gui :
 
     def __do_new_hook(self):
         if self.cfg.new_hook:
-            for t in self.list:
+            for t in self.tags:
                 for item in t:
                     if item.isnew():
                         self.cfg.new_hook(t, item)
@@ -301,7 +301,7 @@ class Gui :
 
     @change_selected
     def __select_topoftag(self, f=0):
-        for feed in self.list[f:]:
+        for feed in self.tags[f:]:
             for item in feed:
                 if item in self.map:
                     self.sel = item
@@ -341,7 +341,7 @@ class Gui :
     def __next_filter(self, f) :
         cursor = self.sel_idx + 1
         while not cursor >= self.items - 1:
-            if f(self.list[self.map[cursor].tag_idx],self.map[cursor]):
+            if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
                 self.sel_idx = cursor
                 break
             cursor += 1
@@ -350,7 +350,7 @@ class Gui :
     def __prev_filter(self, f) :
         cursor = self.sel_idx - 1
         while not cursor <= 0:
-            if f(self.list[self.map[cursor].tag_idx],self.map[cursor]):
+            if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
                 self.sel_idx = cursor
                 break
             cursor -= 1
@@ -368,13 +368,13 @@ class Gui :
         self.__prev_filter(extra.show_unread())
 
     def just_read(self):
-        self.list[self.sel.tag_idx].set_read(self.sel.idx)
+        self.tags[self.sel.tag_idx].set_read(self.sel.idx)
 
     def just_unread(self):
-        self.list[self.sel.tag_idx].set_unread(self.sel.idx)
+        self.tags[self.sel.tag_idx].set_unread(self.sel.idx)
 
     def goto(self) :        
-        self.list[self.sel.tag_idx].set_read(self.sel.idx)
+        self.tags[self.sel.tag_idx].set_read(self.sel.idx)
         self.draw_elements()
         utility.goto(self.sel["link"], self.cfg)
 
@@ -383,7 +383,7 @@ class Gui :
         return REDRAW_ALL
 
     def reader(self) :
-        self.list[self.sel.tag_idx].set_read(self.sel.idx)
+        self.tags[self.sel.tag_idx].set_read(self.sel.idx)
         reader.Reader(self.cfg, self.sel, self.register, self.deregister) 
         return REDRAW_ALL
 
@@ -398,7 +398,7 @@ class Gui :
     @change_filter
     def next_filter(self):
         return (self.cfg.next_filter(),\
-                self.cfg.item_filters[self.cfg.cur_item_filter])
+                self.cfg.filterlist[self.cfg.filter_idx])
 
     @change_filter
     def next_feed_filter(self):
@@ -408,7 +408,7 @@ class Gui :
     @change_filter
     def prev_filter(self):
         return (self.cfg.prev_filter(),\
-                self.cfg.item_filters[self.cfg.cur_item_filter])
+                self.cfg.filterlist[self.cfg.filter_idx])
 
     @change_filter
     def prev_feed_filter(self):
@@ -422,7 +422,7 @@ class Gui :
 
     def __do_inline_search(self, s) :
         if s:
-            for t in self.list:
+            for t in self.tags:
                 for story in t:
                     if s.match(story["title"]):
                         story.mark()
@@ -445,14 +445,14 @@ class Gui :
                 item.unmark()
 
     def toggle_collapse_tag(self):
-        self.list[self.sel.tag_idx].collapsed =\
-                not self.list[self.sel.tag_idx].collapsed
+        self.tags[self.sel.tag_idx].collapsed =\
+                not self.tags[self.sel.tag_idx].collapsed
         self.sel.unselect()
         self.__map_items()
         self.__select_topoftag(self.sel.tag_idx)
 
     def __collapse_all(self, c):
-        for t in self.list:
+        for t in self.tags:
             t.collapsed = c
         self.__map_items()
         self.__select_topoftag(self.sel.tag_idx)
@@ -470,17 +470,17 @@ class Gui :
         return ALARM
 
     def tag_read(self):
-        self.list[self.sel.tag_idx].all_read()
+        self.tags[self.sel.tag_idx].all_read()
 
     def all_read(self):
-        for t in self.list:
+        for t in self.tags:
             t.all_read()
 
     def tag_unread(self):
-        self.list[self.sel.tag_idx].all_unread()
+        self.tags[self.sel.tag_idx].all_unread()
 
     def all_unread(self):
-        for t in self.list :
+        for t in self.tags :
             t.all_unread()
 
     def quit(self):
