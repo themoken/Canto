@@ -57,6 +57,7 @@ class Gui :
         self.max_offset = 0
 
         self.message = None
+        self.deferred = None
 
         register(self)
 
@@ -237,6 +238,10 @@ class Gui :
             self.message = message.Message(self.cfg, "No Items.")
             self.sel = None
 
+        if self.deferred:
+            self.message = message.Message(self.cfg, self.deferred)
+            self.deferred = None
+
         return 1
 
     # Use the new_hook on any "new" items.
@@ -361,21 +366,34 @@ class Gui :
         reader.Reader(self.cfg, self.sel, self.register, self.deregister) 
         return REDRAW_ALL
 
+    def change_filter(fn):
+        def dec(self, *args):
+            r,f = fn(self, *args)
+            if r:
+                self.deferred = "Filter: %s" % f
+                return ALARM
+        return dec
+
+
+    @change_filter
     def next_filter(self):
-        if self.cfg.next_filter():
-            return ALARM
+        return (self.cfg.next_filter(),\
+                self.cfg.item_filters[self.cfg.cur_item_filter])
 
+    @change_filter
     def next_feed_filter(self):
-        if self.sel.feed.next_filter():
-            return ALARM
+        return (self.sel.feed.next_filter(),\
+                self.sel.feed.filterlist[self.sel.feed.filter_idx])
 
+    @change_filter
     def prev_filter(self):
-        if self.cfg.prev_filter():
-            return ALARM
+        return (self.cfg.prev_filter(),\
+                self.cfg.item_filters[self.cfg.cur_item_filter])
 
+    @change_filter
     def prev_feed_filter(self):
-        if self.sel.feed.prev_filter():
-            return ALARM
+        return (self.sel.feed.prev_filter(),\
+                self.sel.feed.filterlist[self.sel.feed.filter_idx])
 
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \

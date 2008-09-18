@@ -18,8 +18,8 @@ class slashdot_renderer(interface_draw.Renderer):
                 " department%B", " ", " "),("┌","─","┐%C")]
 
 class show_unread():
-    def __init__(self):
-        self.name = "Show unread."
+    def __str__(self):
+        return "Show unread"
 
     def __call__(self, tag, item):
         return not item.wasread()
