@@ -457,6 +457,7 @@ class Gui :
         self.__collapse_all(0)
 
     def force_update(self):
+        self.cfg.log("Forcing update.")
         for f in self.cfg.feeds :
             f.time = 1
         return ALARM
