@@ -296,8 +296,13 @@ class Main():
             # communicate with each other. They are otherwise
             # entirely independent.
 
-            if self.key_handlers[-1].keys.has_key(t):
-                actl = self.key_handlers[-1].keys[t]
+            if hasattr(self.key_handlers[-1], "keys"):
+                if self.key_handlers[-1].keys.has_key(t):
+                    actl = self.key_handlers[-1].keys[t]
+                else:
+                    actl = []
+            elif t:
+                actl = [t]
             else:
                 actl = []
 

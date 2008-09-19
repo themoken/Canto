@@ -39,7 +39,7 @@ class Input :
         self.window.addstr(tmp)
         self.window.refresh(0,0,0,0,2,self.cfg.width)
 
-    def key(self, t):
+    def action(self, t):
         if t == (27, 0):
             self.destroy()
             return
