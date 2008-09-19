@@ -379,7 +379,7 @@ class Gui :
 
     def help(self):
         utility.silentfork("man canto", 1)
-        return REDRAW_ALL
+        return REFRESH_ALL
 
     def reader(self) :
         self.tags[self.sel.tag_idx].set_read(self.sel.idx)
