@@ -338,7 +338,7 @@ class Gui :
         self.offset = min(self.sel.row, max(0, self.max_offset))
 
     @change_selected
-    def __next_filter(self, f) :
+    def next_filtered(self, f) :
         cursor = self.sel_idx + 1
         while not cursor >= self.items - 1:
             if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
@@ -347,7 +347,7 @@ class Gui :
             cursor += 1
 
     @change_selected
-    def __prev_filter(self, f) :
+    def prev_filtered(self, f) :
         cursor = self.sel_idx - 1
         while not cursor <= 0:
             if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
@@ -356,16 +356,16 @@ class Gui :
             cursor -= 1
 
     def next_mark(self):
-        self.__next_filter(extra.show_marked())
+        self.next_filtered(extra.show_marked())
 
     def prev_mark(self):
-        self.__prev_filter(extra.show_marked())
+        self.prev_filtered(extra.show_marked())
 
     def next_unread(self):
-        self.__next_filter(extra.show_unread())
+        self.next_filtered(extra.show_unread())
 
     def prev_unread(self):
-        self.__prev_filter(extra.show_unread())
+        self.prev_filtered(extra.show_unread())
 
     def just_read(self):
         self.tags[self.sel.tag_idx].set_read(self.sel.idx)
@@ -399,7 +399,7 @@ class Gui :
     def next_filter(self):
         return (self.cfg.next_filter(),\
                 self.cfg.filterlist[self.cfg.filter_idx])
-
+    
     @change_filter
     def next_feed_filter(self):
         return (self.sel.feed.next_filter(),\
@@ -417,10 +417,10 @@ class Gui :
 
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \
-                self.__do_inline_search, self.register, self.deregister)
+                self.do_inline_search, self.register, self.deregister)
         return REDRAW_ALL
 
-    def __do_inline_search(self, s) :
+    def do_inline_search(self, s) :
         if s:
             for t in self.tags:
                 for story in t:

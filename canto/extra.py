@@ -9,6 +9,7 @@
 
 import interface_draw
 import os
+import re
 
 class slashdot_renderer(interface_draw.Renderer):
     def reader_head(self, story):
@@ -30,6 +31,12 @@ class show_marked():
 
     def __call__(self, tag, item):
         return item.marked()
+
+def search(s, **kwargs):
+    if kwargs.has_key("regex") and kwargs["regex"]:
+        return lambda x : x.do_inline_search(re.compile(s))
+    else:
+        return lambda x : x.do_inline_search(re.compile(".*" + s + ".*"))
 
 def set_xterm_title(tag, item):
     # Don't use print!
