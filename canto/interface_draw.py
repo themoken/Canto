@@ -157,6 +157,7 @@ class Renderer :
     
     def story(self, tag, story, row, height, width, window_list):
         title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = title.lstrip().rstrip()
 
         if story.idx == 0:
             row = self.simple_out(self.tag_head(tag),\
