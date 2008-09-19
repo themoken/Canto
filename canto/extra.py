@@ -32,6 +32,24 @@ class show_marked():
     def __call__(self, tag, item):
         return item.marked()
 
+class only_with():
+    def __init__(self, keyword, **kwargs):
+        self.keyword = keyword
+        if kwargs.has_key("regex") and kwargs["regex"]:
+            self.match = re.compile(keyword)
+        else:
+            self.match = re.compile(".*" + keyword + ".*")
+
+    def __str__(self):
+        return "With %s" % self.keyword
+
+    def __call__(self, tag, item):
+        return self.match.match(item["title"])
+
+class only_without(only_with):
+    def __call__(self, tag, item):
+        return not self.match.match(item["title"])
+
 def search(s, **kwargs):
     if kwargs.has_key("regex") and kwargs["regex"]:
         return lambda x : x.do_inline_search(re.compile(s))

@@ -76,9 +76,15 @@ class Feed(tag.Tag):
 
     def __do_extend(self):
         self.clear()
-        self.extend(filter(self.filterlist[self.filter_idx],\
-                [story.Story(entry, self, self.renderer)\
-                for entry in self.ufp["entries"]]))
+        if self.filterlist[self.filter_idx]:
+            self.extend(filter(\
+                    lambda x: self.filterlist[self.filter_idx](self,x),\
+                    [story.Story(entry, self, self.renderer)\
+                    for entry in self.ufp["entries"]]))
+        else:
+            self.extend(\
+                    [story.Story(entry, self, self.renderer) \
+                    for entry in self.ufp["entries"]])
 
     def next_filter(self):
         if self.filter_idx < len(self.filterlist) - 1:
