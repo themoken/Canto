@@ -170,6 +170,17 @@ class Main():
 
         self.stories = []
 
+        # Detect if there are any new feeds by whether their
+        # set path exists. If not, run canto-fetch but don't
+        # force it, so canto-fetch intelligently updates.
+
+        for f in self.cfg.feeds :
+            if not os.path.exists(f.path):
+                self.cfg.log("Detected unfetched feed: %s" % f.tag)
+                canto_fetch.main(self.cfg, [], True, False)
+                self.cfg.log("Fetched.")
+                break
+
         # Force an update from disk
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds :
