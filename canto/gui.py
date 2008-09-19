@@ -163,12 +163,12 @@ class Gui :
             row = -1
         
         # Actually perform curses screen update.
-        for i in range(len(self.window_list)) :
+        for i,win in enumerate(self.window_list) :
             if i * self.cfg.height > row:
-                self.window_list[i].clear()
+                win.erase()
             else:
-                self.window_list[i].clrtobot()
-            self.window_list[i].noutrefresh()
+                win.clrtobot()
+            win.noutrefresh()
         curses.doupdate()
 
         # If we've got a sub-window message open, refresh that.
