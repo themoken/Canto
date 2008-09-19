@@ -22,10 +22,6 @@ Simple help
 Print version
 
 .TP
--g/--gensconf
-Only generate server configuration.
-
-.TP
 -u/--update
 Update feeds before launching client.
 
@@ -79,6 +75,10 @@ Set item unread or read (just_unread) (just_read)
 Cycle through defined filters (prev_filter) (next_filter)
 
 .TP
+{ / }
+Cycle through defined feed filters (prev_feed_filter) (next_feed_filter)
+
+.TP
 h
 Display this man page. (help)
 
@@ -111,10 +111,6 @@ Goto next/previous marked item (next_mark) (prev_mark)
 Goto next/previous unread item (next_unread) (prev_unread)
 
 .TP
-F
-Collected search (search)
-
-.TP
 r / u
 Mark tag read/unread (tag_read) (tag_unread)
 
@@ -143,7 +139,7 @@ Scroll up/down if content off screen (scroll_up) (scroll_down)
 
 .TP
 n / p
-Goto next/previous item without closing reader (reader_next) (reader_prev)
+goto next/previous item without closing reader
 
 .TP
 l
@@ -160,29 +156,33 @@ The ~/.canto/conf file is where all of the configuration is. You can start by us
 .sp 1
 .nf
 
-# Setup browser
-browser="elinks \\"%u\\""
-text_browser = 1
+from canto.extra import *
+import os
 
-keys["z"] = "goto"
+if os.getenv("TERM") == "linux":
+    browser="elinks \"%u\""
+    text_browser = True
+else:
+    browser="firefox \"%u\""
+    text_browser = False
 
 def my_resize_hook(cfg):
     cfg.columns = cfg.width / 70
 
 resize_hook = my_resize_hook
+select_hook = set_xterm_title
+end_hook = clear_xterm_title
 
-# Set defaults
-default_rate(10)
-default_keep(40)
+filterlist=[None, show_unread()]
 
-# Add some feeds
-addfeed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot", rate=30)
+keys['x'] = ["just_read","next_item"]
+keys['1'] = search(".*[Ll]inux.*", regex=True)
+keys['2'] = search("Obama")
+
+addfeed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot")
 addfeed("OSNews", "http://osnews.com/files/recent.xml")
 addfeed("Damn Interesting", "http://www.damninteresting.com/?feed=rss2")
 addfeed("Reddit", "http://reddit.com/.rss")
-addfeed("Proggit", "http://programming.reddit.com/.rss")
-addfeed("KernelTrap", "http://kerneltrap.org/node/feed")
-addfeed("Canto", "http://codezen.org/canto/feeds/latest", keep=10)
 
 .SH FILES
 .TP
@@ -194,12 +194,8 @@ Main configuration file. For advanced usage, see the online configuration docume
 Everyday log file.
 
 .TP
-.I ~/.canto/sconf
-Server configuration file.
-
-.TP
-.I ~/.canto/slog
-Server log file.
+.I ~/.canto/fetchlog
+Canto-fetch log file.
 
 .TP
 .I ~/.canto/feeds/
