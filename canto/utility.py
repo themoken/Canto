@@ -64,7 +64,7 @@ def conv_key_list(dict):
             continue
 
         # All the items in a key_list must be lists.
-        if type(dict[key]) == str:
+        if type(dict[key]) != type([]):
             ret[newkey] = [dict[key]]
         else:
             ret[newkey] = dict[key]
