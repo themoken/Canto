@@ -47,6 +47,9 @@ class only_with():
         return self.match.match(item["title"])
 
 class only_without(only_with):
+    def __str__(self):
+        return "Without %s" % self.keyword
+
     def __call__(self, tag, item):
         return not self.match.match(item["title"])
 
