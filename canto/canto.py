@@ -296,23 +296,19 @@ class Main():
             # communicate with each other. They are otherwise
             # entirely independent.
 
-            while t:
-                r = self.key_handlers[-1].key(t)
+            if self.key_handlers[-1].keys.has_key(t):
+                actl = self.key_handlers[-1].keys[t]
+            else:
+                actl = []
+
+            for a in actl:
+                r = self.key_handlers[-1].action(a)
                 if r == REFRESH_ALL:
                     self.refresh()
-                elif r == READER_NEXT:
-                    self.key_handlers[-1].next_item()
-                    self.key_handlers[-1].reader()
-                elif r == READER_PREV:
-                    self.key_handlers[-1].prev_item()
-                    self.key_handlers[-1].reader()
                 elif r == ALARM:
                     self.alarm()
-                elif r == KEY_PASSTHRU:
-                    continue
                 elif r == REDRAW_ALL:
                     self.key_handlers[-1].draw_elements()
-                break
 
         # Kill curses
         curses.endwin()

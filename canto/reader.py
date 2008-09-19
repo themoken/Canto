@@ -18,7 +18,8 @@ class Reader :
     def __init__(self, cfg, story, register, deregister):
         self.story = story
         self.cfg = cfg
-        
+        self.keys = cfg.reader_key_list
+
         self.more = 0
         self.offset = 0
         self.height = 0
@@ -61,14 +62,6 @@ class Reader :
         else: 
             self.refresh()
 
-    def reader_next(self):
-        self.destroy()
-        return READER_NEXT
- 
-    def reader_prev(self):
-        self.destroy()
-        return READER_PREV
-
     def scroll_down(self):
         if self.more > 0 :
             self.offset += 1
@@ -103,17 +96,17 @@ class Reader :
                 self.register, self.deregister)
         return 1
     
-    def key(self, t):
-        if self.cfg.reader_key_list.has_key(t) and self.cfg.reader_key_list[t]:
-            f = getattr(self, self.cfg.reader_key_list[t], None)
+    def action(self, a):
+        if callable(a):
+            r = a()
+        else:
+            f = getattr(self,a,None)
             if f:
                 r = f()
-                if not r:
-                    self.draw_elements()
-                return r
-        else:
-            self.destroy()
-            return KEY_PASSTHRU
+
+        if not r:
+            self.draw_elements()
+        return r
 
     def alarm(self, stories):
         self.draw_elements()

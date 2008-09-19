@@ -42,7 +42,8 @@ import extra
 
 class Gui :
     def __init__(self, cfg, list, tags, register, deregister):
-        self.safe_attrs = ["help","quit","next_filter","prev_filter"] 
+        self.safe_actions = ["help","quit","next_filter","prev_filter"] 
+        self.keys = cfg.key_list
         self.window_list = []
         self.map = []
 
@@ -272,32 +273,30 @@ class Gui :
                         self.cfg.new_hook(t, item)
                         item.old()
 
-    def key(self, t):
-        # Gui() has key t, and it's not None
-        if self.cfg.key_list.has_key(t) and self.cfg.key_list[t] :
-            # Clear message, if we have items
-            if self.items:
-                if self.message:
-                    self.message = None
+    def action(self, a):
+        # Clear message, if we have items
+        if self.items:
+            if self.message:
+                self.message = None
 
-            # Set a message and bail, if the bind isn't "safe"
-            elif self.cfg.key_list[t] not in self.safe_attrs:
-                if not self.message:
-                    self.message = message.Message(self.cfg, "No Items.")
-                return
+        # Set a message and bail, if the bind isn't "safe"
+        elif a not in self.safe_actions:
+            if not self.message:
+                self.message = message.Message(self.cfg, "No Items.")
+            return
 
-            # Allows user defined functions to manipulate Gui()
+        # Allows user defined functions to manipulate Gui()
 
-            if callable(self.cfg.key_list[t]):
-                r = self.cfg.key_list[t](self)
-            else:
-                f = getattr(self, self.cfg.key_list[t], None)
-                if f:
-                    r = f()
+        if callable(a):
+            r = a(self)
+        else:
+            f = getattr(self, a, None)
+            if f:
+                r = f()
 
-            if not r:
-                self.draw_elements()
-            return r
+        if not r:
+            self.draw_elements()
+        return r
 
     @change_selected
     def __select_topoftag(self, f=0):

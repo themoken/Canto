@@ -63,7 +63,12 @@ def conv_key_list(dict):
         except AttributeError:
             continue
 
-        ret[newkey] = dict[key]
+        # All the items in a key_list must be lists.
+        if type(dict[key]) == str:
+            ret[newkey] = [dict[key]]
+        else:
+            ret[newkey] = dict[key]
+
     return ret
 
 def silentfork(path, text):

@@ -78,8 +78,10 @@ class Cfg:
                               "KEY_PPAGE" : "page_up",
                               "g" : "goto",
                               "l" : "toggle_show_links",
-                              "n" : "reader_next",
-                              "p" : "reader_prev",
+                              "n" : ["destroy","next_item","reader"],
+                              "p" : ["destroy","prev_item","reader"],
+                              "h" : ["destroy","help"],
+                              "q" : ["destroy","quit"],
                               " " : "quit"}
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
