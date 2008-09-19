@@ -256,8 +256,8 @@ class Gui :
             self.message = message.Message(self.cfg, self.deferred)
             self.deferred = None
 
-        if self.cfg.alarm_hook:
-            self.cfg.alarm_hook(self)
+        if self.cfg.update_hook:
+            self.cfg.update_hook(self)
 
         return 1
 
