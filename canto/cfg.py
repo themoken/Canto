@@ -207,6 +207,19 @@ class Cfg:
     def set_default_title_key(self, title_key):
         self.default_title_key = title_key
 
+    # This decorator-like function is used to wrap
+    # all of the hooks, so that user exceptions don't
+    # take Canto down.
+
+    def hook_dec(self, fn):
+        def hdec(*args):
+            try:
+                r = fn(*args)
+            except:
+                self.log("\nException in handler:")
+                self.log("%s" % traceback.format_exc())
+        return hdec
+
     def parse(self):
 
         locals = {"addfeed":self.addfeed,
@@ -254,11 +267,15 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["resize_hook", "new_hook", "select_hook", "update_hook",\
-                "unselect_hook", "filterlist", "filter_idx", "browser",\
-                "text_browser", "render", "columns", "start_hook", "end_hook"]:
+        for attr in ["filterlist", "filter_idx", "browser",\
+                "text_browser", "render", "columns"]:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
+
+        for hook in ["resize_hook","new_hook","select_hook","update_hook",\
+                "unselect_hook","start_hook","end_hook"]:
+            if locals.has_key(hook):
+                setattr(self, hook, self.hook_dec(locals[hook]))
 
         # Ensure we have at least one column
         if not self.columns:
