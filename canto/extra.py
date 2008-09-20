@@ -11,12 +11,24 @@ import interface_draw
 import os
 import re
 
+# Adds Slashdot department information to reader
+#
+# Usage : addfeed("Slashdot",\
+#        "http://rss.slashdot.org/slashdot/Slashdot", \
+#        renderer=slashdot_renderer()
+
 class slashdot_renderer(interface_draw.Renderer):
     def reader_head(self, story):
-        title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = self.do_regex(story["title"], \
+                [self.story_rgx, self.common_rgx])
         return [("%1%B" + title, " ", " "),\
                 ("%bfrom the " + story["slash_department"] +\
                 " department%B", " ", " "),("┌","─","┐%C")]
+
+# Filter for filtering out all read stories.
+#
+# Usage : filterlist=[None, show_unread()]
+#       then using [/] to cycle through.
 
 class show_unread():
     def __str__(self):
@@ -25,12 +37,24 @@ class show_unread():
     def __call__(self, tag, item):
         return not item.wasread()
 
+# Filter for filtering out all unread stories.
+#
+# Usage : filterlist=[None, show_marked()]
+#       then using [/] to cycle through
+
 class show_marked():
     def __str__(self):
         return "Show marked"
 
     def __call__(self, tag, item):
         return item.marked()
+
+# A filter to take a keyword or regex and filter
+# all stories that don't contain/match it.
+#
+# Usage : filterlist=[None, only_with("Obama")]
+#         filterlist=[None, only_with(".*[Ll]inux.*", regex=True)]
+#
 
 class only_with():
     def __init__(self, keyword, **kwargs):
@@ -46,6 +70,9 @@ class only_with():
     def __call__(self, tag, item):
         return self.match.match(item["title"])
 
+# Same as above, except filters out all stories that
+# *do* match the keyword / regex.
+
 class only_without(only_with):
     def __str__(self):
         return "Without %s" % self.keyword
@@ -53,15 +80,33 @@ class only_without(only_with):
     def __call__(self, tag, item):
         return not self.match.match(item["title"])
 
+# Creates a keybind for searching for a keyword or regex.
+#
+# Usage : keys["1"] = search("Obama")
+#         keys["2"] = search(".*[Ll]inux.*, regex=True)
+
 def search(s, **kwargs):
     if kwargs.has_key("regex") and kwargs["regex"]:
         return lambda x : x.do_inline_search(re.compile(s))
     else:
         return lambda x : x.do_inline_search(re.compile(".*" + s + ".*"))
 
+# Note: the following two hacks are for xterm and compatible
+# terminal emulators ([u]rxvt, eterm, aterm, etc.). These should
+# not be run in screen or standard linux terms because they'll
+# print garbage to the screen.
+
+# Sets the xterm_title to Feed - Title
+#
+# Usage : select_hook = set_xterm_title
+
 def set_xterm_title(tag, item):
     # Don't use print!
     os.write(1, "\033]0; %s - %s\007" % (tag.tag, item["title"]))
+
+# Sets the xterm title to " "
+#
+# Usage : end_hook = clear_xterm_title
 
 def clear_xterm_title(*args):
     os.write(1, "\033]0; \007")
