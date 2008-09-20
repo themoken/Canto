@@ -53,6 +53,7 @@ class Gui :
 
         self.lines = 0
         self.sel = 0
+        self.sel_idx = -1
         self.items = 0
 
         self.offset = 0
