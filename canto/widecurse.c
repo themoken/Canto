@@ -47,6 +47,7 @@ static PyObject *tlen(PyObject *self, PyObject *args)
 {
     char *message;
     char end = 0;
+    int ret = 0;
 
     if(!PyArg_ParseTuple(args, "s|c", &message, &end))
             return NULL;
@@ -249,10 +250,18 @@ static PyObject * mvw(PyObject *self, PyObject *args)
     for(j = 0; end[j]; j++)
         do_char(win, width, &j, &y, &x, end);
 
-    if (ret == -1)
+    PyMem_Free(rep);
+    PyMem_Free(end);
+
+    if (ret == -1) {
+        PyMem_Free(message);
         return Py_BuildValue("s", NULL);
-    else
-        return Py_BuildValue("s", lstrip(&message[i]));
+    }
+    else {
+        PyObject *r = Py_BuildValue("s", lstrip(&message[i]));
+        PyMem_Free(message);
+        return r;
+    }
 }
 
 
