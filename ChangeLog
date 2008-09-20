@@ -1,6 +1,6 @@
 Canto 0.5.1 ChangeLog
 * Fixed progressing memory leak
-* Hooks are now wrapped in an exception logging wrapper.
+* Hooks/filters are now wrapped in an exception logging wrapper.
 * noitem_unsafe decorator applied to all Gui() functions that can't
 	be used without any items
 * Fixed uninitialized variable causing crash.

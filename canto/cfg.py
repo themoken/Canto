@@ -185,7 +185,7 @@ class Cfg:
             renderer = self.render
 
         if kwargs.has_key("filterlist"):
-            filterlist = kwargs["filterlist"]
+            filterlist = [self.filter_dec(x) for x in kwargs["filterlist"]]
         else:
             filterlist = [None]
 
@@ -216,9 +216,29 @@ class Cfg:
             try:
                 r = fn(*args)
             except:
-                self.log("\nException in handler:")
+                self.log("\nException in hook:")
                 self.log("%s" % traceback.format_exc())
         return hdec
+
+    def filter_dec(self, c):
+        if not c:
+            return None
+
+        class fdec():
+            def __init__(self, instance, log):
+                self.instance = instance
+                self.log = log
+
+            def __str__ (self):
+                return self.instance.__str__()
+
+            def __call__(self, *args):
+                try:
+                    return self.instance(*args)
+                except:
+                    self.log("\nException in filter:")
+                    self.log("%s" % traceback.format_exc())
+        return fdec(c, self.log)
 
     def parse(self):
 
@@ -272,10 +292,14 @@ class Cfg:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
 
+        # Wrap hooks in the exception handler
         for hook in ["resize_hook","new_hook","select_hook","update_hook",\
                 "unselect_hook","start_hook","end_hook"]:
             if locals.has_key(hook):
                 setattr(self, hook, self.hook_dec(locals[hook]))
+
+        # Wrap filters in exception handler
+        self.filterlist = [self.filter_dec(x) for x in self.filterlist]
 
         # Ensure we have at least one column
         if not self.columns:
