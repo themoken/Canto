@@ -1,3 +1,28 @@
+Canto 0.5.1 ChangeLog
+* Fixed progressing memory leak
+* Hooks are now wrapped in an exception logging wrapper.
+* noitem_unsafe decorator applied to all Gui() functions that can't
+	be used without any items
+* Fixed uninitialized variable causing crash.
+
+Canto 0.5.0 ChangeLog
+* New dependency on feedparser and chardet.
+* Global and per-feed filters implemented.
+* Hooks, to call code on events (like new items, changing selection, etc.)
+* Entirely changed, much less fragile on-disk format.
+* Canto and canto-fetch are now a single, multi-call binary
+* Canto-fetch no longer has its own config
+* More useful keybinds, support lists of actions and arbitrary functions.
+* Per-feed renderers can be configured.
+* Story items now include all content, rather than just title/link/description
+	(pretty useful for neat per-feed renderers, thanks to feedparser)
+* Reader is now prettier, and more correct.
+* Canto.extra is provided for nice helper functions for your config.
+* Code documentation is much improved
+* Code organization is more logical
+* Proper locking between multiple instances of canto/canto-fetch.
+* Entirely backwards compatible with 0.4.0 configs
+
 Canto 0.4.8 ChangeLog
 * Fix minor search problem
 * Move title_key logic into canto_fetch
