@@ -42,7 +42,6 @@ import extra
 
 class Gui :
     def __init__(self, cfg, list, tags, register, deregister):
-        self.safe_actions = ["help","quit","next_filter","prev_filter"] 
         self.keys = cfg.key_list
         self.window_list = []
         self.map = []
@@ -188,6 +187,17 @@ class Gui :
             return 1
         return 0
 
+    # This decorator makes items (usu. keybinds) that require
+    # items to be present bail if none are.
+
+    def noitem_unsafe(fn):
+        def ns_dec(self, *args):
+            if self.items > 0:
+                return fn(self, *args)
+            else:
+                self.message = message.Message(self.cfg, "No Items.")
+        return ns_dec
+
     # This decorator lets the bind just change sel_idx and
     # have self.sel set automatically and the story's state
     # synced.
@@ -244,7 +254,7 @@ class Gui :
                         self.sel.tag_idx:
                     self.sel_idx = self.map.index(self.sel)
                 else:
-                    self.__select_topoftag(self.sel.tag_idx)
+                    self.__select_topoftag()
             else:
                 self.__select_topoftag(0)
 
@@ -280,12 +290,6 @@ class Gui :
             if self.message:
                 self.message = None
 
-        # Set a message and bail, if the bind isn't "safe"
-        elif a not in self.safe_actions:
-            if not self.message:
-                self.message = message.Message(self.cfg, "No Items.")
-            return
-
         # Allows user defined functions to manipulate Gui()
 
         if callable(a):
@@ -299,8 +303,11 @@ class Gui :
             self.draw_elements()
         return r
 
+    @noitem_unsafe
     @change_selected
-    def __select_topoftag(self, f=0):
+    def __select_topoftag(self, f=-1):
+        if f < 0:
+            f = self.sel.tag_idx
         for feed in self.tags[f:]:
             for item in feed:
                 if item in self.map:
@@ -318,6 +325,7 @@ class Gui :
         if self.sel_idx > 0 :
             self.sel_idx -= 1
 
+    @noitem_unsafe
     def prev_tag(self) :
         curtag = self.sel.tag_idx
         while not self.sel_idx == 0 :
@@ -325,6 +333,7 @@ class Gui :
                 break
             self.prev_item()
 
+    @noitem_unsafe
     def next_tag(self) :
         curtag = self.sel.tag_idx
         while not self.sel_idx == self.items - 1:
@@ -337,6 +346,7 @@ class Gui :
         # so that the user's eye isn't lost.
         self.offset = min(self.sel.row, max(0, self.max_offset))
 
+    @noitem_unsafe
     @change_selected
     def next_filtered(self, f) :
         cursor = self.sel_idx + 1
@@ -346,6 +356,7 @@ class Gui :
                 break
             cursor += 1
 
+    @noitem_unsafe
     @change_selected
     def prev_filtered(self, f) :
         cursor = self.sel_idx - 1
@@ -373,6 +384,7 @@ class Gui :
     def just_unread(self):
         self.tags[self.sel.tag_idx].set_unread(self.sel.idx)
 
+    @noitem_unsafe
     def goto(self) :        
         self.tags[self.sel.tag_idx].set_read(self.sel.idx)
         self.draw_elements()
@@ -382,6 +394,7 @@ class Gui :
         utility.silentfork("man canto", 1)
         return REFRESH_ALL
 
+    @noitem_unsafe
     def reader(self) :
         self.tags[self.sel.tag_idx].set_read(self.sel.idx)
         reader.Reader(self.cfg, self.sel, self.register, self.deregister) 
@@ -400,6 +413,7 @@ class Gui :
         return (self.cfg.next_filter(),\
                 self.cfg.filterlist[self.cfg.filter_idx])
     
+    @noitem_unsafe
     @change_filter
     def next_feed_filter(self):
         return (self.sel.feed.next_filter(),\
@@ -410,11 +424,13 @@ class Gui :
         return (self.cfg.prev_filter(),\
                 self.cfg.filterlist[self.cfg.filter_idx])
 
+    @noitem_unsafe
     @change_filter
     def prev_feed_filter(self):
         return (self.sel.feed.prev_filter(),\
                 self.sel.feed.filterlist[self.sel.feed.filter_idx])
 
+    @noitem_unsafe
     def inline_search(self):
         search.Search(self.cfg, " Inline Search ", \
                 self.do_inline_search, self.register, self.deregister)
@@ -433,29 +449,32 @@ class Gui :
         self.next_mark()
         self.draw_elements()
 
+    @noitem_unsafe
     def toggle_mark(self):
         if self.sel.marked() :
             self.sel.unmark()
         else:
             self.sel.mark()
 
+    @noitem_unsafe
     def all_unmarked(self):
         for item in self.map:
             if item.marked():
                 item.unmark()
 
+    @noitem_unsafe
     def toggle_collapse_tag(self):
         self.tags[self.sel.tag_idx].collapsed =\
                 not self.tags[self.sel.tag_idx].collapsed
         self.sel.unselect()
         self.__map_items()
-        self.__select_topoftag(self.sel.tag_idx)
+        self.__select_topoftag()
 
     def __collapse_all(self, c):
         for t in self.tags:
             t.collapsed = c
         self.__map_items()
-        self.__select_topoftag(self.sel.tag_idx)
+        self.__select_topoftag()
 
     def set_collapse_all(self):
         self.__collapse_all(1)
@@ -468,7 +487,8 @@ class Gui :
         for f in self.cfg.feeds :
             f.time = 1
         return ALARM
-
+    
+    @noitem_unsafe
     def tag_read(self):
         self.tags[self.sel.tag_idx].all_read()
 
@@ -476,6 +496,7 @@ class Gui :
         for t in self.tags:
             t.all_read()
 
+    @noitem_unsafe
     def tag_unread(self):
         self.tags[self.sel.tag_idx].all_unread()
 
