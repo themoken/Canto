@@ -31,7 +31,9 @@ def print_canto_usage():
     print "--list      -l        List configured feeds."
     print "--checkall  -a        Prints number of new items."
     print "--checknew  -n [feed] Prints number of items that are new in feed."
+    print ""
     print "--opml      -o        Convert conf to OPML and print to stdout."
+    print "--import    -i [path] Add feeds from OPML file to conf."
     print ""
     print_common_usage()
 
@@ -64,9 +66,9 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         if sys.argv[0].endswith("canto"):
-            shortopts = 'hvulaon:D:C:L:F:'
+            shortopts = 'hvulaoin:D:C:L:F:'
             longopts =   ["help","version","update","list","checkall","opml",\
-                         "checknew=", "dir=", "conf=","log=","fdir="]
+                         "import","checknew=", "dir=", "conf=","log=","fdir="]
             iam = "canto"
         elif sys.argv[0].endswith("canto-fetch"):
             shortopts = 'hvVfD:C:L:F:'
@@ -104,10 +106,7 @@ class Main():
 
         conf_file = conf_dir + "conf"
         feed_dir = conf_dir + "feeds/"
-        flags = 0 
         
-        feed_ct = None
-
         for opt, arg in optlist :
             if opt in ["-C", "--conf"] :
                 conf_file = arg
@@ -141,6 +140,10 @@ class Main():
         if iam == "fetch":
             sys.exit(canto_fetch.main(self.cfg, optlist))
 
+        flags = 0 
+        feed_ct = None
+        opml_file = None
+
         for opt, arg in optlist :
             if opt in ["-u","--update"] :
                 flags |= UPDATE_FIRST
@@ -153,6 +156,12 @@ class Main():
                 flags |= FEED_LIST
             elif opt in ["-o","--opml"] :
                 flags |= OUT_OPML
+            elif opt in ["-i","--import"] :
+                flags |= IN_OPML
+                opml_file = arg
+
+        if flags & IN_OPML:
+            self.cfg.source_opml(opml_file, append=True)
 
         # If self.cfg had to generate a config, make sure we
         # update first.
@@ -196,13 +205,20 @@ class Main():
             print """<opml version="1.0">"""
             print """<body>"""
             for feed in self.cfg.feeds:
-                if "rss" in feed.ufp["version"]:
-                    type = "rss"
+                if not feed.ufp:
+                    # This is only reached if a lock wasn't obtained,
+                    # in this case, don't even make a guess.
+                    print """\t<outline title="%s" xmlUrl="%s" />""" %\
+                        (feed.tag, feed.URL)
+                    continue
                 elif "atom" in feed.ufp["version"]:
                     type = "pie"
+                else:
+                    type = "rss"
 
                 print """\t<outline title="%s" xmlUrl="%s" type="%s" />""" %\
                         (feed.tag, feed.URL, type)
+
             print """</body>"""
             print """</opml>"""
             sys.exit(0)

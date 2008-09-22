@@ -23,6 +23,7 @@ import time
 import cPickle
 import extra
 import chardet
+import xml.parsers.expat
 
 class ConfigError(Exception):
     def __str__(self):
@@ -89,7 +90,6 @@ class Cfg:
 
         self.default_rate = 5
         self.default_keep = 40
-        self.default_title_key = 1
 
         self.path = conf
         self.feed_dir = feed_dir
@@ -193,9 +193,10 @@ class Cfg:
         # any duplicate feed names, or everything  will break.
 
         if not tag in [f.tag for f in self.feeds]:
-            return self.feeds.append(feed.Feed(self, self.feed_dir +\
+            self.feeds.append(feed.Feed(self, self.feed_dir +\
                     tag.replace("/", " "), tag, URL, rate, keep, renderer,
                     filterlist))
+            return 1
         return -1
 
     def set_default_rate(self, rate):
@@ -203,9 +204,6 @@ class Cfg:
 
     def set_default_keep(self, keep):
         self.default_keep = keep
-
-    def set_default_title_key(self, title_key):
-        self.default_title_key = title_key
 
     # This decorator-like function is used to wrap
     # all of the hooks, so that user exceptions don't
@@ -240,6 +238,18 @@ class Cfg:
                     self.log("%s" % traceback.format_exc())
         return fdec(c, self.log)
 
+    def read_decode(self, filename):
+        try:
+            data = codecs.open(filename, "r", "UTF-8").read()
+        except UnicodeDecodeError:
+            # If the Python built-in decoders can't figure it
+            # out, it might need some help from chardet.
+            data = codecs.open(self.path, "r").read()
+            enc = chardet.detect(data)["encoding"]
+            data = unicode(data, enc).encode("UTF-8")
+            self.log("Chardet detected encoding %s for %s" % (enc,filename))
+        return data
+
     def parse(self):
 
         locals = {"addfeed":self.addfeed,
@@ -254,28 +264,19 @@ class Cfg:
             "text_browser" : self.text_browser,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
-            "default_title_key" : self.set_default_title_key,
             "render" : self.render,
             "renderer" : interface_draw.Renderer,
             "keys" : self.key_list,
             "reader_keys" : self.reader_key_list,
             "columns" : self.columns,
-            "colors" : self.colors}
+            "colors" : self.colors,
+            "source_opml" : self.source_opml}
 
         # The entirety of the config is read in first (rather
         # than using execfile) because the config could be in
         # some strange encoding, and execfile would choke attempting
         # to coerce some character into ASCII.
-
-        try:
-            data = codecs.open(self.path, "r", "UTF-8").read()
-        except UnicodeDecodeError:
-            # If the Python built-in decoders can't figure it
-            # out, it might need some help from chardet.
-            data = codecs.open(self.path, "r").read()
-            enc = chardet.detect(data)["encoding"]
-            data = unicode(data, enc).encode("UTF-8")
-            self.log("Chardet detected conf encoding: %s" % enc)
+        data = self.read_decode(self.path)
 
         try :
             exec(data, {}, locals)
@@ -310,6 +311,29 @@ class Cfg:
         if self.filter_idx >= len(self.filterlist):
             self.log("filter_idx not in range, set to 0")
             self.filter_idx = 0
+
+    def source_opml(self, filename, **kwargs):
+        append = False
+        if kwargs.has_key("append"):
+            append = kwargs["append"]
+            file = open(self.path, "a")
+
+        def start(name, attrs) : 
+            if name == "outline" and (\
+                ((attrs.has_key("type") and\
+                attrs["type"] in ["pie","rss"])) or\
+                not attrs.has_key("type")):
+                if self.addfeed(attrs["text"].encode("UTF-8"),\
+                        attrs["xmlUrl"]) and append:
+                    file.write("""addfeed("%s","%s")\n""" %
+                        (attrs["text"], attrs["xmlUrl"]))
+
+        p = xml.parsers.expat.ParserCreate()
+        p.StartElementHandler = start
+        d = self.read_decode(filename)
+        p.Parse(d, 1)
+        if append:
+            file.close()
 
     # Key-binds for feed based filtering.
     def next_filter(self):
