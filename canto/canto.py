@@ -31,6 +31,7 @@ def print_canto_usage():
     print "--list      -l        List configured feeds."
     print "--checkall  -a        Prints number of new items."
     print "--checknew  -n [feed] Prints number of items that are new in feed."
+    print "--opml      -o        Convert conf to OPML and print to stdout."
     print ""
     print_common_usage()
 
@@ -63,8 +64,8 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         if sys.argv[0].endswith("canto"):
-            shortopts = 'hvulan:D:C:L:F:'
-            longopts =   ["help","version","update","list","checkall",\
+            shortopts = 'hvulaon:D:C:L:F:'
+            longopts =   ["help","version","update","list","checkall","opml",\
                          "checknew=", "dir=", "conf=","log=","fdir="]
             iam = "canto"
         elif sys.argv[0].endswith("canto-fetch"):
@@ -150,6 +151,8 @@ class Main():
                 flags |= CHECK_NEW
             elif opt in ["-l","--list"] :
                 flags |= FEED_LIST
+            elif opt in ["-o","--opml"] :
+                flags |= OUT_OPML
 
         # If self.cfg had to generate a config, make sure we
         # update first.
@@ -187,6 +190,22 @@ class Main():
             f.time = 1
             f.tick()
             self.filter_extend(f)
+
+        if flags & OUT_OPML:
+            self.cfg.log("Outputting OPML")
+            print """<opml version="1.0">"""
+            print """<body>"""
+            for feed in self.cfg.feeds:
+                if "rss" in feed.ufp["version"]:
+                    type = "rss"
+                elif "atom" in feed.ufp["version"]:
+                    type = "pie"
+
+                print """\t<outline title="%s" xmlUrl="%s" type="%s" />""" %\
+                        (feed.tag, feed.URL, type)
+            print """</body>"""
+            print """</opml>"""
+            sys.exit(0)
 
         # Handle -a/-n flags (print number of new items)
 
