@@ -189,13 +189,21 @@ class Cfg:
         else:
             filterlist = [None]
 
+        if kwargs.has_key("sort"):
+            if type(kwargs["sort"]) != type([]):
+                sort = [kwargs["sort"]]
+            else:
+                sort = kwargs["sort"]
+        else:
+            sort = None
+
         # The tag is the only thing that has to be unique, so we ignore
         # any duplicate feed names, or everything  will break.
 
         if not tag in [f.tag for f in self.feeds]:
             self.feeds.append(feed.Feed(self, self.feed_dir +\
                     tag.replace("/", " "), tag, URL, rate, keep, renderer,
-                    filterlist))
+                    filterlist, sort))
             return 1
         return -1
 

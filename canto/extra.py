@@ -8,6 +8,7 @@
 #   published by the Free Software Foundation.
 
 import interface_draw
+import time
 import os
 import re
 
@@ -110,3 +111,36 @@ def set_xterm_title(tag, item):
 
 def clear_xterm_title(*args):
     os.write(1, "\033]0; \007")
+
+# SORTS
+
+def by_date(x, y):
+    try:
+        a = int(time.mktime(x["updated_parsed"]))
+        b = int(time.mktime(y["updated_parsed"]))
+    except:
+        return 0
+
+    return b - a
+
+def by_len(x, y):
+    return len(x["title"]) - len(y["title"])
+
+def by_alpha(x, y):
+    for a, b in zip(x["title"],y["title"]):
+        if ord(a) != ord(b):
+            return ord(a) - ord(b)
+
+    return by_len(x,y)
+
+def by_unread(x, y):
+    if x.wasread() and not y.wasread():
+        return 1
+    if y.wasread() and not x.wasread():
+        return -1
+    return 0
+
+def reverse_sort(fn):
+    def rs(x, y):
+        return -1 * fn(x,y)
+    return rs

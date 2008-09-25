@@ -8,13 +8,14 @@
 #   published by the Free Software Foundation.
 
 class Tag(list):
-    def __init__(self, c = "*"):
+    def __init__(self, sort = None, c = "*"):
         list.__init__(self)
         self.tag = c
         self.collapsed = 0
         self.start = 0
         self.read = 0
         self.unread = 0
+        self.sort = sort
 
     def search_stories(self, story, tk = 0):
         for i in range(len(self)) :
@@ -49,6 +50,10 @@ class Tag(list):
     def extend(self, iter):
         list.extend(self, [s for s in iter if self.tag in s["canto_state"]])
 
+        if self.sort:
+            for s in self.sort:
+                list.sort(self, s)
+
         lt = len(self)
         for i in range(lt):
             self[i].idx = i
@@ -60,4 +65,4 @@ class Tag(list):
         self.unread = len(self) - self.read
 
     def clear(self):
-        while len(self) : self.pop()
+        del self[:]

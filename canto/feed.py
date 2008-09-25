@@ -30,8 +30,9 @@ import cPickle
 # has_changed() has been called by one of the Story() items Feed() contains.
 
 class Feed(tag.Tag):
-    def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist):
-        tag.Tag.__init__(self, t)
+    def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist,
+            sort):
+        tag.Tag.__init__(self, sort, t)
         self.ufp = None
 
         self.path = dirpath

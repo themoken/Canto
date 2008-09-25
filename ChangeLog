@@ -1,3 +1,7 @@
+Canto 0.5.2 ChangeLog
+* Added sorting
+* Added OPML support
+
 Canto 0.5.1 ChangeLog
 * Fixed progressing memory leak
 * Hooks/filters are now wrapped in an exception logging wrapper.
