@@ -90,6 +90,8 @@ class Cfg:
 
         self.default_rate = 5
         self.default_keep = 40
+        self.default_filterlist = [None]
+        self.default_sort = None
 
         self.path = conf
         self.feed_dir = feed_dir
@@ -187,7 +189,7 @@ class Cfg:
         if kwargs.has_key("filterlist"):
             filterlist = [self.filter_dec(x) for x in kwargs["filterlist"]]
         else:
-            filterlist = [None]
+            filterlist = self.default_filterlist
 
         if kwargs.has_key("sort"):
             if type(kwargs["sort"]) != type([]):
@@ -195,7 +197,7 @@ class Cfg:
             else:
                 sort = kwargs["sort"]
         else:
-            sort = None
+            sort = self.default_sort
 
         # The tag is the only thing that has to be unique, so we ignore
         # any duplicate feed names, or everything  will break.
@@ -206,6 +208,16 @@ class Cfg:
                     filterlist, sort))
             return 1
         return -1
+
+    def set_default_sort(self, list):
+        if type(list) != type([]):
+            list = [list]
+        self.default_sort = list
+
+    def set_default_filterlist(self, list):
+        if type(list) != type([]):
+            list = [list]
+        self.default_filterlist = list
 
     def set_default_rate(self, rate):
         self.default_rate = rate
@@ -270,6 +282,8 @@ class Cfg:
             "width" : self.width,
             "browser" : self.browser,
             "text_browser" : self.text_browser,
+            "default_sort" : self.set_default_sort,
+            "default_filterlist" : self.set_default_filterlist,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
             "render" : self.render,
