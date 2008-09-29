@@ -262,6 +262,7 @@ class Cfg:
     def parse(self):
 
         locals = {"addfeed":self.addfeed,
+            "add_feed":self.addfeed,
 
             # height and width are kept for legacy reasons
             # and will always be 0 at config time. Configs
