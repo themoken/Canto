@@ -214,6 +214,16 @@ class Cfg:
     def set_default_keep(self, keep):
         self.default_keep = keep
 
+    def change_feed(self, tag, **kwargs):
+        l = [f for f in self.feeds if f.tag == tag]
+        if not len(l):
+            return
+
+        feed = l[0]
+        for key in ["keep","rate","renderer","filterlist","sort"]:
+            if kwargs.has_key(key):
+                setattr(feed, key, kwargs[key])
+
     # This decorator-like function is used to wrap
     # all of the hooks, so that user exceptions don't
     # take Canto down.
@@ -263,6 +273,7 @@ class Cfg:
 
         locals = {"addfeed":self.addfeed,
             "add_feed":self.addfeed,
+            "change_feed":self.change_feed,
 
             # height and width are kept for legacy reasons
             # and will always be 0 at config time. Configs
