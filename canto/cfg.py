@@ -33,7 +33,6 @@ class Cfg:
     def __init__(self, conf, log_file, feed_dir):
         self.browser = "firefox \"%u\""
         self.text_browser = 0
-        self.render = interface_draw.Renderer()
         self.log_file = log_file
 
         self.key_list = {"q" : "quit",
@@ -92,6 +91,7 @@ class Cfg:
         self.default_keep = 40
         self.default_filterlist = [None]
         self.default_sort = None
+        self.default_renderer = interface_draw.Renderer()
 
         self.path = conf
         self.feed_dir = feed_dir
@@ -165,58 +165,47 @@ class Cfg:
         except:
             pass
 
+    # wrap_args wraps each filter class in the filter_dec wrapper
+    # and ensures that sort is a list.
+
+    def wrap_args(self, kwargs):
+        if kwargs.has_key("filterlist"):
+            kwargs["filterlist"] = \
+                    [self.filter_dec(x) for x in kwargs["filterlist"]]
+        if kwargs.has_key("sort") and type(kwargs["sort"]) != type([]):
+            kwargs["sort"] = [kwargs["sort"]]
+
+        return kwargs
+
     # Addfeed is a wrapper that's called as the config is exec'd
     # so that subsequent commands can reference it ASAP, and
     # so that set defaults are applied at that point.
 
     def addfeed(self, tag, URL, **kwargs):
+        for key in ["keep","rate","renderer","filterlist","sort"]:
+            if not kwargs.has_key(key):
+                kwargs[key] = getattr(self, "default_" + key)
 
-        if kwargs.has_key("keep"):
-            keep = kwargs["keep"]
-        else:
-            keep = self.default_keep
-
-        if kwargs.has_key("rate"):
-            rate = kwargs["rate"]
-        else:
-            rate = self.default_rate
-
-        if kwargs.has_key("renderer"):
-            renderer = kwargs["renderer"]
-        else:
-            renderer = self.render
-
-        if kwargs.has_key("filterlist"):
-            filterlist = [self.filter_dec(x) for x in kwargs["filterlist"]]
-        else:
-            filterlist = self.default_filterlist
-
-        if kwargs.has_key("sort"):
-            if type(kwargs["sort"]) != type([]):
-                sort = [kwargs["sort"]]
-            else:
-                sort = kwargs["sort"]
-        else:
-            sort = self.default_sort
+        kwargs = self.wrap_args(kwargs)
 
         # The tag is the only thing that has to be unique, so we ignore
         # any duplicate feed names, or everything  will break.
 
         if not tag in [f.tag for f in self.feeds]:
             self.feeds.append(feed.Feed(self, self.feed_dir +\
-                    tag.replace("/", " "), tag, URL, rate, keep, renderer,
-                    filterlist, sort))
+                    tag.replace("/", " "), tag, URL,\
+                    kwargs["rate"],\
+                    kwargs["keep"],\
+                    kwargs["renderer"],\
+                    kwargs["filterlist"],\
+                    kwargs["sort"]))
             return 1
         return -1
 
     def set_default_sort(self, list):
-        if type(list) != type([]):
-            list = [list]
         self.default_sort = list
 
     def set_default_filterlist(self, list):
-        if type(list) != type([]):
-            list = [list]
         self.default_filterlist = list
 
     def set_default_rate(self, rate):
@@ -286,7 +275,7 @@ class Cfg:
             "default_filterlist" : self.set_default_filterlist,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
-            "render" : self.render,
+            "render" : self.default_renderer,
             "renderer" : interface_draw.Renderer,
             "keys" : self.key_list,
             "reader_keys" : self.reader_key_list,
