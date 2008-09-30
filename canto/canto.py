@@ -272,7 +272,7 @@ class Main():
         #   B) Because feed() must remember all objects in the feed
         #       regardless of whatever filters are applied.
 
-        tag_list = [tag.Tag(None, x.tag) for x in self.cfg.feeds]
+        tag_list = [tag.Tag([None], x.tag) for x in self.cfg.feeds]
 
         # Instantiate the base Gui class
         gui.Gui(self.cfg, self.stories, tag_list, self.push_handler, \

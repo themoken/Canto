@@ -8,7 +8,7 @@
 #   published by the Free Software Foundation.
 
 class Tag(list):
-    def __init__(self, sort = None, c = "*"):
+    def __init__(self, sort = [None], c = "*"):
         list.__init__(self)
         self.tag = c
         self.collapsed = 0
@@ -50,8 +50,8 @@ class Tag(list):
     def extend(self, iter):
         list.extend(self, [s for s in iter if self.tag in s["canto_state"]])
 
-        if self.sort:
-            for s in self.sort:
+        for s in self.sort:
+            if s:
                 list.sort(self, s)
 
         lt = len(self)
