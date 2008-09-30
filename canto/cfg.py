@@ -172,8 +172,10 @@ class Cfg:
         if kwargs.has_key("filterlist"):
             kwargs["filterlist"] = \
                     [self.filter_dec(x) for x in kwargs["filterlist"]]
-        if kwargs.has_key("sort") and type(kwargs["sort"]) != type([]):
-            kwargs["sort"] = [kwargs["sort"]]
+        if kwargs.has_key("sort"):
+            if type(kwargs["sort"]) != type([]):
+                kwargs["sort"] = [kwargs["sort"]]
+            kwargs["sort"] = [self.hook_dec(x) for x in kwargs["sort"]]
 
         return kwargs
 
@@ -219,6 +221,8 @@ class Cfg:
         if not len(l):
             return
 
+        kwargs = self.wrap_args(kwargs)
+
         feed = l[0]
         for key in ["keep","rate","renderer","filterlist","sort"]:
             if kwargs.has_key(key):
@@ -229,12 +233,17 @@ class Cfg:
     # take Canto down.
 
     def hook_dec(self, fn):
+        if not fn:
+            return None
+
         def hdec(*args):
             try:
                 r = fn(*args)
             except:
                 self.log("\nException in hook:")
                 self.log("%s" % traceback.format_exc())
+                return 0
+            return r
         return hdec
 
     def filter_dec(self, c):

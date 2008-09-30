@@ -115,6 +115,10 @@ def clear_xterm_title(*args):
 # SORTS
 
 def by_date(x, y):
+    # We wrap this, despite the fact that sorts are all
+    # wrapped in an exception logger because this is a
+    # normal, unimportant problem.
+
     try:
         a = int(time.mktime(x["updated_parsed"]))
         b = int(time.mktime(y["updated_parsed"]))
