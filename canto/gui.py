@@ -360,7 +360,7 @@ class Gui :
     @change_selected
     def prev_filtered(self, f) :
         cursor = self.sel_idx - 1
-        while not cursor <= 0:
+        while not cursor < 0:
             if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
                 self.sel_idx = cursor
                 break
