@@ -298,6 +298,8 @@ class Gui :
             f = getattr(self, a, None)
             if f:
                 r = f()
+            else:
+                r = -1
 
         if not r:
             self.draw_elements()
