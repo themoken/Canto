@@ -58,6 +58,9 @@ def convkey(s):
 def conv_key_list(dict):
     ret = {}
     for key in dict:
+        if not dict[key]:
+            continue
+
         try:
             newkey = convkey(key)
         except AttributeError:
