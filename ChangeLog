@@ -1,6 +1,10 @@
 Canto 0.5.2 ChangeLog
 * Added sorting
 * Added OPML support
+* Added change_feed
+* addfeed() == add_feed()
+* Added missing default_filterlist()
+* Fixed bad keybind crashes
 
 Canto 0.5.1 ChangeLog
 * Fixed progressing memory leak
