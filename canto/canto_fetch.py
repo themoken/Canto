@@ -12,7 +12,7 @@ import time
 import os
 import feedparser
 import shutil
-
+import sys
 
 def main(cfg, optlist, verbose=False, force=False):
 
@@ -137,7 +137,14 @@ def main(cfg, optlist, verbose=False, force=False):
             continue
         log_func("Updating %s" % fd.tag)
 
-        newfeed = feedparser.parse(fd.URL)
+        try:
+            newfeed = feedparser.parse(feedparser.urllib2.urlopen(fd.URL))
+        except:
+            # Generally an exception is a connection refusal, but in any
+            # case we either won't get data or can't trust the data, so
+            # just skip processing this feed.
+            log_func("Exception trying to get feed: %s" % sys.exc_info()[1])
+            continue
 
         # Feedparser returns a very nice dict of information.
         # if there was something wrong with the feed (usu. encodings
