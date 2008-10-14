@@ -348,7 +348,8 @@ class Main():
                 elif r == ALARM:
                     self.alarm()
                 elif r == REDRAW_ALL:
-                    self.key_handlers[-1].draw_elements()
+                    for k in self.key_handlers:
+                        k.draw_elements()
 
         # Kill curses
         curses.endwin()

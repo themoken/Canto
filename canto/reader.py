@@ -56,11 +56,10 @@ class Reader :
 
     def toggle_show_links(self):
         self.show_links = not self.show_links
+        self.refresh()
 
         if not self.show_links:
             return REDRAW_ALL
-        else: 
-            self.refresh()
 
     def scroll_down(self):
         if self.more > 0 :
@@ -100,6 +99,7 @@ class Reader :
         if callable(a):
             r = a()
         else:
+            r = 0
             f = getattr(self,a,None)
             if f:
                 r = f()
