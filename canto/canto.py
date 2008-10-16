@@ -283,6 +283,7 @@ class Main():
         # Signal handling
         signal.signal(signal.SIGWINCH, self.winch)
         signal.signal(signal.SIGALRM, self.alarm)
+        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         signal.alarm(60)
 
         self.cfg.log("Signals set.")
