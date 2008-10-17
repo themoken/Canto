@@ -169,17 +169,19 @@ def main(cfg, optlist, verbose=False, force=False):
         # almost without exception gives us all string in Unicode
         # so none of these should fail.
 
+        def encode_and_escape(s):
+            s = s.encode("UTF-8")
+            s = s.replace("\\","\\\\")
+            return s.replace("%", "\\%")
+
         for entry in newfeed["entries"]:
             if entry.has_key("content"):
                 for c in entry["content"]:
-                    c["value"] = c["value"].encode("UTF-8")
-                    c["value"] = c["value"].replace("%", "\\%")
+                    c["value"] = encode_and_escape(c["value"])
 
             for key in entry.keys():
                 if type(entry[key]) in [unicode,str]:
-                    entry[key] = entry[key].encode("UTF-8")
-                    entry[key] = entry[key].replace("%", "\\%")
-
+                    entry[key] = encode_and_escape(entry[key])
 
         for entry in newfeed["entries"]:
             # If the item didn't come with a GUID, then

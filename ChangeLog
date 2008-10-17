@@ -1,3 +1,9 @@
+Canto 0.5.3 ChangeLog
+* Fixed browser zombies
+* Fixed closing link enumeration
+* Fixed missing -i/-o man page references
+* Add ability to use any type of URL for feed (e.g. file://)
+
 Canto 0.5.2 ChangeLog
 * Added sorting
 * Added OPML support
