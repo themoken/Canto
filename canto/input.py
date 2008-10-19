@@ -34,7 +34,7 @@ class Input :
         if l > self.cfg.width - 2 :
             tmp = tmp[(l - (self.cfg.width - 2)):]
 
-        self.cfg.render.box(self.caption, self.cfg.width, self.window)
+        self.cfg.default_renderer.box(self.caption, self.cfg.width, self.window)
         self.window.move(1, 1)
         self.window.addstr(tmp)
         self.window.refresh(0,0,0,0,2,self.cfg.width)
