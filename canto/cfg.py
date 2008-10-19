@@ -216,6 +216,9 @@ class Cfg:
     def set_default_keep(self, keep):
         self.default_keep = keep
 
+    def set_default_renderer(self, renderer):
+        self.default_renderer = renderer
+
     def change_feed(self, tag, **kwargs):
         l = [f for f in self.feeds if f.tag == tag]
         if not len(l):
@@ -296,7 +299,7 @@ class Cfg:
             "default_filterlist" : self.set_default_filterlist,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
-            "render" : self.default_renderer,
+            "default_renderer" : self.set_default_renderer,
             "renderer" : interface_draw.Renderer,
             "keys" : self.key_list,
             "reader_keys" : self.reader_key_list,

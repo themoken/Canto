@@ -1,3 +1,6 @@
+Canto 0.5.4 ChangeLog
+* Fix renderer overrides
+
 Canto 0.5.3 ChangeLog
 * Fixed browser zombies
 * Fixed closing link enumeration
