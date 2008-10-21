@@ -283,7 +283,7 @@ class Main():
         # Signal handling
         signal.signal(signal.SIGWINCH, self.winch)
         signal.signal(signal.SIGALRM, self.alarm)
-        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+        signal.signal(signal.SIGCHLD, self.chld)
         signal.alarm(60)
 
         self.cfg.log("Signals set.")
@@ -299,6 +299,13 @@ class Main():
         while 1:
             if not len(self.key_handlers):
                 break
+
+            # We break out of this with SIGCHLD
+            if self.cfg.wait_for_pid:
+                while self.cfg.wait_for_pid:
+                    pass
+                signal.signal(signal.SIGALRM, self.alarm)
+                self.refresh()
 
             t = None
             k = self.cfg.stdscr.getch()
@@ -364,6 +371,11 @@ class Main():
 
         self.cfg.log("Flushed to disk.")
         sys.exit(0)
+
+    def chld(self, a=None, b=None):
+        pid,none = os.wait()
+        if self.cfg.wait_for_pid == pid:
+            self.cfg.wait_for_pid = 0
 
     # The reason KEY_RESIZE is used is that it's unsafe to 
     # do much of anything but set a flag in a signal handler,

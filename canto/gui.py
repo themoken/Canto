@@ -393,8 +393,7 @@ class Gui :
         utility.goto(self.sel["link"], self.cfg)
 
     def help(self):
-        utility.silentfork("man canto", 1)
-        return REFRESH_ALL
+        self.cfg.wait_for_pid = utility.silentfork("man canto", 1)
 
     @noitem_unsafe
     def reader(self) :

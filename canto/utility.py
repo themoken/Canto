@@ -84,23 +84,18 @@ def silentfork(path, text):
         os.system(path)
         sys.exit(-1)
 
-    if text :
-        s = signal.getsignal(signal.SIGALRM)
+    if text:
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
-        while 1:
-            try:
-                os.waitpid(pid, 0)
-            except OSError:
-                continue
-            break
-        signal.signal(signal.SIGALRM, s)
 
     return pid
 
 def goto(URL, cfg):
     URL = URL.replace("\"","%22")
     s = re.sub("%u", URL, cfg.browser)
-    silentfork(s, cfg.text_browser)
+    if cfg.text_browser:
+        cfg.wait_for_pid = silentfork(s, 1)
+    else:
+        silentfork(s, 0)
 
 def getlinks(string):
     s = re.sub("\\\n", " ", string[:])

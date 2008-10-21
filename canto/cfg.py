@@ -33,6 +33,7 @@ class Cfg:
     def __init__(self, conf, log_file, feed_dir):
         self.browser = "firefox \"%u\""
         self.text_browser = 0
+        self.wait_for_pid = 0
         self.log_file = log_file
 
         self.key_list = {"q" : "quit",
