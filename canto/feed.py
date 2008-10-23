@@ -73,8 +73,7 @@ class Feed(tag.Tag):
         self.unlock()
 
         if not hasattr(self, "tag"):
-            tag.Tag.__init__(self, self.sorts, \
-                    self.ufp["feed"]["title"].encode("UTF-8"))
+            tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
 
         self.__do_extend()
         return 1

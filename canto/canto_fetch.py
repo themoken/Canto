@@ -90,7 +90,7 @@ def main(cfg, optlist, verbose=False, force=False):
         except OSError:
             # If lock exists, but is over 2 minutes old, it's
             # probably the product of a crash or a machine
-            # gettig powered down, delete it.
+            # getting powered down, delete it.
 
             if time.time() - os.stat(lpath).st_ctime > 120:
                 log_func("Deleting stale lock for %s." % fd.URL)
@@ -175,7 +175,7 @@ def main(cfg, optlist, verbose=False, force=False):
 
         if not hasattr(fd,"tag"):
             if newfeed.has_key("feed") and newfeed["feed"].has_key("title"):
-                fd.tag = newfeed["feed"]["title"]
+                fd.tag = newfeed["feed"]["title"].encode("UTF-8")
             else:
                 log_func("Ugh. Defaulting to URL for tag. No guarantees.")
                 newfeed["feed"]["title"] = fd.URL

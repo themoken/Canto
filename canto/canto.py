@@ -180,7 +180,7 @@ class Main():
 
         for f in self.cfg.feeds :
             if not os.path.exists(f.path):
-                self.cfg.log("Detected unfetched feed: %s" % f.tag)
+                self.cfg.log("Detected unfetched feed: %s." % f.URL)
                 canto_fetch.main(self.cfg, [], True, False)
                 self.cfg.log("Fetched.")
                 break
