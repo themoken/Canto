@@ -294,6 +294,7 @@ class Main():
         signal.signal(signal.SIGWINCH, self.winch)
         signal.signal(signal.SIGALRM, self.alarm)
         signal.signal(signal.SIGCHLD, self.chld)
+        signal.signal(signal.SIGINT, self.done)
         signal.alarm(60)
 
         self.cfg.log("Signals set.")
@@ -308,7 +309,7 @@ class Main():
 
         while 1:
             if not len(self.key_handlers):
-                break
+                self.done()
 
             # We break out of this with SIGCHLD
             if self.cfg.wait_for_pid:
@@ -369,6 +370,7 @@ class Main():
                     for k in self.key_handlers:
                         k.draw_elements()
 
+    def done(self, a=None, b=None):
         # Kill curses
         curses.endwin()
 
