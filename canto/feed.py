@@ -71,6 +71,7 @@ class Feed(tag.Tag):
             self.ufp = cPickle.load(f)
             f.close()
         except:
+            self.unlock()
             return 0
 
         self.unlock()
