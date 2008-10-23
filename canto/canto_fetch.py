@@ -50,26 +50,37 @@ def main(cfg, optlist, verbose=False, force=False):
         os.unlink(cfg.feed_dir)
         os.mkdir(cfg.feed_dir)
 
+    # Rename any < 0.5.5 tag named files with > 0.5.5 URL named files.
+
+    for file in os.listdir(cfg.feed_dir):
+        for tag, URL in [(f.tag, f.URL) for f in cfg.feeds \
+                if hasattr(f,"tag") ]:
+            if file == tag.replace("/"," "):
+                log_func("Detected old disk format, converting.")
+                target = cfg.feed_dir + file
+                newname = cfg.feed_dir + URL.replace("/"," ")
+                os.rename(target, newname)
+                break
+
     # Remove any crap out of the directory. This is mostly for
     # cleaning up when the user has removed a feed from the configuration.
 
     for file in os.listdir(cfg.feed_dir):
-        file = cfg.feed_dir + file
-        for tag in [f.tag for f in cfg.feeds]:
-            valid = cfg.feed_dir + tag.replace("/", " ")
+        for URL in [f.URL for f in cfg.feeds]:
+            valid = URL.replace("/"," ")
             if file == valid or file == valid + ".lock":
                 break
         else:
             log_func("Deleted extraneous file: %s" % file)
             try:
-                os.unlink(file)
+                os.unlink(cfg.feed_dir + file)
             except:
                 pass
 
     # The main canto-fetch loop.
 
     for fd in cfg.feeds:
-        fpath = cfg.feed_dir + fd.tag.replace("/", " ")
+        fpath = cfg.feed_dir + fd.URL.replace("/", " ")
         lpath = fpath + ".lock"
 
         # First, we get a lock.
@@ -82,7 +93,7 @@ def main(cfg, optlist, verbose=False, force=False):
             # gettig powered down, delete it.
 
             if time.time() - os.stat(lpath).st_ctime > 120:
-                log_func("Deleting stale lock for %s." % fd.tag)
+                log_func("Deleting stale lock for %s." % fd.URL)
                 os.unlink(lpath)
                 try:
                     lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
@@ -91,11 +102,11 @@ def main(cfg, optlist, verbose=False, force=False):
                     # that would indicate that between the unlink and
                     # the os.open another process created it.
 
-                    log_func("Failed twice to get lock for %s." % fd.tag)
+                    log_func("Failed twice to get lock for %s." % fd.URL)
                     continue
             else:
                 # Failing once is pretty typical, and not fatal.
-                log_func("Failed once to get lock for %s." % fd.tag)
+                log_func("Failed once to get lock for %s." % fd.URL)
                 continue
 
         # locks must be closed to avoid having a million
@@ -135,7 +146,21 @@ def main(cfg, optlist, verbose=False, force=False):
         if time.time() - curfeed["canto_update"] < fd.rate * 60 and not force:
             os.unlink(lpath)
             continue
-        log_func("Updating %s" % fd.tag)
+
+        # Attempt to set the tag, if unspecified, by grabbing
+        # it out of the previously downloaded info.
+
+        if not hasattr(fd,"tag"):
+            if curfeed.has_key("feed") and curfeed["feed"].has_key("title"):
+                fd.tag = curfeed["feed"]["title"]
+                log_func("Updating %s" % fd.tag)
+            else:
+                # This is the first time we've gotten this URL,
+                # so just use the URL since we don't know the title.
+
+                log_func("New feed %s" % fd.URL)
+        else:
+            log_func("Updating %s" % fd.tag)
 
         try:
             newfeed = feedparser.parse(feedparser.urllib2.urlopen(fd.URL))
@@ -143,8 +168,18 @@ def main(cfg, optlist, verbose=False, force=False):
             # Generally an exception is a connection refusal, but in any
             # case we either won't get data or can't trust the data, so
             # just skip processing this feed.
+
             log_func("Exception trying to get feed: %s" % sys.exc_info()[1])
+            os.unlink(lpath)
             continue
+
+        if not hasattr(fd,"tag"):
+            if newfeed.has_key("feed") and newfeed["feed"].has_key("title"):
+                fd.tag = newfeed["feed"]["title"]
+            else:
+                log_func("Ugh. Defaulting to URL for tag. No guarantees.")
+                newfeed["feed"]["title"] = fd.URL
+                fd.tag = fd.URL
 
         # Feedparser returns a very nice dict of information.
         # if there was something wrong with the feed (usu. encodings
@@ -162,7 +197,6 @@ def main(cfg, optlist, verbose=False, force=False):
         # Make state persist between feeds
         newfeed["canto_state"] = curfeed["canto_state"]
         newfeed["canto_update"] = time.time()
-
         
         # For all content that we would usually use, we convert
         # it to UTF-8 and escape all %s with \. Feedparser
@@ -173,6 +207,10 @@ def main(cfg, optlist, verbose=False, force=False):
             s = s.encode("UTF-8")
             s = s.replace("\\","\\\\")
             return s.replace("%", "\\%")
+
+        for key in newfeed["feed"]:
+            if type(newfeed["feed"][key]) in [unicode,str]:
+                newfeed["feed"][key] = encode_and_escape(newfeed["feed"][key])
 
         for entry in newfeed["entries"]:
             if entry.has_key("content"):

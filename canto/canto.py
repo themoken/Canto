@@ -174,14 +174,6 @@ class Main():
             self.cfg.log("Pausing to update...")
             canto_fetch.main(self.cfg, [], True, True)
 
-        # Print out a feed list, bail
-        if flags & FEED_LIST:
-            for f in self.cfg.feeds:
-                print f.tag
-            sys.exit(0)
-
-        self.stories = []
-
         # Detect if there are any new feeds by whether their
         # set path exists. If not, run canto-fetch but don't
         # force it, so canto-fetch intelligently updates.
@@ -193,12 +185,20 @@ class Main():
                 self.cfg.log("Fetched.")
                 break
 
+        self.stories = []
+
         # Force an update from disk
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds :
             f.time = 1
             f.tick()
             self.filter_extend(f)
+
+        # Print out a feed list, bail
+        if flags & FEED_LIST:
+            for f in self.cfg.feeds:
+                print f.tag
+            sys.exit(0)
 
         if flags & OUT_OPML:
             self.cfg.log("Outputting OPML")

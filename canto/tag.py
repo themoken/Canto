@@ -15,9 +15,9 @@ class Tag(list):
         self.start = 0
         self.read = 0
         self.unread = 0
-        self.sort = sort
+        self.sorts = sort
 
-    def search_stories(self, story, tk = 0):
+    def search_stories(self, story):
         for i in range(len(self)) :
             if self[i]["id"] == story["id"]:
                 return i
@@ -50,7 +50,7 @@ class Tag(list):
     def extend(self, iter):
         list.extend(self, [s for s in iter if self.tag in s["canto_state"]])
 
-        for s in self.sort:
+        for s in self.sorts:
             if s:
                 list.sort(self, s)
 

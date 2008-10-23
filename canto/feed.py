@@ -32,9 +32,12 @@ import cPickle
 class Feed(tag.Tag):
     def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist,
             sort):
-        tag.Tag.__init__(self, sort, t)
-        self.ufp = None
 
+        if t:
+            tag.Tag.__init__(self, sort, t)
+
+        self.ufp = None
+        self.sorts = sort
         self.path = dirpath
         self.lpath = dirpath + ".lock"
         self.URL = URL
@@ -68,6 +71,11 @@ class Feed(tag.Tag):
         f.close()
 
         self.unlock()
+
+        if not hasattr(self, "tag"):
+            tag.Tag.__init__(self, self.sorts, \
+                    self.ufp["feed"]["title"].encode("UTF-8"))
+
         self.__do_extend()
         return 1
 

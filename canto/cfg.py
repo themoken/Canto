@@ -192,11 +192,11 @@ class Cfg:
         kwargs = self.wrap_args(kwargs)
 
         # The tag is the only thing that has to be unique, so we ignore
-        # any duplicate feed names, or everything  will break.
+        # any duplicate URLs, or everything  will break.
 
-        if not tag in [f.tag for f in self.feeds]:
+        if not URL in [f.URL for f in self.feeds]:
             self.feeds.append(feed.Feed(self, self.feed_dir +\
-                    tag.replace("/", " "), tag, URL,\
+                    URL.replace("/", " "), tag, URL,\
                     kwargs["rate"],\
                     kwargs["keep"],\
                     kwargs["renderer"],\
