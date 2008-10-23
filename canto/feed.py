@@ -71,10 +71,9 @@ class Feed(tag.Tag):
             self.ufp = cPickle.load(f)
             f.close()
         except:
-            self.unlock()
             return 0
-
-        self.unlock()
+        finally:
+            self.unlock()
 
         if not hasattr(self, "tag"):
             tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
