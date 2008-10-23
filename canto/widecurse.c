@@ -7,7 +7,6 @@
 
 #include <Python.h>
 #include <py_curses.h>
-#include <ncursesw/ncurses.h>
 
 char *lstrip(char *s)
 {
@@ -47,7 +46,6 @@ static PyObject *tlen(PyObject *self, PyObject *args)
 {
     char *message;
     char end = 0;
-    int ret = 0;
 
     if(!PyArg_ParseTuple(args, "s|c", &message, &end))
             return NULL;
