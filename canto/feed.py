@@ -66,9 +66,12 @@ class Feed(tag.Tag):
         if not self.lock():
             return 0
 
-        f = open(self.path, "rb")
-        self.ufp = cPickle.load(f)
-        f.close()
+        try:
+            f = open(self.path, "rb")
+            self.ufp = cPickle.load(f)
+            f.close()
+        except:
+            return 0
 
         self.unlock()
 
