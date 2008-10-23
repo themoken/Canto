@@ -10,6 +10,11 @@ Canto-fetch is meant to be used through a cron, adding this line to your crontab
 
 * * * * * canto-fetch
 
+Alternatively, if you're unable/uncomfortable using cron, canto-fetch has a
+daemon mode so you can invoke it in your X session scripts. Just use
+
+canto-fetch -d &
+
 .SH USAGE
 These options correspond to options to the canto client.
 
@@ -24,6 +29,10 @@ Print version and quit.
 .TP
 -V / --verbose
 Output status while updating.
+
+.TP
+-d / --daemon
+Continue to check for updates every minute.
 
 .TP
 -f / --force

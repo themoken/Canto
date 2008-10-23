@@ -1,3 +1,8 @@
+Canto 0.5.5 ChangeLog
+* Allow add_feed() to be called without a tag
+* Add canto-fetch -d (daemon mode)
+* Improved signal handling.
+
 Canto 0.5.4 ChangeLog
 * Fix renderer overrides
 

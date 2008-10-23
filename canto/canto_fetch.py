@@ -265,7 +265,6 @@ def update(fd, fpath, force, log_func):
         if not entry.has_key("canto_state"):
             entry["canto_state"] = [ fd.tag, "unread", "*", "new"]
 
-    
     # Tailor the list to the correct number of items.
     if len(newfeed["entries"]) < fd.keep:
         newfeed["entries"] += \
