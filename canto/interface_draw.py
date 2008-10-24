@@ -30,6 +30,9 @@ class Renderer :
             # Strip leading linebreaks.
             (re.compile("^[\n\\s]*"), ""),
 
+            # Strip trailing linebreaks.
+            (re.compile("[\n\\s]*$"), ""),
+
             # Add spaces for splitting.
             (re.compile("\\\n"), "\n ")]
 
