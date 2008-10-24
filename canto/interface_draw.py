@@ -15,17 +15,20 @@ class Renderer :
             # Highlight quotes in color 5
             (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
 
+            # Do something smart with lists.
+            (re.compile("[\\s\n]*(<[/]ul.*?>|<[/]ol.*?>)[\\s\n]*"), "\n\n"),
+            (re.compile("<li.*?>"), "• "),
+            (re.compile("</li.*?>[\\s\n]*"), "\n"),
+
             # Convert linebreaks
             (re.compile("<p.*?>|<pre.*?>|<blockquote.*?>|<div.*?>"), "\n\n"),
             (re.compile("<br.*?>"), "\n"),
 
-            # Do something smart with lists.
-            (re.compile("<ul.*?>|<ol.*?>"), "\n\n"),
-            (re.compile("<li.*?>"), "• "),
-            (re.compile("</li.*?>"), "\n"),
-
             # Consolidate more than two linebreaks.
-            (re.compile("(\\\n){3,}"), "\n\n"),
+            (re.compile("(\n){3,}"), "\n\n"),
+
+            # Strip leading linebreaks.
+            (re.compile("^[\n\\s]*"), ""),
 
             # Add spaces for splitting.
             (re.compile("\\\n"), "\n ")]
