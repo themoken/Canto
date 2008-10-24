@@ -226,7 +226,7 @@ class Main():
                 else:
                     type = "rss"
 
-                print """\t<outline title="%s" xmlUrl="%s" type="%s" />""" %\
+                print """\t<outline text="%s" xmlUrl="%s" type="%s" />""" %\
                         (feed.tag, feed.URL, type)
 
             print """</body>"""
