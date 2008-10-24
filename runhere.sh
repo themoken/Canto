@@ -14,11 +14,7 @@ export PYTHONPATH="$PWD/root/lib/python$PYVER/site-packages:$OLDPPATH"
 export MANPATH="$PWD/root/share/man:$OLDMPATH"
 
 bin/canto-fetch -d &
-bin/canto
-
-killall -9 canto-fetch
+bin/canto -u
 
 export PYTHONPATH=$OLDPPATH
 export MANPATH=$OLDMPATH
-
-rm -rf $PWD/root
