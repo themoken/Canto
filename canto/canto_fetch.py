@@ -114,7 +114,6 @@ def main(cfg, optlist, verbose=False, force=False):
             os.unlink(lpath)
         except:
             log_func("Failed to release lock for %s" % fd.tag)
-            pass
     
     log_func("Gracefully exiting Canto-fetch.")
     return 0

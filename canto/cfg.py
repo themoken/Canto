@@ -185,6 +185,9 @@ class Cfg:
     # so that set defaults are applied at that point.
 
     def addfeed(self, tag, URL, **kwargs):
+        if (not URL) or URL == "":
+            return -1
+
         for key in ["keep","rate","renderer","filterlist","sort"]:
             if not kwargs.has_key(key):
                 kwargs[key] = getattr(self, "default_" + key)
@@ -306,7 +309,8 @@ class Cfg:
             "reader_keys" : self.reader_key_list,
             "columns" : self.columns,
             "colors" : self.colors,
-            "source_opml" : self.source_opml}
+            "source_opml" : self.source_opml,
+            "source_urls" : self.source_urls}
 
         # The entirety of the config is read in first (rather
         # than using execfile) because the config could be in
@@ -348,28 +352,53 @@ class Cfg:
             self.log("filter_idx not in range, set to 0")
             self.filter_idx = 0
 
-    def source_opml(self, filename, **kwargs):
-        append = False
-        if kwargs.has_key("append"):
-            append = kwargs["append"]
-            file = open(self.path, "a")
+    def source(fn):
+        def source_dec(self, *args, **kwargs):
+            append = False
+            if kwargs.has_key("append"):
+                append = kwargs["append"]
+                file = open(self.path, "a")
 
+            l = fn(self, *args, **kwargs)
+
+            for f in l:
+                if self.addfeed(f[0],f[1]) and append:
+                    if f[0]:
+                        file.write("""add_feed("%s","%s")\n""" % f) 
+                    else:
+                        file.write("""add_feed(None,"%s")\n""" % f[1])
+
+            if append:
+                file.close()
+        return source_dec
+   
+    @source
+    def source_opml(self, filename, **kwargs):
+        l = []
         def start(name, attrs) : 
             if name == "outline" and (\
                 ((attrs.has_key("type") and\
                 attrs["type"] in ["pie","rss"])) or\
                 not attrs.has_key("type")):
-                if self.addfeed(attrs["text"].encode("UTF-8"),\
-                        attrs["xmlUrl"]) and append:
-                    file.write("""addfeed("%s","%s")\n""" %
-                        (attrs["text"], attrs["xmlUrl"]))
+
+                l.append((attrs["text"].encode("UTF-8"),attrs["xmlUrl"]))
 
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = start
         d = self.read_decode(filename)
         p.Parse(d, 1)
-        if append:
-            file.close()
+        return l
+
+    @source
+    def source_urls(self, filename, **kwargs):
+        l = []
+        f = open(filename, "r")
+        d = f.read().split('\n')[:-1]
+        f.close()
+
+        for feed in d:
+            l.append((None, feed))
+        return l
 
     # Key-binds for feed based filtering.
     def next_filter(self):
