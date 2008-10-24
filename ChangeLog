@@ -6,6 +6,7 @@ Canto 0.5.5 ChangeLog
 * Fix OPML export output
 * Fix Canto hang after help
 * Cleanup C compile warning
+* More rendering cleanups
 
 Canto 0.5.4 ChangeLog
 * Fix renderer overrides
