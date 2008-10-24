@@ -67,7 +67,7 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         if sys.argv[0].endswith("canto"):
-            shortopts = 'hvulaoin:D:C:L:F:'
+            shortopts = 'hvulaoi:n:D:C:L:F:'
             longopts =   ["help","version","update","list","checkall","opml",\
                          "import","checknew=", "dir=", "conf=","log=","fdir="]
             iam = "canto"
