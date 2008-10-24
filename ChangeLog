@@ -1,7 +1,11 @@
 Canto 0.5.5 ChangeLog
-* Allow add_feed() to be called without a tag
+* Allow add_feed() to be called without a tag (name)
 * Add canto-fetch -d (daemon mode)
-* Improved signal handling.
+* Add runhere.sh script to run canto straight from source
+* Add source_urls
+* Fix OPML export output
+* Fix Canto hang after help
+* Cleanup C compile warning
 
 Canto 0.5.4 ChangeLog
 * Fix renderer overrides
