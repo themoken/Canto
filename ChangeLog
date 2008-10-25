@@ -1,3 +1,9 @@
+Canto 0.5.6 ChangeLog
+* Fix OPML import
+* Fix changing feed names immediately
+* Two feeds with the same name are now merged
+* Add -b (background flag) to canto-fetch
+
 Canto 0.5.5 ChangeLog
 * Allow add_feed() to be called without a tag (name)
 * Add canto-fetch -d (daemon mode)
