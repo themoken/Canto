@@ -87,6 +87,12 @@ class Feed(tag.Tag):
 
     def __do_extend(self):
         self.clear()
+
+        # This happens if the feed name was changed.
+        for entry in self.ufp["entries"]:
+            if entry["canto_state"][0] != self.tag:
+                entry["canto_state"][0] = self.tag
+
         if self.filterlist[self.filter_idx]:
             self.extend(filter(\
                     lambda x: self.filterlist[self.filter_idx](self,x),\
