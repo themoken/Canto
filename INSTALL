@@ -3,7 +3,7 @@
 =REQUIREMENTS=
 - Python >=2.4 (tested mostly on 2.5.1)
 - NCursesw >=5.5 (yes, Unicode is a requirement)
-- Feedparser
+- Feedparser, chardet
 
 =BUILDING=
 - Python development headers
@@ -12,3 +12,5 @@
 
 =INSTALL=
 - `python setup.py install` will install the files to your root.
+- `./runhere.sh` will install the files to the current directory and run 
+   canto without being installed.
