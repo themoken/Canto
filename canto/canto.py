@@ -327,13 +327,6 @@ class Main():
             if not len(self.key_handlers):
                 self.done()
 
-            # We break out of this with SIGCHLD
-            if self.cfg.wait_for_pid:
-                while self.cfg.wait_for_pid:
-                    pass
-                signal.signal(signal.SIGALRM, self.alarm)
-                self.refresh()
-
             t = None
             k = self.cfg.stdscr.getch()
 
@@ -404,6 +397,8 @@ class Main():
         pid,none = os.wait()
         if self.cfg.wait_for_pid == pid:
             self.cfg.wait_for_pid = 0
+            signal.signal(signal.SIGALRM, self.alarm)
+            self.resize = 1
 
     # The reason KEY_RESIZE is used is that it's unsafe to 
     # do much of anything but set a flag in a signal handler,
