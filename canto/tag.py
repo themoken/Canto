@@ -17,6 +17,9 @@ class Tag(list):
         self.unread = 0
         self.sorts = sort
 
+    def __eq__(self, other):
+        return self.tag == other.tag
+
     def search_stories(self, story):
         for i in range(len(self)) :
             if self[i]["id"] == story["id"]:
