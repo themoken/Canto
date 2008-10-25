@@ -14,6 +14,23 @@ import signal
 import htmlentitydefs
 import curses
 
+def daemonize():
+    pid = os.fork()
+    if not pid:
+        os.setsid()
+        os.chdir("/")
+        os.umask(0)
+        pid = os.fork()
+        if pid:
+            sys.exit(0)
+    else:
+        sys.exit(0)
+
+    os.close(0)
+    os.close(1)
+    os.close(2)
+
+
 def convcolor(c):
     colordir = {"default" : -1, 
             "black" : 0, 

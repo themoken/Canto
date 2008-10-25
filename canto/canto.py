@@ -39,11 +39,12 @@ def print_canto_usage():
 
 def print_fetch_usage():
     print "USAGE: canto-fetch [-hvVfdDCLF]"
-    print "--help      -h        This help."
-    print "--version   -v        Print version info."
-    print "--verbose   -V        Print extra info while running."
-    print "--force     -f        Force update, regardless of timeestamps."
-    print "--daemon    -d        Run as a daemon."
+    print "--help       -h       This help."
+    print "--version    -v       Print version info."
+    print "--verbose    -V       Print extra info while running."
+    print "--force      -f       Force update, regardless of timeestamps."
+    print "--daemon     -d       Run as a daemon."
+    print "--background -b       Background (implies -d)"
     print ""
     print_common_usage()
 
@@ -72,9 +73,9 @@ class Main():
                          "import","checknew=", "dir=", "conf=","log=","fdir="]
             iam = "canto"
         elif sys.argv[0].endswith("canto-fetch"):
-            shortopts = 'hvVfdD:C:L:F:'
+            shortopts = 'hvVfdbD:C:L:F:'
             longopts =   ["help","version","verbose","force","dir=",\
-                         "conf=", "log=", "fdir=","daemon"]
+                         "conf=", "log=", "fdir=","daemon","background"]
             iam = "fetch"
         else:
             print "No idea how you called me..."
@@ -139,15 +140,26 @@ class Main():
         self.cfg.log("Config parsed successfully.")
 
         if iam == "fetch":
+            daemon = False
+            background = False
             for opt, arg in optlist :
                 if opt in ["-d","--daemon"]:
-                    while 1:
-                        canto_fetch.main(self.cfg, optlist)
-                        time.sleep(60)
-                        try :
-                            self.cfg = cfg.Cfg(conf_file, log_file, feed_dir)
-                        except:
-                            pass
+                    daemon = True
+                if opt in ["-b","--background"]:
+                    background = True
+                    daemon = True
+
+            if background:
+                utility.daemonize()
+
+            if daemon:
+                while 1:
+                    canto_fetch.main(self.cfg, optlist)
+                    time.sleep(60)
+                    try :
+                        self.cfg = cfg.Cfg(conf_file, log_file, feed_dir)
+                    except:
+                        pass
             sys.exit(canto_fetch.main(self.cfg, optlist))
 
         flags = 0 
