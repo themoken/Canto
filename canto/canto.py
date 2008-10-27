@@ -328,6 +328,11 @@ class Main():
                 self.done()
 
             t = None
+
+            if self.cfg.wait_for_pid:
+                time.sleep(0.5)
+                continue
+
             k = self.cfg.stdscr.getch()
 
             # KEY_RESIZE is the only key not propagated, to
