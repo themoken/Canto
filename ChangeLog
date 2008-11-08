@@ -1,3 +1,8 @@
+Canto 0.5.7 ChangeLog
+* Add -r flag to add URL from the command line.
+* Added save() example keybind to canto/extra.py
+* Fix nasty text browser problems from 0.5.6
+
 Canto 0.5.6 ChangeLog
 * Fix OPML import
 * Fix changing feed names immediately
