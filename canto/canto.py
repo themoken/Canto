@@ -189,9 +189,14 @@ class Main():
 
         if flags & IN_OPML:
             self.cfg.source_opml(opml_file, append=True)
+            print "OPML imported."
 
         if flags & IN_URL:
             self.cfg.source_url(url, append=True)
+            print "URL added."
+
+        if flags & (IN_OPML + IN_URL):
+            sys.exit(0)
 
         # If self.cfg had to generate a config, make sure we
         # update first.
