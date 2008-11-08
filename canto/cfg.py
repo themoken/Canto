@@ -400,6 +400,10 @@ class Cfg:
             l.append((None, feed))
         return l
 
+    @source
+    def source_url(self, URL, **kwargs):
+        return [(None, URL)]
+
     # Key-binds for feed based filtering.
     def next_filter(self):
         if self.filter_idx < len(self.filterlist) - 1:

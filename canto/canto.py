@@ -31,9 +31,11 @@ def print_canto_usage():
     print "--list      -l        List configured feeds."
     print "--checkall  -a        Prints number of new items."
     print "--checknew  -n [feed] Prints number of items that are new in feed."
+
     print ""
     print "--opml      -o        Convert conf to OPML and print to stdout."
     print "--import    -i [path] Add feeds from OPML file to conf."
+    print "--url       -r [url]  Add feed at URL to conf."
     print ""
     print_common_usage()
 
@@ -68,9 +70,9 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         if sys.argv[0].endswith("canto"):
-            shortopts = 'hvulaoi:n:D:C:L:F:'
-            longopts =   ["help","version","update","list","checkall","opml",\
-                         "import","checknew=", "dir=", "conf=","log=","fdir="]
+            shortopts = 'hvulaor:i:n:D:C:L:F:'
+            longopts = ["help","version","update","list","checkall","opml",\
+                    "import=","url=","checknew=","dir=","conf=","log=","fdir="]
             iam = "canto"
         elif sys.argv[0].endswith("canto-fetch"):
             shortopts = 'hvVfdbD:C:L:F:'
@@ -181,9 +183,15 @@ class Main():
             elif opt in ["-i","--import"] :
                 flags |= IN_OPML
                 opml_file = arg
+            elif opt in ["-r","--url"] :
+                flags |= IN_URL
+                url = arg
 
         if flags & IN_OPML:
             self.cfg.source_opml(opml_file, append=True)
+
+        if flags & IN_URL:
+            self.cfg.source_url(url, append=True)
 
         # If self.cfg had to generate a config, make sure we
         # update first.
@@ -200,13 +208,20 @@ class Main():
         # set path exists. If not, run canto-fetch but don't
         # force it, so canto-fetch intelligently updates.
 
-        for f in self.cfg.feeds :
+        for i,f in enumerate(self.cfg.feeds) :
             if not os.path.exists(f.path):
-                self.cfg.log("Detected unfetched feed: %s." % f.URL)
+                self.cfg.log("\nDetected unfetched feed: %s." % f.URL)
                 canto_fetch.main(self.cfg, [], True, False)
-                self.cfg.log("Fetched.")
+
+                #Still no go?
+                if not os.path.exists(f.path):
+                    self.cfg.log("Failed to fetch %s, removing\n" % f.URL)
+                    self.cfg.feeds[i] = None
+                else:
+                    self.cfg.log("Fetched.\n")
                 break
 
+        self.cfg.feeds = filter(None, self.cfg.feeds)
         self.stories = []
 
         # Force an update from disk
