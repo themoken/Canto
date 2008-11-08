@@ -226,7 +226,7 @@ class Main():
                     self.cfg.log("Fetched.\n")
                 break
 
-        self.cfg.feeds = filter(None, self.cfg.feeds)
+        self.cfg.feeds = filter(lambda x: x != None, self.cfg.feeds)
         self.stories = []
 
         # Force an update from disk
