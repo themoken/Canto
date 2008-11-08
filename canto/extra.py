@@ -92,6 +92,18 @@ def search(s, **kwargs):
     else:
         return lambda x : x.do_inline_search(re.compile(".*" + s + ".*"))
 
+# Creates a keybind to append current story information to a file in the user's
+# home directory. This is merely an example, but with a little modification it
+# could be used to output XML chunks or Markdown output, etc.
+# 
+# Usage : keys["s"] = save
+
+def save(x):
+    file = open(os.getenv("HOME")+"/canto_out", "a")
+    file.write(x.sel["title"] + "\n")
+    file.write(x.sel["link"] + "\n\n")
+    file.close()
+
 # Note: the following two hacks are for xterm and compatible
 # terminal emulators ([u]rxvt, eterm, aterm, etc.). These should
 # not be run in screen or standard linux terms because they'll
