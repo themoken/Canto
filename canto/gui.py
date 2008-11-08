@@ -352,7 +352,7 @@ class Gui :
     @change_selected
     def next_filtered(self, f) :
         cursor = self.sel_idx + 1
-        while not cursor >= self.items - 1:
+        while not cursor >= self.items:
             if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
                 self.sel_idx = cursor
                 break
