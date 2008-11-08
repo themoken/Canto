@@ -11,9 +11,9 @@ Canto-fetch is meant to be used through a cron, adding this line to your crontab
 * * * * * canto-fetch
 
 Alternatively, if you're unable/uncomfortable using cron, canto-fetch has a
-daemon mode so you can invoke it in your X session scripts. Just use
+background daemon mode so you can invoke it in your X session scripts. Just use
 
-canto-fetch -d &
+canto-fetch -b
 
 .SH USAGE
 These options correspond to options to the canto client.
@@ -32,7 +32,8 @@ Output status while updating.
 
 .TP
 -d / --daemon
-Continue to check for updates every minute.
+Continue to check for updates every minute. Mostly for debugging with -V, users
+probably want -b to background.
 
 .TP
 -b / --background
