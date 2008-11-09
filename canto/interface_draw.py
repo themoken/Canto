@@ -1,11 +1,20 @@
 # -*- coding: utf-8 -*-
 from widecurse import core, tlen
+import html2text
 import utility
 import re
 
+html2text.UNICODE_SNOB = 1
+html2text.BODY_WIDTH = 0
+
 class Renderer :
     def __init__(self):
-        self.story_rgx = []
+        self.story_rgx = [
+            # Eliminate extraneous HTML
+            (re.compile("<.*?>"), ""),
+
+            # Eliminate HTML entities
+            (html2text.r_unescape, html2text.replaceEntities)]
 
         self.reader_rgx = [
             # Strip out newlines for formatting.
@@ -13,37 +22,8 @@ class Renderer :
             (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
 
             # Highlight quotes in color 5
-            (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1"),
+            (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1")]
 
-            # Do something smart with lists.
-            (re.compile("[\\s\n]*(<[/]ul.*?>|<[/]ol.*?>)[\\s\n]*"), "\n\n"),
-            (re.compile("<li.*?>"), "• "),
-            (re.compile("</li.*?>[\\s\n]*"), "\n"),
-
-            # Convert linebreaks
-            (re.compile("<p.*?>|<pre.*?>|<blockquote.*?>|<div.*?>"), "\n\n"),
-            (re.compile("<br.*?>"), "\n"),
-
-            # Consolidate more than two linebreaks.
-            (re.compile("(\n){3,}"), "\n\n"),
-
-            # Strip leading linebreaks.
-            (re.compile("^[\n\\s]*"), ""),
-
-            # Strip trailing linebreaks.
-            (re.compile("[\n\\s]*$"), ""),
-
-            # Add spaces for splitting.
-            (re.compile("\\\n"), "\n ")]
-
-        self.common_rgx = [
-            # Strip any remaining HTML
-            (re.compile("<.*?>"), ""),
-
-            # Replace any HTML entities
-            (re.compile("&(\w{1,8});"), utility.getentity),
-            (re.compile("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"), utility.getchar)]
-   
     def tag_head(self, tag):
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
         if tag.collapsed:
@@ -82,7 +62,7 @@ class Renderer :
         return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
     def reader_head(self, story):
-        title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = self.do_regex(story["title"], self.story_rgx)
         return [("%1%B" + title, " ", " "),("┌","─","┐%C")]
 
     def reader_foot(self, story):
@@ -154,15 +134,14 @@ class Renderer :
 
         return row + line
 
-    def do_regex(self, target, l):
-        s = target
-        for rlist in l:
-            for rgx,rep in rlist:
-                s = rgx.sub(rep,s)
-        return s
+    def do_regex(self, target, rlist):
+        s = unicode(target, "UTF-8")
+        for rgx,rep in rlist:
+            s = rgx.sub(rep,s)
+        return s.encode("UTF-8")
     
     def story(self, tag, story, row, height, width, window_list):
-        title = self.do_regex(story["title"], [self.story_rgx, self.common_rgx])
+        title = self.do_regex(story["title"], self.story_rgx)
         title = title.lstrip().rstrip()
 
         if story.idx == 0:
@@ -193,7 +172,8 @@ class Renderer :
         else:
             s = story["description"]
 
-        s = self.do_regex(s, [self.reader_rgx, self.common_rgx])
+        s = self.do_regex(s, self.reader_rgx)
+        s = html2text.html2text(unicode(s, "UTF-8")).encode("UTF-8")
 
         l = s.split("\n")
         if show_links:
