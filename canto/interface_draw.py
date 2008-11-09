@@ -6,6 +6,7 @@ import re
 
 html2text.UNICODE_SNOB = 1
 html2text.BODY_WIDTH = 0
+html2text.SKIP_INTERNAL_LINKS = True
 
 class Renderer :
     def __init__(self):
@@ -18,8 +19,8 @@ class Renderer :
 
         self.reader_rgx = [
             # Strip out newlines for formatting.
-            (re.compile("<img.*?>"), "[image]"),
-            (re.compile("<a\s+href=\".*?\".*?>(.*?)</\s*a\s*>"), "%4\\1%1"),
+            (re.compile("<a\s+.*?>(.*?)</a\s*>"), "%4\\1%1"),
+            (re.compile("<img\s+.*?>"), "[image]"),
 
             # Highlight quotes in color 5
             (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1")]
