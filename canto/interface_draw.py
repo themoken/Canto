@@ -20,6 +20,9 @@ class Renderer :
         self.bq = "%B%1│%0%b "
         self.bq_on = 0
 
+        self.indent = "  "
+        self.in_on = 0
+
     def tag_head(self, tag):
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
         if tag.collapsed:
@@ -101,14 +104,26 @@ class Renderer :
         line = 0
         for s, l in list:
             if s:
-                if s.startswith("%Q"):
-                    self.bq_on += 1
+                while s[:2] in ["%Q","%I"]:
+                    if s.startswith("%Q"):
+                        self.bq_on += 1
+                    else:
+                        self.in_on += 1
                     s = s[2:]
+
                 if self.bq_on:
-                    l = [(e[0] + self.bq * self.bq_on\
-                            , e[1],e[2]) for e in l]
-                if s.endswith("%q"):
-                    self.bq_on -= 1
+                    l = [(e[0] + self.bq * self.bq_on,\
+                            e[1],e[2]) for e in l]
+                if self.in_on:
+                    l = [(e[0] + self.indent * self.in_on,\
+                            e[1],e[2]) for e in l]
+               
+                while s[-2:] in ["%q","%i"]:
+                    if s.endswith("%q"):
+                        self.bq_on -= 1
+                    else:
+                        self.in_on -= 1
+                    s = s[:-2]
 
             while s :
                 window, winrow = self.__window(row + line, height, window_list)

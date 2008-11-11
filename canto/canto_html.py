@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 #Canto - ncurses RSS reader
 #   Copyright (C) 2008 Jack Miller <jack@codezen.org>
 #
@@ -75,23 +77,21 @@ class CantoHTML(sgmllib.SGMLParser):
                 self.result += "^"
         elif tag in ["p", "br", "div"]:
             self.result += "\n"
-        elif tag in ["ul"]:
+        elif tag in ["ul", "ol"]:
             if not close:
-                self.list_stack.append(["ul",0])
+                self.result += "\n%I"
+                self.list_stack.append([tag,0])
             else:
                 self.list_stack.pop()
-        elif tag in ["ol"]:
-            if not close:
-                self.list_stack.append(["ol",0])
-            else:
-                self.list_stack.pop()
+                self.result += "%i\n"
         elif tag in ["li"]:
             if not close:
+                self.result += "\n"
                 if self.list_stack[-1][0] == "ul":
-                    self.result += u"\n\u25CF "
+                    self.result += u"\u25CF "
                 else:
                     self.list_stack[-1][1] += 1
-                    self.result += "\n" + str(self.list_stack[-1][1])+ "."
+                    self.result += str(self.list_stack[-1][1])+ "."
             else:
                 self.result += "\n"
         elif tag in ["a"]:
@@ -122,3 +122,11 @@ def convert(s):
     r = instance.result
     instance.reset()
     return r.encode("UTF-8")
+
+if __name__ == "__main__":
+    print "Testing canto_html"
+    print "1. Proper list nesting"
+
+    print convert("<ul><li>Unordered</li><li>Some header text\
+            <ol><li>Ordered</li><li>Also ordered</li></ol>\
+            <li>Unordered, too</li></ul>")
