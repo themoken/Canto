@@ -1,40 +1,22 @@
 # -*- coding: utf-8 -*-
 from widecurse import core, tlen
-import html2text
+import canto_html
 import utility
 import re
-
-html2text.UNICODE_SNOB = 1
-html2text.BODY_WIDTH = 0
-html2text.SKIP_INTERNAL_LINKS = True
 
 class Renderer :
     def __init__(self):
         self.story_rgx = [
             # Eliminate extraneous HTML
-            (re.compile(u"<.*?>"), ""),
+            (re.compile("<.*?>"), "")]
 
-            # Eliminate HTML entities
-            (html2text.r_unescape, html2text.replaceEntities)]
+        self.reader_pre_rgx = []
 
-        self.reader_pre_rgx = [
-            # Strip out newlines for formatting.
-            (re.compile(u"<a\s+.*?>(.*?)</a\s*>"), u"%4\\1%1"),
-            (re.compile(u"<img\s+.*?>"), u"[image]"),
+        self.reader_post_rgx = [
+            (re.compile("[\\\"](.*?)[\\\"]"), "%5\"\\1\"%1")]
 
-            # Highlight quotes in color 5
-            (re.compile(u"[\\\"](.*?)[\\\"]"), u"%5\\1%1")]
-
-        # Most of these stem from not wanting to really change
-        # the content of html2text (so it can be rebased)
-
-        # The purpose of html2text is to generate markdown, which
-        # is great and all, but not the best for display in the
-        # reader.
-
-        self.reader_post_rgx = []
-
-        self.bq = "%B│%b"
+        self.bq = "%B%1│%0%b "
+        self.bq_on = 0
 
     def tag_head(self, tag):
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
@@ -116,9 +98,15 @@ class Renderer :
     def out(self, list, row, height, width, window_list):
         line = 0
         for s, l in list:
-            if s and s[0] == ">":
-                s = s[1:]
-                l = [(e[0] + self.bq, e[1],e[2]) for e in l]
+            if s:
+                if s.startswith("%Q"):
+                    self.bq_on += 1
+                    s = s[2:]
+                if self.bq_on:
+                    l = [(e[0] + self.bq * self.bq_on\
+                            , e[1],e[2]) for e in l]
+                if s.endswith("%q"):
+                    self.bq_on -= 1
 
             while s :
                 window, winrow = self.__window(row + line, height, window_list)
@@ -151,10 +139,10 @@ class Renderer :
         return row + line
 
     def do_regex(self, target, rlist):
-        s = unicode(target, "UTF-8")
+        s = target
         for rgx,rep in rlist:
             s = rgx.sub(rep,s)
-        return s.encode("UTF-8")
+        return s
     
     def story(self, tag, story, row, height, width, window_list):
         title = self.do_regex(story["title"], self.story_rgx)
@@ -189,7 +177,7 @@ class Renderer :
             s = story["description"]
 
         s = self.do_regex(s, self.reader_pre_rgx)
-        s = html2text.html2text(unicode(s, "UTF-8")).encode("UTF-8")
+        s = canto_html.convert(s)
         s = self.do_regex(s, self.reader_post_rgx)
 
         l = s.split("\n")
