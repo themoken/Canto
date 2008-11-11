@@ -21,6 +21,7 @@ class CantoHTML(sgmllib.SGMLParser):
         self.link_count = 0
         self.link_decoration = 1
         self.list_stack = []
+        self.verbatim = 0
 
     def unknown_starttag(self, tag, attrs):
         self.handle_tag(tag, attrs, 0)
@@ -29,7 +30,10 @@ class CantoHTML(sgmllib.SGMLParser):
         self.handle_tag(tag, {}, 1)
 
     def handle_data(self, text):
-        self.result += text
+        if self.verbatim > 0:
+            self.result += text
+        else:
+            self.result += text.replace("\n", " ")
 
     def convert_charref(self, ref):
         try:
@@ -52,6 +56,11 @@ class CantoHTML(sgmllib.SGMLParser):
                 self.result += "\n%Q"
             else:
                 self.result += "%q\n"
+        elif tag in ["pre","code"]:
+            if not close:
+                self.verbatim += 1
+            else:
+                self.verbatim -= 1
         elif tag in ["sup"]:
             if not close:
                 self.result += "^"
@@ -70,10 +79,12 @@ class CantoHTML(sgmllib.SGMLParser):
         elif tag in ["li"]:
             if not close:
                 if self.list_stack[-1][0] == "ul":
-                    self.result += u"\u25CF "
+                    self.result += u"\n\u25CF "
                 else:
                     self.list_stack[-1][1] += 1
-                    self.result += str(self.list_stack[-1][1])+ "."
+                    self.result += "\n" + str(self.list_stack[-1][1])+ "."
+            else:
+                self.result += "\n"
         elif tag in ["a"]:
             if not close:
                 self.result += "%4"
