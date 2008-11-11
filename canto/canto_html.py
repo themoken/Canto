@@ -73,7 +73,7 @@ class CantoHTML(sgmllib.SGMLParser):
                     self.result += u"\u25CF "
                 else:
                     self.list_stack[-1][1] += 1
-                    self.result += str(self.list_stack[-1][1])
+                    self.result += str(self.list_stack[-1][1])+ "."
         elif tag in ["a"]:
             if not close:
                 self.result += "%4"

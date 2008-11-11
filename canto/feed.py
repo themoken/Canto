@@ -35,6 +35,8 @@ class Feed(tag.Tag):
 
         if t:
             tag.Tag.__init__(self, sort, t)
+        else:
+            self.tag = None
 
         self.ufp = None
         self.sorts = sort
@@ -75,7 +77,7 @@ class Feed(tag.Tag):
         finally:
             self.unlock()
 
-        if not hasattr(self, "tag"):
+        if not self.tag:
             tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
 
         self.__do_extend()

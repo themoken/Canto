@@ -42,8 +42,7 @@ def main(cfg, optlist, verbose=False, force=False):
     # Rename any < 0.5.5 tag named files with > 0.5.5 URL named files.
 
     for file in os.listdir(cfg.feed_dir):
-        for tag, URL in [(f.tag, f.URL) for f in cfg.feeds \
-                if hasattr(f,"tag") ]:
+        for tag, URL in [(f.tag, f.URL) for f in cfg.feeds if f.tag ]:
             if file == tag.replace("/"," "):
                 log_func("Detected old disk format, converting.")
                 target = cfg.feed_dir + file
@@ -164,7 +163,7 @@ def update(fd, fpath, force, log_func):
     # Attempt to set the tag, if unspecified, by grabbing
     # it out of the previously downloaded info.
 
-    if not hasattr(fd,"tag"):
+    if not fd.tag:
         if curfeed.has_key("feed") and curfeed["feed"].has_key("title"):
             fd.tag = curfeed["feed"]["title"]
             log_func("Updating %s" % fd.tag)
@@ -186,7 +185,7 @@ def update(fd, fpath, force, log_func):
         log_func("Exception trying to get feed: %s" % sys.exc_info()[1])
         return
 
-    if not hasattr(fd,"tag"):
+    if not fd.tag:
         if newfeed.has_key("feed") and newfeed["feed"].has_key("title"):
             fd.tag = newfeed["feed"]["title"].encode("UTF-8")
         else:
