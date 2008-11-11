@@ -231,8 +231,13 @@ class Main():
 
         # Force an update from disk
         self.cfg.log("Populating feeds...")
+        for f in self.cfg.feeds:
+            f.time = 1
+            f.tick()
+            self.filter_extend(f)
+
         while None in [f.tag for f in self.cfg.feeds]:
-            for f in self.cfg.feeds :
+            for f in [ f for f in self.cfg.feeds if not f.tag]:
                 f.time = 1
                 f.tick()
                 self.filter_extend(f)
