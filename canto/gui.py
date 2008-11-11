@@ -18,7 +18,6 @@ import feed
 import reader
 import sys
 import tag
-import message
 import extra 
 
 # Gui() is the class encompassing the basic view of canto,
@@ -58,9 +57,6 @@ class Gui :
         self.offset = 0
         self.max_offset = 0
 
-        self.message = None
-        self.deferred = None
-
         register(self)
 
         # Populate the Tag() objects provided with
@@ -80,21 +76,18 @@ class Gui :
                 t[0].select()
                 break
         else:
-            self.message = message.Message(self.cfg, "No Items.")
+            self.cfg.log("No Items.")
 
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
-
-        if self.message:
-            return
 
         self.refresh()
 
     def refresh(self):
         # Generate all of the columns
-        self.window_list = [curses.newwin(self.cfg.height + 1, \
-                    self.cfg.width / self.cfg.columns, 0, \
-                    (self.cfg.width / self.cfg.columns) * i) \
+        self.window_list = [curses.newwin(self.cfg.gui_height, \
+                    self.cfg.gui_width / self.cfg.columns, 0, \
+                    (self.cfg.gui_width / self.cfg.columns) * i) \
                     for i in range(0, self.cfg.columns)]
 
         # Setup the backgrounds.
@@ -104,7 +97,7 @@ class Gui :
         # Self.lines is the maximum number of visible lines on the screen
         # at any given time. Used for scroll detection.
 
-        self.lines = self.cfg.columns * self.cfg.height
+        self.lines = self.cfg.columns * self.cfg.gui_height
 
         self.__map_items()
         self.draw_elements()
@@ -164,16 +157,12 @@ class Gui :
         
         # Actually perform curses screen update.
         for i,win in enumerate(self.window_list) :
-            if i * self.cfg.height >= row:
+            if i * self.cfg.gui_height >= row:
                 win.erase()
             else:
                 win.clrtobot()
             win.noutrefresh()
         curses.doupdate()
-
-        # If we've got a sub-window message open, refresh that.
-        if self.message:
-            self.message.refresh()
 
     def __check_scroll(self) :
         # If our current item is offscreen up, ret 1
@@ -195,7 +184,7 @@ class Gui :
             if self.items > 0:
                 return fn(self, *args)
             else:
-                self.message = message.Message(self.cfg, "No Items.")
+                self.cfg.log("No Items.")
         return ns_dec
 
     # This decorator lets the bind just change sel_idx and
@@ -235,10 +224,6 @@ class Gui :
         self.sel_idx = min(self.sel_idx, self.items - 1)
         
         if self.items > 0:
-            # If we have items, alarm() kills message.
-            if self.message:
-                self.message = None
-
             # Attempt to update sel_idx, if the item is still
             # visible (in self.map), otherwise just select
             # the top of the current (or first previous feed).
@@ -258,14 +243,10 @@ class Gui :
             else:
                 self.__select_topoftag(0)
 
-        # If we had a selection, and now no items, fire up a message.
-        elif self.sel and not self.message:
-            self.message = message.Message(self.cfg, "No Items.")
+        # If we had a selection, and now no items notify the user.
+        elif self.sel:
+            self.cfg.log("No Items.")
             self.sel = None
-
-        if self.deferred:
-            self.message = message.Message(self.cfg, self.deferred)
-            self.deferred = None
 
         if self.cfg.update_hook:
             self.cfg.update_hook(self)
@@ -285,11 +266,6 @@ class Gui :
                         item.old()
 
     def action(self, a):
-        # Clear message, if we have items
-        if self.items:
-            if self.message:
-                self.message = None
-
         # Allows user defined functions to manipulate Gui()
 
         if callable(a):
@@ -405,7 +381,7 @@ class Gui :
         def dec(self, *args):
             r,f = fn(self, *args)
             if r:
-                self.deferred = "Filter: %s" % f
+                self.cfg.log("Filter: %s" % f)
                 return ALARM
         return dec
 

@@ -27,7 +27,7 @@ class Reader :
         self.height = 0
         self.show_links = 0
         
-        self.max_height = self.cfg.height
+        self.max_height = self.cfg.gui_height
 
         register(self)
         self.register = register
@@ -41,7 +41,7 @@ class Reader :
         self.lines = self.story.renderer.reader(self.story, \
                 self.cfg.width, self.links, self.show_links, None)
 
-        self.height, self.width = min(self.lines, self.cfg.height),\
+        self.height, self.width = min(self.lines, self.max_height),\
                 self.cfg.width
         self.window = curses.newpad(self.lines, self.cfg.width)
         self.window.bkgdset(curses.color_pair(1))
@@ -86,9 +86,9 @@ class Reader :
         except:
             return
 
-        if i in range(len(self.links)) :
+        if i < len(self.links):
             utility.goto(self.links[i][0], self.cfg)
-        self.draw_elements()
+        return 1
 
     def goto(self):
         input.Input(self.cfg, " Link Number ", self.__dogoto, \

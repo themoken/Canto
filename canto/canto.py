@@ -471,6 +471,18 @@ class Main():
         curses.endwin()
         self.cfg.stdscr.refresh()
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
+
+        self.cfg.gui_height = self.cfg.height - self.cfg.msg_height 
+        self.cfg.gui_width = self.cfg.width
+
+        self.cfg.msg = curses.newwin(self.cfg.msg_height,\
+                self.cfg.width, self.cfg.gui_height, 0)
+        self.cfg.msg.bkgdset(curses.color_pair(1))
+        self.cfg.msg.scrollok(True)
+        self.cfg.msg.idlok(True)
+        self.cfg.msg.erase()
+        self.cfg.msg.refresh()
+
         self.cfg.stdscr.keypad(1)
 
         if self.cfg.resize_hook:

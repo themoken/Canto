@@ -180,13 +180,6 @@ class Renderer :
     
         return row
 
-    def message(self, message, width, window):
-        row = self.simple_out([("%B┌","─","┐")], 0, -1, width, [window])
-        row = self.out([[message, [("%B│%b%1 ", " ", " %1%B│%b")]*3]], \
-                row, -1, width, [window])
-        row = self.simple_out([("└","─","┘%C")], row, -1, width, [window])
-        return row
-
     def reader(self, story, width, links, show_links, window):
         if story.has_key("content"):
             s = story["content"][0]["value"]
@@ -207,11 +200,4 @@ class Renderer :
         row = self.out([[x, (self.rfirsts(story), self.rmids(story),
             self.rends(story))] for x in l], row, -1, width, [window])
         row = self.simple_out(self.reader_foot(story), row, -1, width, [window])
-        return row
-
-    def box(self, caption, width, window):
-        row = self.simple_out([("%B┌" + caption,"─","┐")], \
-                0, -1, width, [window])
-        row = self.simple_out([("│"," ","│")], row, -1, width, [window])
-        row = self.simple_out([("└","─","┘%C")], row, -1, width, [window])
         return row

@@ -101,6 +101,12 @@ class Cfg:
         self.height = 0
         self.width = 0
 
+        self.gui_height = 0
+        self.gui_width = 0
+
+        self.msg_height = 1
+        self.msg = None
+
         self.resize_hook = None
         self.new_hook = None
         self.select_hook = None
@@ -159,6 +165,9 @@ class Cfg:
     # Simple append log.
 
     def log(self, message, mode="a"):
+        if self.msg:
+            self.msg.addstr("\n" + message)
+            self.msg.refresh()
         try:
             f = open(self.log_file, mode)
             f.write(message + "\n")
