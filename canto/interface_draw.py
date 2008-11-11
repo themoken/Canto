@@ -13,7 +13,9 @@ class Renderer :
         self.reader_pre_rgx = []
 
         self.reader_post_rgx = [
-            (re.compile("[\\\"](.*?)[\\\"]"), "%5\"\\1\"%1")]
+            (re.compile("[\\\"](.*?)[\\\"]"), "%5\"\\1\"%1"),
+            (re.compile("\n\s*$", re.M), "\n"),
+            (re.compile("\n{2,}"), "\n \n")]
 
         self.bq = "%B%1│%0%b "
         self.bq_on = 0

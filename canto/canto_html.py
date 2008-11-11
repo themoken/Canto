@@ -51,6 +51,11 @@ class CantoHTML(sgmllib.SGMLParser):
         return "[?]"
 
     def handle_tag(self, tag, attrs, close):
+        if tag in ["h" + str(x) for x in xrange(1,7)]:
+            if not close:
+                self.result += "\n%B"
+            else:
+                self.result += "%b\n"
         if tag in ["blockquote"]:
             if not close:
                 self.result += "\n%Q"
@@ -58,8 +63,12 @@ class CantoHTML(sgmllib.SGMLParser):
                 self.result += "%q\n"
         elif tag in ["pre","code"]:
             if not close:
+                if tag == "pre":
+                    self.result += "\n%Q"
                 self.verbatim += 1
             else:
+                if tag == "pre":
+                    self.result += "%q\n"
                 self.verbatim -= 1
         elif tag in ["sup"]:
             if not close:
