@@ -164,7 +164,7 @@ class Gui :
         
         # Actually perform curses screen update.
         for i,win in enumerate(self.window_list) :
-            if i * self.cfg.height > row:
+            if i * self.cfg.height >= row:
                 win.erase()
             else:
                 win.clrtobot()

@@ -12,18 +12,29 @@ class Renderer :
     def __init__(self):
         self.story_rgx = [
             # Eliminate extraneous HTML
-            (re.compile("<.*?>"), ""),
+            (re.compile(u"<.*?>"), ""),
 
             # Eliminate HTML entities
             (html2text.r_unescape, html2text.replaceEntities)]
 
-        self.reader_rgx = [
+        self.reader_pre_rgx = [
             # Strip out newlines for formatting.
-            (re.compile("<a\s+.*?>(.*?)</a\s*>"), "%4\\1%1"),
-            (re.compile("<img\s+.*?>"), "[image]"),
+            (re.compile(u"<a\s+.*?>(.*?)</a\s*>"), u"%4\\1%1"),
+            (re.compile(u"<img\s+.*?>"), u"[image]"),
 
             # Highlight quotes in color 5
-            (re.compile("[\\\"](.*?)[\\\"]"), "%5\\1%1")]
+            (re.compile(u"[\\\"](.*?)[\\\"]"), u"%5\\1%1")]
+
+        # Most of these stem from not wanting to really change
+        # the content of html2text (so it can be rebased)
+
+        # The purpose of html2text is to generate markdown, which
+        # is great and all, but not the best for display in the
+        # reader.
+
+        self.reader_post_rgx = []
+
+        self.bq = "%B│%b"
 
     def tag_head(self, tag):
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
@@ -105,6 +116,10 @@ class Renderer :
     def out(self, list, row, height, width, window_list):
         line = 0
         for s, l in list:
+            if s and s[0] == ">":
+                s = s[1:]
+                l = [(e[0] + self.bq, e[1],e[2]) for e in l]
+
             while s :
                 window, winrow = self.__window(row + line, height, window_list)
 
@@ -173,8 +188,9 @@ class Renderer :
         else:
             s = story["description"]
 
-        s = self.do_regex(s, self.reader_rgx)
+        s = self.do_regex(s, self.reader_pre_rgx)
         s = html2text.html2text(unicode(s, "UTF-8")).encode("UTF-8")
+        s = self.do_regex(s, self.reader_post_rgx)
 
         l = s.split("\n")
         if show_links:
