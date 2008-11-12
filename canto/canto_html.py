@@ -92,8 +92,6 @@ class CantoHTML(sgmllib.SGMLParser):
                 else:
                     self.list_stack[-1][1] += 1
                     self.result += str(self.list_stack[-1][1])+ "."
-            else:
-                self.result += "\n"
         elif tag in ["a"]:
             if not close:
                 self.result += "%4"
