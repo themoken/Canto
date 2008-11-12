@@ -11,7 +11,6 @@ import re
 import sys
 import os
 import signal 
-import htmlentitydefs
 import curses
 
 def daemonize():

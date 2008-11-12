@@ -7,23 +7,15 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import os
-import sys
-import re
-import feed
-import utility
-import codecs
-import curses
-import gui
-import tag
-import signal
 import interface_draw
-import traceback
-import time
-import cPickle
-import extra
-import chardet
+import utility
+import feed
+
 import xml.parsers.expat
+import traceback
+import chardet
+import codecs
+import os
 
 class ConfigError(Exception):
     def __str__(self):

@@ -7,18 +7,13 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from const import *
 from input import search
-import os
-import cfg
-import curses
+from const import *
 import utility
-import re
-import feed
 import reader
-import sys
-import tag
 import extra 
+
+import curses
 
 # Gui() is the class encompassing the basic view of canto,
 # the list of feeds (tags) and items.

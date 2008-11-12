@@ -5,19 +5,17 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import cPickle
-import codecs
-import getopt
-import time
-import os
 import feedparser
+import cPickle
 import shutil
-import sys
 import fcntl
+import time
+import sys
+import os
 
 def main(cfg, optlist, verbose=False, force=False):
 
-    for opt, arg in optlist:
+    for opt,arg in optlist:
         if opt in ["-V","--verbose"]:
             verbose = True
         elif opt in ["-f","--force"]:

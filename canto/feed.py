@@ -7,14 +7,9 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import sys
 import story
-import utility
-import interface_draw
-import re
-import codecs
 import tag
-import os
+
 import cPickle
 import fcntl
 

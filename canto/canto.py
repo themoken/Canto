@@ -7,21 +7,19 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from const import *
-import signal
-import cfg
-import locale
-import os
-import time
-import sys
-import getopt
-import codecs
-import curses
-import traceback
+import canto_fetch
 import utility
+import cfg
 import tag
 import gui
-import canto_fetch
+
+import signal
+import locale
+import curses
+import getopt
+import time
+import sys
+import os
 
 def print_canto_usage():
     print "USAGE: canto [-hvulanDCLF]"
@@ -84,7 +82,7 @@ class Main():
             sys.exit(-1)
 
         try :
-            optlist, arglist = getopt.getopt(sys.argv[1:],shortopts,longopts)
+            optlist = getopt.getopt(sys.argv[1:],shortopts,longopts)[0]
         except getopt.GetoptError, e:
             print "Error: %s" % e.msg
             sys.exit(-1)
@@ -425,7 +423,7 @@ class Main():
         sys.exit(0)
 
     def chld(self, a=None, b=None):
-        pid,none = os.wait()
+        pid, = os.wait()
         if self.cfg.wait_for_pid == pid:
             self.cfg.wait_for_pid = 0
             signal.signal(signal.SIGALRM, self.alarm)

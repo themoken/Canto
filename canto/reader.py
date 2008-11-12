@@ -7,13 +7,11 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from const import *
 from input import input
-
-import interface_draw
+from const import *
 import utility
+
 import curses
-import re
 
 class Reader :
     def __init__(self, cfg, story, register, deregister):

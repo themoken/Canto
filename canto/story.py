@@ -7,12 +7,6 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import sys
-import utility
-import struct
-import re
-import codecs
-
 # Story() controls a single story and is always contained in a feed().
 # Like Feed(), it contains a self.ufp variable that holds a verbatim copy of
 # the data returned by the UFP. The class then mostly serves as a soft wrapper
