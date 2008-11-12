@@ -424,7 +424,7 @@ class Main():
         sys.exit(0)
 
     def chld(self, a=None, b=None):
-        pid, = os.wait()
+        pid,none = os.wait()
         if self.cfg.wait_for_pid == pid:
             self.cfg.wait_for_pid = 0
             signal.signal(signal.SIGALRM, self.alarm)
