@@ -338,8 +338,8 @@ class Main():
         signal.signal(signal.SIGCHLD, self.chld)
         signal.signal(signal.SIGINT, self.done)
 
-        signal.alarm(5)
-        self.tick = 0
+        signal.alarm(1)
+        self.tick = 60
 
         self.cfg.log("Signals set.")
 
@@ -407,7 +407,7 @@ class Main():
                 if r == REFRESH_ALL:
                     self.refresh()
                 elif r == ALARM:
-                    self.tick = 60
+                    self.tick = 1
                     self.alarm()
                 elif r == REDRAW_ALL:
                     for k in self.key_handlers:
@@ -452,8 +452,8 @@ class Main():
     # required as part of a signal handler.
 
     def alarm(self, a=None, b=None):
-        self.tick += 5
-        if self.tick >= 60:
+        self.tick -= 1
+        if self.tick <= 0:
             self.stories = []
             for f in self.cfg.feeds:
                 f.tick()
@@ -463,11 +463,14 @@ class Main():
             for handler in self.key_handlers:
                 if handler.alarm(self.stories):
                     handler.draw_elements()
+            self.tick = 60
 
-        # Clear message
-        self.cfg.msg.erase()
-        self.cfg.msg.refresh()
-        signal.alarm(5)
+        self.cfg.msg_tick -= 1
+        if self.cfg.msg_tick <= 0:
+            self.cfg.msg.erase()
+            self.cfg.msg.refresh()
+
+        signal.alarm(1)
 
     # Refresh should only be called initially, if we have a 
     # resize event, or if it's possible that the terminal has

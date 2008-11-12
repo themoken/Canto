@@ -93,6 +93,7 @@ class Cfg:
         self.default_filterlist = [None]
         self.default_sort = None
         self.default_renderer = interface_draw.Renderer()
+        self.default_msg_tick = 5
 
         self.path = conf
         self.feed_dir = feed_dir
@@ -106,6 +107,7 @@ class Cfg:
 
         self.msg_height = 1
         self.msg = None
+        self.msg_tick = 0
 
         self.resize_hook = None
         self.new_hook = None
@@ -162,12 +164,16 @@ class Cfg:
         self.key_list = utility.conv_key_list(self.key_list)
         self.reader_key_list = utility.conv_key_list(self.reader_key_list)
 
+    def message(self, s):
+        if self.msg:
+            self.msg.addstr(s)
+            self.msg_tick = self.default_msg_tick
+            self.msg.refresh()
+
     # Simple append log.
 
     def log(self, message, mode="a"):
-        if self.msg:
-            self.msg.addstr("\n" + message)
-            self.msg.refresh()
+        self.message("\n" + message)
         try:
             f = open(self.log_file, mode)
             f.write(message + "\n")
