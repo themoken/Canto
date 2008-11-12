@@ -460,6 +460,7 @@ class Main():
                 self.filter_extend(f)
             
             self.key_handlers[0].alarm(self.stories)
+            self.key_handlers[-1].refresh()
             self.tick = 60
 
         self.cfg.msg_tick -= 1
