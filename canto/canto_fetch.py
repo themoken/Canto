@@ -5,6 +5,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from threading import Thread
 import feedparser
 import cPickle
 import shutil
@@ -65,181 +66,195 @@ def main(cfg, optlist, verbose=False, force=False):
                 pass
 
     # The main canto-fetch loop.
-
+    threads = []
     for fd in cfg.feeds:
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
-        update(fd, fpath, force, log_func)
+        threads.append(UpdateThread(fd, fpath, force, log_func))
+        threads[-1].start()
+
+    for thread in threads:
+        thread.join()
     
     log_func("Gracefully exiting Canto-fetch.")
     return 0
 
-def update(fd, fpath, force, log_func):
-    # This emptyfeed forms a skeleton for any canto feed.
-    # Canto_state is a place holder. Canto_update is the
-    # last time the feed was updated, and canto_version is
-    # obviously the version under which it was last written.
+class UpdateThread(Thread):
+    def __init__(self, fd, fpath, force, log_func):
+        Thread.__init__(self)
+        self.fd = fd
+        self.fpath = fpath
+        self.force = force
+        self.log_func = log_func
 
-    # Canto_version will be used in the future, if later
-    # releases change anything serious in the format.
+        # This emptyfeed forms a skeleton for any canto feed.
+        # Canto_state is a place holder. Canto_update is the
+        # last time the feed was updated, and canto_version is
+        # obviously the version under which it was last written.
 
-    emptyfeed = {"canto_state":[], "entries":[], "canto_update":0, 
-                    "canto_version":VERSION_TUPLE}
+        # Canto_version will be used in the future, if later
+        # releases change anything serious in the format.
+
+        self.emptyfeed = {"canto_state":[], "entries":[], "canto_update":0,
+                        "canto_version":VERSION_TUPLE}
 
     # Now we attempt to load the previous feed information.
 
-    if os.path.exists(fpath):
-        if os.path.isfile(fpath):
-            f = open(fpath, "rb")
-            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+    def run(self):
+        if os.path.exists(self.fpath):
+            if os.path.isfile(self.fpath):
+                f = open(self.fpath, "rb")
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
 
-            try:
-                curfeed = cPickle.load(f)
-            except:
-                log_func("cPickle load exception on %s" % fpath)
-                return
-            finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                f.close()
-        else:
-            # This is a directory, then it's most likely a 
-            # canto < 0.5.0 info, so we kill it.
-
-            log_func("%s is not normal file, old format?" % fpath)
-            log_func("  Deleting...")
-            if os.path.isdir(fpath):
-                shutil.rmtree(fpath)
+                try:
+                    curfeed = cPickle.load(f)
+                except:
+                    self.log_func("cPickle load exception on %s" % self.fpath)
+                    return
+                finally:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    f.close()
             else:
-                os.unlink(fpath)
-            curfeed = emptyfeed
-    else:
-        curfeed = emptyfeed
+                # This is a directory, then it's most likely a 
+                # canto < 0.5.0 info, so we kill it.
 
-    # Determine whether it's been long enough between
-    # updates to warrant refetching the feed.
-
-    if time.time() - curfeed["canto_update"] < fd.rate * 60 and not force:
-        return
-
-    # Attempt to set the tag, if unspecified, by grabbing
-    # it out of the previously downloaded info.
-
-    if not fd.tag:
-        if curfeed.has_key("feed") and curfeed["feed"].has_key("title"):
-            fd.tag = curfeed["feed"]["title"]
-            log_func("Updating %s" % fd.tag)
+                self.log_func("%s is not normal file, old format?" % self.fpath)
+                self.log_func("  Deleting...")
+                if os.path.isdir(self.fpath):
+                    shutil.rmtree(self.fpath)
+                else:
+                    os.unlink(self.fpath)
+                curfeed = self.emptyfeed
         else:
-            # This is the first time we've gotten this URL,
-            # so just use the URL since we don't know the title.
+            curfeed = self.emptyfeed
 
-            log_func("New feed %s" % fd.URL)
-    else:
-        log_func("Updating %s" % fd.tag)
+        # Determine whether it's been long enough between
+        # updates to warrant refetching the feed.
 
-    try:
-        newfeed = feedparser.parse(feedparser.urllib2.urlopen(fd.URL))
-    except:
-        # Generally an exception is a connection refusal, but in any
-        # case we either won't get data or can't trust the data, so
-        # just skip processing this feed.
+        if time.time() - curfeed["canto_update"] < self.fd.rate * 60 and\
+                not self.force:
+            return
 
-        log_func("Exception trying to get feed: %s" % sys.exc_info()[1])
-        return
+        # Attempt to set the tag, if unspecified, by grabbing
+        # it out of the previously downloaded info.
 
-    if not fd.tag:
-        if newfeed.has_key("feed") and newfeed["feed"].has_key("title"):
-            fd.tag = newfeed["feed"]["title"].encode("UTF-8")
-        else:
-            log_func("Ugh. Defaulting to URL for tag. No guarantees.")
-            newfeed["feed"]["title"] = fd.URL
-            fd.tag = fd.URL
-
-    # Feedparser returns a very nice dict of information.
-    # if there was something wrong with the feed (usu. encodings
-    # being mis-declared or missing tags), it sets
-    # bozo_exception.
-
-    # These exceptions are recoverable and their objects are
-    # un-Picklable so we log it and remove the value.
-
-    if newfeed.has_key("bozo_exception"):
-        log_func("Recoverable error in feed %s: %s" % 
-                    (fd.tag, newfeed["bozo_exception"]))
-        newfeed["bozo_exception"] = None
-
-    # Make state persist between feeds
-    newfeed["canto_state"] = curfeed["canto_state"]
-    newfeed["canto_update"] = time.time()
-    
-    # For all content that we would usually use, we convert
-    # it to UTF-8 and escape all %s with \. Feedparser
-    # almost without exception gives us all string in Unicode
-    # so none of these should fail.
-
-    def encode_and_escape(s):
-        s = s.encode("UTF-8")
-        s = s.replace("\\","\\\\")
-        return s.replace("%", "\\%")
-
-    for key in newfeed["feed"]:
-        if type(newfeed["feed"][key]) in [unicode,str]:
-            newfeed["feed"][key] = encode_and_escape(newfeed["feed"][key])
-
-    for entry in newfeed["entries"]:
-        if entry.has_key("content"):
-            for c in entry["content"]:
-                c["value"] = encode_and_escape(c["value"])
-
-        for key in entry.keys():
-            if type(entry[key]) in [unicode,str]:
-                entry[key] = encode_and_escape(entry[key])
-
-    for entry in newfeed["entries"]:
-        # If the item didn't come with a GUID, then
-        # use link and then title as an identifier.
-
-        if not entry.has_key("id"):
-            if entry.has_key("link"):
-                entry["id"] = entry["link"]
-            elif entry.has_key("title"):
-                entry["id"] = entry["title"]
+        if not self.fd.tag:
+            if curfeed.has_key("feed") and curfeed["feed"].has_key("title"):
+                self.fd.tag = curfeed["feed"]["title"]
+                self.log_func("Updating %s" % self.fd.tag)
             else:
-                entry["id"] = None
+                # This is the first time we've gotten this URL,
+                # so just use the URL since we don't know the title.
 
-        # Then search through the current feed to
-        # make item state persistent.
+                self.log_func("New feed %s" % self.fd.URL)
+        else:
+            self.log_func("Updating %s" % self.fd.tag)
 
-        for centry in curfeed["entries"]:
-            if entry["id"] == centry["id"]:
-                entry["canto_state"] = centry["canto_state"]
-                
-                # The entry is removed so that later it's
-                # not a candidate for being appended to the
-                # end of the feed.
+        try:
+            newfeed = feedparser.parse(feedparser.urllib2.urlopen(self.fd.URL))
+        except:
+            # Generally an exception is a connection refusal, but in any
+            # case we either won't get data or can't trust the data, so
+            # just skip processing this feed.
 
-                curfeed["entries"].remove(centry)
-                break
+            self.log_func("Exception trying to get feed: %s" % \
+                    sys.exc_info()[1])
+            return
 
-        # Apply default state to genuinely new items.
-        if not entry.has_key("canto_state"):
-            entry["canto_state"] = [ fd.tag, "unread", "*", "new"]
+        if not self.fd.tag:
+            if newfeed.has_key("feed") and newfeed["feed"].has_key("title"):
+                self.fd.tag = newfeed["feed"]["title"].encode("UTF-8")
+            else:
+                self.log_func("Ugh. Defaulting to URL for tag. No guarantees.")
+                newfeed["feed"]["title"] = self.fd.URL
+                self.fd.tag = self.fd.URL
 
-    # Tailor the list to the correct number of items.
-    if len(newfeed["entries"]) < fd.keep:
-        newfeed["entries"] += \
-            curfeed["entries"][:fd.keep - len(newfeed["entries"])]
-    else:
-        newfeed["entries"] = newfeed["entries"][:fd.keep]
+        # Feedparser returns a very nice dict of information.
+        # if there was something wrong with the feed (usu. encodings
+        # being mis-declared or missing tags), it sets
+        # bozo_exception.
 
-    # Dump the output to the new file.
-    f = open(fpath, "wb")
-    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+        # These exceptions are recoverable and their objects are
+        # un-Picklable so we log it and remove the value.
 
-    try:
-        cPickle.dump(newfeed, f)
-    except:
-        log_func("cPickle dump exception on %s" % fpath)
-        raise
-    finally:
-        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        f.close()
+        if newfeed.has_key("bozo_exception"):
+            self.log_func("Recoverable error in feed %s: %s" % 
+                        (self.fd.tag, newfeed["bozo_exception"]))
+            newfeed["bozo_exception"] = None
+
+        # Make state persist between feeds
+        newfeed["canto_state"] = curfeed["canto_state"]
+        newfeed["canto_update"] = time.time()
+        
+        # For all content that we would usually use, we convert
+        # it to UTF-8 and escape all %s with \. Feedparser
+        # almost without exception gives us all string in Unicode
+        # so none of these should fail.
+
+        def encode_and_escape(s):
+            s = s.encode("UTF-8")
+            s = s.replace("\\","\\\\")
+            return s.replace("%", "\\%")
+
+        for key in newfeed["feed"]:
+            if type(newfeed["feed"][key]) in [unicode,str]:
+                newfeed["feed"][key] = encode_and_escape(newfeed["feed"][key])
+
+        for entry in newfeed["entries"]:
+            if entry.has_key("content"):
+                for c in entry["content"]:
+                    c["value"] = encode_and_escape(c["value"])
+
+            for key in entry.keys():
+                if type(entry[key]) in [unicode,str]:
+                    entry[key] = encode_and_escape(entry[key])
+
+        for entry in newfeed["entries"]:
+            # If the item didn't come with a GUID, then
+            # use link and then title as an identifier.
+
+            if not entry.has_key("id"):
+                if entry.has_key("link"):
+                    entry["id"] = entry["link"]
+                elif entry.has_key("title"):
+                    entry["id"] = entry["title"]
+                else:
+                    entry["id"] = None
+
+            # Then search through the current feed to
+            # make item state persistent.
+
+            for centry in curfeed["entries"]:
+                if entry["id"] == centry["id"]:
+                    entry["canto_state"] = centry["canto_state"]
+                    
+                    # The entry is removed so that later it's
+                    # not a candidate for being appended to the
+                    # end of the feed.
+
+                    curfeed["entries"].remove(centry)
+                    break
+
+            # Apply default state to genuinely new items.
+            if not entry.has_key("canto_state"):
+                entry["canto_state"] = [ self.fd.tag, "unread", "*", "new"]
+
+        # Tailor the list to the correct number of items.
+        if len(newfeed["entries"]) < self.fd.keep:
+            newfeed["entries"] += \
+                curfeed["entries"][:self.fd.keep - len(newfeed["entries"])]
+        else:
+            newfeed["entries"] = newfeed["entries"][:self.fd.keep]
+
+        # Dump the output to the new file.
+        f = open(self.fpath, "wb")
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+
+        try:
+            cPickle.dump(newfeed, f)
+        except:
+            self.log_func("cPickle dump exception on %s" % self.fpath)
+            raise
+        finally:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            f.close()
 
