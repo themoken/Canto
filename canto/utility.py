@@ -116,7 +116,7 @@ def goto(URL, cfg):
 
 def getlinks(string):
     s = re.sub("\\\n", " ", string[:])
-    links = re.findall("<a\s+href=\"(.*?)\".*?>(.*?)</\s*a\s*>", s)
+    links = re.findall("<a[^>]+?href=\"(.*?)\".*?>(.*?)</\s*a\s*>", s)
     return links 
 
 def stripchars(string):

@@ -251,8 +251,6 @@ class Gui :
         if self.cfg.update_hook:
             self.cfg.update_hook(self)
 
-        return 1
-
     # Use the new_hook on any "new" items.
     # The new attribute is never accessible from the
     # renderer, and is only used for the hook.

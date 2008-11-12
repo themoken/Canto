@@ -107,9 +107,6 @@ class Reader :
             self.draw_elements()
         return r
 
-    def alarm(self, stories):
-        self.draw_elements()
-
     def quit(self):
         self.destroy()
         return REDRAW_ALL

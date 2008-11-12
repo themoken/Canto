@@ -459,10 +459,7 @@ class Main():
                 f.tick()
                 self.filter_extend(f)
             
-            # Notify all gui objects of (potentially) new items.
-            for handler in self.key_handlers:
-                if handler.alarm(self.stories):
-                    handler.draw_elements()
+            self.key_handlers[0].alarm(self.stories)
             self.tick = 60
 
         self.cfg.msg_tick -= 1
