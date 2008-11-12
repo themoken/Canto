@@ -91,7 +91,7 @@ class Reader :
         return 1
 
     def goto(self):
-        input.Input(self.cfg, " Link Number ", self.__dogoto, \
+        input.Input(self.cfg, "Link Number", self.__dogoto, \
                 self.register, self.deregister)
         return 1
     

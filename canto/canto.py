@@ -411,6 +411,9 @@ class Main():
                         k.draw_elements()
 
     def done(self, a=None, b=None):
+        # Kill the message log
+        self.cfg.msg = None
+
         # Kill curses
         curses.endwin()
 
