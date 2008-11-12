@@ -117,6 +117,14 @@ class CantoHTML(sgmllib.SGMLParser):
                 self.result += "%b"
 
 instance = CantoHTML()
+def ent_wrapper(match):
+    return CantoHTML.convert_entityref(instance,\
+         match.groups()[0]).encode("UTF-8")
+
+def char_wrapper(match):
+    return CantoHTML.convert_charref(instance,\
+        match.groups()[0]).encode("UTF-8")
+
 def convert(s):
     instance.feed(unicode(s,"UTF-8"))
     r = instance.result

@@ -8,14 +8,19 @@ class Renderer :
     def __init__(self):
         self.story_rgx = [
             # Eliminate extraneous HTML
-            (re.compile("<.*?>"), "")]
+            (re.compile("<.*?>"), ""),
+            (re.compile("&(\w{1,8});"), canto_html.ent_wrapper),
+            (re.compile("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"),
+                canto_html.char_wrapper)
+            ]
 
         self.reader_pre_rgx = []
 
         self.reader_post_rgx = [
             (re.compile("[\\\"](.*?)[\\\"]"), "%5\"\\1\"%1"),
             (re.compile("\n\s*$", re.M), "\n"),
-            (re.compile("\n{2,}"), "\n \n")]
+            (re.compile("\n{2,}"), "\n \n")
+            ]
 
         self.bq = "%B%1│%0%b "
         self.bq_on = 0

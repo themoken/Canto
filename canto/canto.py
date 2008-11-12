@@ -466,7 +466,7 @@ class Main():
             self.tick = 60
 
         self.cfg.msg_tick -= 1
-        if self.cfg.msg_tick <= 0:
+        if self.cfg.msg_tick == 0:
             self.cfg.msg.erase()
             self.cfg.msg.refresh()
 
