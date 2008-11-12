@@ -13,6 +13,7 @@ import os
 import feedparser
 import shutil
 import sys
+import fcntl
 
 def main(cfg, optlist, verbose=False, force=False):
 
@@ -56,7 +57,7 @@ def main(cfg, optlist, verbose=False, force=False):
     for file in os.listdir(cfg.feed_dir):
         for URL in [f.URL for f in cfg.feeds]:
             valid = URL.replace("/"," ")
-            if file == valid or file == valid + ".lock":
+            if file == valid:
                 break
         else:
             log_func("Deleted extraneous file: %s" % file)
@@ -69,50 +70,7 @@ def main(cfg, optlist, verbose=False, force=False):
 
     for fd in cfg.feeds:
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
-        lpath = fpath + ".lock"
-
-        # First, we get a lock.
-
-        try:
-            lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
-        except OSError:
-            # If lock exists, but is over 2 minutes old, it's
-            # probably the product of a crash or a machine
-            # getting powered down, delete it.
-
-            if time.time() - os.stat(lpath).st_ctime > 120:
-                log_func("Deleting stale lock for %s." % fd.URL)
-                os.unlink(lpath)
-                try:
-                    lock = os.open(lpath, os.O_CREAT|os.O_EXCL)
-                except:
-                    # Failing twice should be exceptionally rare (because
-                    # that would indicate that between the unlink and
-                    # the os.open another process created it.
-
-                    log_func("Failed twice to get lock for %s." % fd.URL)
-                    continue
-            else:
-                # Failing once is pretty typical, and not fatal.
-                log_func("Failed once to get lock for %s." % fd.URL)
-                continue
-
-        # locks must be closed to avoid having a million
-        # dangling file descriptors and eventually killing the program.
-
-        os.close(lock)
-
         update(fd, fpath, force, log_func)
-
-        # Finally, release the lock. This is wrapped in a 
-        # try->catch because sometimes the lock disappears
-        # (either through user intervention or an error)
-        # and it should not be fatal.
-
-        try:
-            os.unlink(lpath)
-        except:
-            log_func("Failed to release lock for %s" % fd.tag)
     
     log_func("Gracefully exiting Canto-fetch.")
     return 0
@@ -134,12 +92,16 @@ def update(fd, fpath, force, log_func):
     if os.path.exists(fpath):
         if os.path.isfile(fpath):
             f = open(fpath, "rb")
+            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+
             try:
                 curfeed = cPickle.load(f)
             except:
                 log_func("cPickle load exception on %s" % fpath)
                 return
-            f.close()
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
         else:
             # This is a directory, then it's most likely a 
             # canto < 0.5.0 info, so we kill it.
@@ -272,9 +234,14 @@ def update(fd, fpath, force, log_func):
 
     # Dump the output to the new file.
     f = open(fpath, "wb")
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+
     try:
         cPickle.dump(newfeed, f)
     except:
         log_func("cPickle dump exception on %s" % fpath)
         raise
-    f.close()
+    finally:
+        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        f.close()
+

@@ -16,6 +16,7 @@ import codecs
 import tag
 import os
 import cPickle
+import fcntl
 
 # Feed() controls a single feed and implements all of the update functionality
 # on top of Tag() (which is the generic class for lists of items). Feed() is
@@ -52,30 +53,16 @@ class Feed(tag.Tag):
         self.filterlist = filterlist
         self.filter_idx = 0
     
-    # Simple traditional Unix file lock.
-    def lock(self):
-        try:
-            f = os.open(self.lpath, os.O_CREAT|os.O_EXCL)
-            os.close(f)
-        except:
-            return 0
-        return 1
-
-    def unlock(self):
-        os.unlink(self.lpath)
-
     def update(self):
-        if not self.lock():
-            return 0
-
         try:
             f = open(self.path, "rb")
+            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
             self.ufp = cPickle.load(f)
-            f.close()
         except:
             return 0
         finally:
-            self.unlock()
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            f.close()
 
         if not self.tag:
             tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
@@ -123,15 +110,14 @@ class Feed(tag.Tag):
         self.changed = 1
 
     def todisk(self):
-        if not self.lock():
-            return 0
-
         f = open(self.path, "wb")
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+
         cPickle.dump(self.ufp, f)
+
+        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         f.close()
         self.changed = 0
-
-        self.unlock()
         return 1
 
     def tick(self):

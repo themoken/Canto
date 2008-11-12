@@ -236,12 +236,6 @@ class Main():
             f.tick()
             self.filter_extend(f)
 
-        while None in [f.tag for f in self.cfg.feeds]:
-            for f in [ f for f in self.cfg.feeds if not f.tag]:
-                f.time = 1
-                f.tick()
-                self.filter_extend(f)
-
         # Print out a feed list, bail
         if flags & FEED_LIST:
             for f in self.cfg.feeds:
