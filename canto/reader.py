@@ -8,11 +8,12 @@
 #   published by the Free Software Foundation.
 
 from const import *
+from input import input
+
 import interface_draw
 import utility
 import curses
 import re
-import input 
 
 class Reader :
     def __init__(self, cfg, story, register, deregister):
@@ -81,7 +82,10 @@ class Reader :
         else:
             self.offset = 0
 
-    def __dogoto(self, s):
+    def goto(self):
+        self.dogoto(input(self.cfg, "Link Number"))
+
+    def dogoto(self, s):
         try : i = int(s)
         except:
             return
@@ -90,11 +94,6 @@ class Reader :
             utility.goto(self.links[i][0], self.cfg)
         return 1
 
-    def goto(self):
-        input.Input(self.cfg, "Link Number", self.__dogoto, \
-                self.register, self.deregister)
-        return 1
-    
     def action(self, a):
         if callable(a):
             r = a()

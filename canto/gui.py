@@ -8,12 +8,12 @@
 #   published by the Free Software Foundation.
 
 from const import *
+from input import search
 import os
 import cfg
 import curses
 import utility
 import re
-import search
 import feed
 import reader
 import sys
@@ -409,9 +409,7 @@ class Gui :
 
     @noitem_unsafe
     def inline_search(self):
-        search.Search(self.cfg, " Inline Search ", \
-                self.do_inline_search, self.register, self.deregister)
-        return REDRAW_ALL
+        self.do_inline_search(search(self.cfg, " Inline Search "))
 
     def do_inline_search(self, s) :
         if s:

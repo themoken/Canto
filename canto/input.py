@@ -8,34 +8,30 @@
 #   published by the Free Software Foundation.
 
 import curses
+import re
 
-class Input :
-    def __init__(self, cfg, prompt, func, register, deregister):
-        cfg.msg.addstr("\n" + prompt + ": ")
+def input(cfg, prompt):
+    cfg.msg.addstr("\n" + prompt + ": ")
 
-        curses.echo()
-        self.term = cfg.msg.getstr()
-        curses.noecho()
+    curses.echo()
+    term = cfg.msg.getstr()
+    curses.noecho()
 
-        self.func = func
-        self.callfunc()
+    return term
 
-    def callfunc(self):
-        self.func(self.term)
-        
-class Search(Input):
-    def callfunc(self):
-        if not self.term :
-            self.func(None)
-            return
-        elif self.term.startswith("rgx:"):
-            str = self.term[4:]
-        else:
-            str = ".*" + re.escape(self.term) + ".*"
-        
-        try:
-            m = re.compile(str)
-        except:
-            self.func(None)
+def search(cfg, prompt):
+    term = input(cfg, prompt)
+    if not term :
+        return
 
-        self.func(m)
+    elif term.startswith("rgx:"):
+        str = term[4:]
+    else:
+        str = ".*" + re.escape(term) + ".*"
+    
+    try:
+        m = re.compile(str)
+    except:
+        return None
+
+    return m
