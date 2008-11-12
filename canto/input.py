@@ -7,24 +7,22 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import signal
+from curses.textpad import Textbox
 import curses
+import signal
 import re
 
 def input(cfg, prompt):
     cfg.msg.addstr("\n" + prompt + ": ")
 
-    curses.echo()
-    
     temp = signal.getsignal(signal.SIGALRM)
     signal.signal(signal.SIGALRM, signal.SIG_IGN)
     
-    term = cfg.msg.getstr()
+    term = Textbox(cfg.msg).edit()
+    term = term.split(": ",1)[-1].strip()
 
     signal.signal(signal.SIGALRM, temp)
     signal.alarm(1)
-
-    curses.noecho()
 
     return term
 
