@@ -24,6 +24,9 @@ def input(cfg, prompt):
     signal.signal(signal.SIGALRM, temp)
     signal.alarm(1)
 
+    cfg.msg.erase()
+    cfg.msg.refresh()
+
     return term
 
 def search(cfg, prompt):
