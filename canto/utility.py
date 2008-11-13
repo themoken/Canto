@@ -113,11 +113,6 @@ def goto(URL, cfg):
     else:
         silentfork(s, 0)
 
-def getlinks(string):
-    s = re.sub("\\\n", " ", string[:])
-    links = re.findall("<a[^>]+?href=\"(.*?)\".*?>(.*?)</\s*a\s*>", s)
-    return links 
-
 def stripchars(string):
     string = string.replace("\\","\\\\")
     string = string.replace("%", "\\%")

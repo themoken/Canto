@@ -34,19 +34,16 @@ class Reader :
         self.refresh()
 
     def refresh(self):
-        self.links = [(self.story["link"], "main link")]
-        self.links.extend(utility.getlinks(self.story["description"]))
-
-        self.lines = self.story.renderer.reader(self.story, \
-                self.cfg.width, self.links, self.show_links, None)
-
+        self.lines, self.links = self.story.renderer.reader(self.story, \
+                self.cfg.width, self.show_links, None)
+        
         self.height, self.width = min(self.lines, self.max_height),\
                 self.cfg.width
         self.window = curses.newpad(self.lines, self.cfg.width)
         self.window.bkgdset(curses.color_pair(1))
 
         self.story.renderer.reader(self.story, self.cfg.width, \
-                self.links, self.show_links, self.window)
+                self.show_links, self.window)
         self.draw_elements()
 
     def draw_elements(self):
@@ -89,7 +86,7 @@ class Reader :
             return
 
         if i < len(self.links):
-            utility.goto(self.links[i][0], self.cfg)
+            utility.goto(self.links[i][1], self.cfg)
         return 1
 
     def action(self, a):

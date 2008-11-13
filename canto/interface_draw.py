@@ -78,7 +78,7 @@ class Renderer :
         return [("%B└", "─", "┘%C")]
 
     def reader_link(self, idx, link):
-        return "%4[" + str(idx) + "] " + link[1] + "%1 - " + link[0]
+        return "%4[" + str(idx) + "] " + link[0] + "%1 - " + link[1]
 
     def rfirsts(self, story):
         return ("%B│%b%1 ", " ", " %1%B│%b")
@@ -201,15 +201,17 @@ class Renderer :
     
         return row
 
-    def reader(self, story, width, links, show_links, window):
+    def reader(self, story, width, show_links, window):
         if story.has_key("content"):
             s = story["content"][0]["value"]
         else:
             s = story["description"]
 
         s = self.do_regex(s, self.reader_pre_rgx)
-        s = canto_html.convert(s)
+        s,links = canto_html.convert(s)
         s = self.do_regex(s, self.reader_post_rgx)
+
+        links = [("main link", story["link"], "browser")] + links
 
         l = s.split("\n")
         if show_links:
@@ -221,4 +223,4 @@ class Renderer :
         row = self.out([[x, (self.rfirsts(story), self.rmids(story),
             self.rends(story))] for x in l], row, -1, width, [window])
         row = self.simple_out(self.reader_foot(story), row, -1, width, [window])
-        return row
+        return row, links

@@ -10,6 +10,8 @@
 #   This was inspired by Aaron Swartz's html2text, but doesn't do
 #   file IO, doesn't do markdown, and doesn't shy away from Unicode.
 
+from mime import LinkHandler
+
 import htmlentitydefs
 import sgmllib
 import re
@@ -30,6 +32,9 @@ class CantoHTML(sgmllib.SGMLParser):
         self.list_stack = []
         self.verbatim = 0
 
+        self.links = []
+        self.mime_handlers = [LinkHandler(self.links)]
+
     # unknown_* funnel all tags to handle_tag
 
     def unknown_starttag(self, tag, attrs):
@@ -39,10 +44,14 @@ class CantoHTML(sgmllib.SGMLParser):
         self.handle_tag(tag, {}, 0)
 
     def handle_data(self, text):
-        if self.verbatim > 0:
-            self.result += text
-        else:
-            self.result += text.replace("\n", " ")
+        if self.verbatim <= 0:
+            text = text.replace("\n", " ")
+
+        for handler in self.mime_handlers:
+            if handler.active:
+                handler.content += text
+
+        self.result += text
 
     # convert_* are called by SGMLParser's default
     # handle_char/entityref functions.
@@ -65,6 +74,11 @@ class CantoHTML(sgmllib.SGMLParser):
     # This is the real workhorse of the HTML parser.
 
     def handle_tag(self, tag, attrs, open):
+        for handler in self.mime_handlers:
+            output = handler.match(tag, attrs, open)
+            if output:
+                self.result += output
+
         if tag in ["h" + str(x) for x in xrange(1,7)]:
             if open:
                 self.result += "\n%B"
@@ -114,7 +128,7 @@ class CantoHTML(sgmllib.SGMLParser):
                 self.result += "%1"
         elif tag in ["img"]:
             if open:
-                self.result += "[image]"
+                self.handle_data("[image]")
         elif tag in ["i", "small", "em"]:
             if open:
                 self.result += "%6%B"
@@ -138,8 +152,9 @@ def char_wrapper(match):
 def convert(s):
     instance.feed(unicode(s,"UTF-8"))
     r = instance.result
+    l = instance.links
     instance.reset()
-    return r.encode("UTF-8")
+    return (r.encode("UTF-8"),l)
 
 if __name__ == "__main__":
     print "Testing canto_html"
@@ -148,3 +163,7 @@ if __name__ == "__main__":
     print convert("<ul><li>Unordered</li><li>Some header text\
             <ol><li>Ordered</li><li>Also ordered</li></ol>\
             <li>Unordered, too</li></ul>")
+
+    print "2. Test link handler"
+
+    print convert("""<a href="test">Blahblah</a>""")
