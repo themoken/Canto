@@ -91,4 +91,4 @@ class Story():
 
     def print_item(self, tag, row, i):
         return self.renderer.story(tag, self, row, \
-                i.cfg.height, i.cfg.width / i.cfg.columns, i.window_list)
+                i.cfg.gui_height, i.cfg.width / i.cfg.columns, i.window_list)

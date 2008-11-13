@@ -114,6 +114,15 @@ class Renderer :
         line = 0
         for s, l in list:
             if s:
+
+                # Handle block level style, not covered in widecurse.
+                # This is broken into three sections so that styles
+                # can be applied to a single line and applied in between.
+
+                # Note, as with any unknown % escape, these will be
+                # totally ignored in the middle of a line.
+
+                # Toggle on based on start of line
                 while s[:2] in ["%Q","%I"]:
                     if s.startswith("%Q"):
                         self.bq_on += 1
@@ -121,6 +130,7 @@ class Renderer :
                         self.in_on += 1
                     s = s[2:]
 
+                # Add decorations to firsts,mids,lasts
                 if self.bq_on:
                     l = [(e[0] + self.bq * self.bq_on,\
                             e[1],e[2]) for e in l]
@@ -128,6 +138,7 @@ class Renderer :
                     l = [(e[0] + self.indent * self.in_on,\
                             e[1],e[2]) for e in l]
                
+                # Toggle off based on end of line
                 while s[-2:] in ["%q","%i"]:
                     if s.endswith("%q"):
                         self.bq_on -= 1

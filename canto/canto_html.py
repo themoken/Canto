@@ -17,6 +17,11 @@ import re
 sgmllib.charref = re.compile('&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]')
 
 class CantoHTML(sgmllib.SGMLParser):
+
+    # Reset is used, instead of __init__ so a single
+    # instance of the class can parse multiple HTML
+    # fragments.
+
     def reset(self):
         sgmllib.SGMLParser.reset(self)
         self.result = ""
@@ -25,17 +30,22 @@ class CantoHTML(sgmllib.SGMLParser):
         self.list_stack = []
         self.verbatim = 0
 
+    # unknown_* funnel all tags to handle_tag
+
     def unknown_starttag(self, tag, attrs):
-        self.handle_tag(tag, attrs, 0)
+        self.handle_tag(tag, attrs, 1)
 
     def unknown_endtag(self, tag):
-        self.handle_tag(tag, {}, 1)
+        self.handle_tag(tag, {}, 0)
 
     def handle_data(self, text):
         if self.verbatim > 0:
             self.result += text
         else:
             self.result += text.replace("\n", " ")
+
+    # convert_* are called by SGMLParser's default
+    # handle_char/entityref functions.
 
     def convert_charref(self, ref):
         try:
@@ -52,19 +62,21 @@ class CantoHTML(sgmllib.SGMLParser):
             return unichr(htmlentitydefs.name2codepoint[ref])
         return "[?]"
 
-    def handle_tag(self, tag, attrs, close):
+    # This is the real workhorse of the HTML parser.
+
+    def handle_tag(self, tag, attrs, open):
         if tag in ["h" + str(x) for x in xrange(1,7)]:
-            if not close:
+            if open:
                 self.result += "\n%B"
             else:
                 self.result += "%b\n"
         if tag in ["blockquote"]:
-            if not close:
+            if open:
                 self.result += "\n%Q"
             else:
                 self.result += "%q\n"
         elif tag in ["pre","code"]:
-            if not close:
+            if open:
                 if tag == "pre":
                     self.result += "\n%Q"
                 self.verbatim += 1
@@ -73,19 +85,19 @@ class CantoHTML(sgmllib.SGMLParser):
                     self.result += "%q\n"
                 self.verbatim -= 1
         elif tag in ["sup"]:
-            if not close:
+            if open:
                 self.result += "^"
         elif tag in ["p", "br", "div"]:
             self.result += "\n"
         elif tag in ["ul", "ol"]:
-            if not close:
+            if open:
                 self.result += "\n%I"
                 self.list_stack.append([tag,0])
             else:
                 self.list_stack.pop()
                 self.result += "%i\n"
         elif tag in ["li"]:
-            if not close:
+            if open:
                 self.result += "\n"
                 if self.list_stack[-1][0] == "ul":
                     self.result += u"\u25CF "
@@ -93,7 +105,7 @@ class CantoHTML(sgmllib.SGMLParser):
                     self.list_stack[-1][1] += 1
                     self.result += str(self.list_stack[-1][1])+ "."
         elif tag in ["a"]:
-            if not close:
+            if open:
                 self.result += "%4"
                 self.link_count += 1
             else:
@@ -101,15 +113,15 @@ class CantoHTML(sgmllib.SGMLParser):
                     self.result += "[" + str(self.link_count) + "]"
                 self.result += "%1"
         elif tag in ["img"]:
-            if not close:
+            if open:
                 self.result += "[image]"
         elif tag in ["i", "small", "em"]:
-            if not close:
+            if open:
                 self.result += "%6%B"
             else:
                 self.result += "%b%1"
         elif tag in ["b", "strong"]:
-            if not close:
+            if open:
                 self.result += "%B"
             else:
                 self.result += "%b"

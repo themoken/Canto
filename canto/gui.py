@@ -76,8 +76,6 @@ class Gui :
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
 
-        self.refresh()
-
     def refresh(self):
         # Generate all of the columns
         self.window_list = [curses.newwin(self.cfg.gui_height, \
