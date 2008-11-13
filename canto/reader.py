@@ -86,7 +86,7 @@ class Reader :
             return
 
         if i < len(self.links):
-            utility.goto(self.links[i][1], self.cfg)
+            utility.goto(self.links[i], self.cfg)
         return 1
 
     def action(self, a):

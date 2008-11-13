@@ -23,8 +23,10 @@ class ConfigError(Exception):
 
 class Cfg:
     def __init__(self, conf, log_file, feed_dir):
-        self.browser = "firefox \"%u\""
-        self.text_browser = 0
+        self.handlers = {
+            "browser" : ("firefox \"%u\"", 0, 0),
+            }
+
         self.wait_for_pid = 0
         self.log_file = log_file
 
@@ -297,15 +299,7 @@ class Cfg:
         locals = {"addfeed":self.addfeed,
             "add_feed":self.addfeed,
             "change_feed":self.change_feed,
-
-            # height and width are kept for legacy reasons
-            # and will always be 0 at config time. Configs
-            # should use resize_hook instead.
-
-            "height" : self.height,
-            "width" : self.width,
-            "browser" : self.browser,
-            "text_browser" : self.text_browser,
+            "handlers":self.handlers,
             "default_sort" : self.set_default_sort,
             "default_filterlist" : self.set_default_filterlist,
             "default_rate" : self.set_default_rate,
@@ -335,8 +329,7 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["filterlist", "filter_idx", "browser",\
-                "text_browser", "render", "columns"]:
+        for attr in ["filterlist", "filter_idx", "render", "columns"]:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
 

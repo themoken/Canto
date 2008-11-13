@@ -7,11 +7,13 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import re
-import sys
-import os
+import tempfile
+import urllib2
 import signal 
 import curses
+import sys
+import re
+import os
 
 def daemonize():
     pid = os.fork()
@@ -90,13 +92,24 @@ def conv_key_list(dict):
 
     return ret
 
-def silentfork(path, text):
+def silentfork(path, href, text, fetch):
 
     pid = os.fork()
     if not pid :
         if not text :
             os.close(sys.stdout.fileno())
         os.close(sys.stderr.fileno())
+
+        if fetch:
+            response = urllib2.urlopen(href)
+            data = response.read()
+            fd, name = tempfile.mkstemp()
+            os.write(fd, data)
+            os.close(fd)
+            path = path.replace("%u", name)
+        else:
+            path = path.replace("%u", href)
+
         os.system(path)
         sys.exit(-1)
 
@@ -105,13 +118,18 @@ def silentfork(path, text):
 
     return pid
 
-def goto(URL, cfg):
-    URL = URL.replace("\"","%22")
-    s = re.sub("%u", URL, cfg.browser)
-    if cfg.text_browser:
-        cfg.wait_for_pid = silentfork(s, 1)
+def goto(link, cfg):
+    title,href,handler = link
+    if cfg.handlers.has_key(handler):
+        binary, text, fetch = cfg.handlers[handler]
+        href = href.replace("\"","%22")
+
+        if text:
+            cfg.wait_for_pid = silentfork(binary, href, 1, fetch)
+        else:
+            silentfork(binary, href, 0, fetch)
     else:
-        silentfork(s, 0)
+        cfg.log("No handler set for %s" % handler)
 
 def stripchars(string):
     string = string.replace("\\","\\\\")
