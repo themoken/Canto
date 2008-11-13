@@ -246,13 +246,7 @@ class Main():
             print """<opml version="1.0">"""
             print """<body>"""
             for feed in self.cfg.feeds:
-                if not feed.ufp:
-                    # This is only reached if a lock wasn't obtained,
-                    # in this case, don't even make a guess.
-                    print """\t<outline title="%s" xmlUrl="%s" />""" %\
-                        (feed.tag, feed.URL)
-                    continue
-                elif "atom" in feed.ufp["version"]:
+                if "atom" in feed.ufp["version"]:
                     type = "pie"
                 else:
                     type = "rss"
