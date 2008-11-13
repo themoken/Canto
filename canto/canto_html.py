@@ -10,7 +10,7 @@
 #   This was inspired by Aaron Swartz's html2text, but doesn't do
 #   file IO, doesn't do markdown, and doesn't shy away from Unicode.
 
-from mime import LinkHandler
+from mime import LinkHandler, ImageHandler
 
 import htmlentitydefs
 import sgmllib
@@ -33,7 +33,8 @@ class CantoHTML(sgmllib.SGMLParser):
         self.verbatim = 0
 
         self.links = []
-        self.mime_handlers = [LinkHandler(self.links)]
+        self.mime_handlers = [LinkHandler(self.links),\
+                ImageHandler(self.links)]
 
     # unknown_* funnel all tags to handle_tag
 
@@ -77,7 +78,7 @@ class CantoHTML(sgmllib.SGMLParser):
         for handler in self.mime_handlers:
             output = handler.match(tag, attrs, open)
             if output:
-                self.result += output
+                self.handle_data(output)
 
         if tag in ["h" + str(x) for x in xrange(1,7)]:
             if open:
@@ -118,17 +119,6 @@ class CantoHTML(sgmllib.SGMLParser):
                 else:
                     self.list_stack[-1][1] += 1
                     self.result += str(self.list_stack[-1][1])+ "."
-        elif tag in ["a"]:
-            if open:
-                self.result += "%4"
-                self.link_count += 1
-            else:
-                if self.link_decoration:
-                    self.result += "[" + str(self.link_count) + "]"
-                self.result += "%1"
-        elif tag in ["img"]:
-            if open:
-                self.handle_data("[image]")
         elif tag in ["i", "small", "em"]:
             if open:
                 self.result += "%6%B"
@@ -167,3 +157,8 @@ if __name__ == "__main__":
     print "2. Test link handler"
 
     print convert("""<a href="test">Blahblah</a>""")
+
+    print "3. Test image handler"
+
+    print convert("""<img src="myimage.jpg" />
+                        <img src="otherimage.jpg" alt="Sexy" />""")

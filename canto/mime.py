@@ -5,11 +5,17 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-class LinkHandler():
+class Handler():
     def __init__(self, ll):
         self.ll = ll
         self.reset()
 
+    def get_attr(self, attrs, attr):
+        l = [v for k,v in attrs if k == attr]
+        if l :
+            return l[0]
+
+class LinkHandler(Handler):
     def reset(self):
         self.active = 0
         self.link = ""
@@ -19,10 +25,11 @@ class LinkHandler():
     def match(self, tag, attrs, open):
         if tag == "a":
             if open:
-                href = [v for k,v in attrs if k == "href"]
+                href = self.get_attr(attrs, "href")
                 if href:
-                    self.link = href[0]
+                    self.link = href
                     self.active = 1
+                    return "%4"
                 else:
                     self.reset()
             else:
@@ -30,3 +37,23 @@ class LinkHandler():
                         self.link.encode("UTF-8"),\
                         self.handler.encode("UTF-8")))
                 self.reset()
+                return "[" + str(len(self.ll)) + "]%1"
+
+class ImageHandler(Handler):
+    def reset(self):
+        self.active = 0
+        self.handler = "image"
+
+    def match(self, tag, attrs, open):
+        if tag == "img":
+            if open:
+                src = self.get_attr(attrs, "src")
+                alt = self.get_attr(attrs, "alt")
+                if not alt:
+                    alt = "[image]"
+                if src:
+                    self.ll.append((alt.encode("UTF-8"),\
+                        src.encode("UTF-8"),\
+                        self.handler.encode("UTF-8")))
+                self.reset()
+                return alt

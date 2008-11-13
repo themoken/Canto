@@ -78,7 +78,12 @@ class Renderer :
         return [("%B└", "─", "┘%C")]
 
     def reader_link(self, idx, link):
-        return "%4[" + str(idx) + "] " + link[0] + "%1 - " + link[1]
+        if link[2] == "browser":
+            color = "%4"
+        else:
+            color = ""
+
+        return color +"[" + str(idx) + "] " + link[0] + "%1 - " + link[1]
 
     def rfirsts(self, story):
         return ("%B│%b%1 ", " ", " %1%B│%b")
