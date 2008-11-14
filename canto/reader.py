@@ -26,14 +26,13 @@ class Reader :
         self.height = 0
         self.show_links = 0
         
-        self.max_height = self.cfg.gui_height
-
         register(self)
         self.register = register
         self.deregister = deregister
         self.refresh()
 
     def refresh(self):
+        self.max_height = self.cfg.gui_height
         self.lines, self.links = self.story.renderer.reader(self.story, \
                 self.cfg.width, self.show_links, None)
         
