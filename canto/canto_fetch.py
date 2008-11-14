@@ -55,12 +55,9 @@ def main(cfg, optlist, verbose=False, force=False):
     # Remove any crap out of the directory. This is mostly for
     # cleaning up when the user has removed a feed from the configuration.
 
+    valid_names = [f.URL.replace("/"," ") for f in cfg.feeds]
     for file in os.listdir(cfg.feed_dir):
-        for URL in [f.URL for f in cfg.feeds]:
-            valid = URL.replace("/"," ")
-            if file == valid:
-                break
-        else:
+        if not file in valid_names:
             log_func("Deleted extraneous file: %s" % file)
             try:
                 os.unlink(cfg.feed_dir + file)
