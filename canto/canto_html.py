@@ -27,14 +27,11 @@ class CantoHTML(sgmllib.SGMLParser):
     def reset(self):
         sgmllib.SGMLParser.reset(self)
         self.result = ""
-        self.link_count = 0
-        self.link_decoration = 1
         self.list_stack = []
         self.verbatim = 0
 
         self.links = []
-        self.mime_handlers = [LinkHandler(self.links),\
-                ImageHandler(self.links)]
+        self.mime_handlers = [LinkHandler(),ImageHandler()]
 
     # unknown_* funnel all tags to handle_tag
 
@@ -76,7 +73,7 @@ class CantoHTML(sgmllib.SGMLParser):
 
     def handle_tag(self, tag, attrs, open):
         for handler in self.mime_handlers:
-            output = handler.match(tag, attrs, open)
+            output = handler.match(tag, attrs, open, self.links)
             if output:
                 self.handle_data(output)
 

@@ -6,8 +6,7 @@
 #   published by the Free Software Foundation.
 
 class Handler():
-    def __init__(self, ll):
-        self.ll = ll
+    def __init__(self):
         self.reset()
 
     def get_attr(self, attrs, attr):
@@ -22,7 +21,7 @@ class LinkHandler(Handler):
         self.content = ""
         self.handler = "browser"
 
-    def match(self, tag, attrs, open):
+    def match(self, tag, attrs, open, ll):
         if tag == "a":
             if open:
                 href = self.get_attr(attrs, "href")
@@ -33,18 +32,18 @@ class LinkHandler(Handler):
                 else:
                     self.reset()
             else:
-                self.ll.append((self.content.encode("UTF-8"),\
+                ll.append((self.content.encode("UTF-8"),\
                         self.link.encode("UTF-8"),\
                         self.handler.encode("UTF-8")))
                 self.reset()
-                return "[" + str(len(self.ll)) + "]%1"
+                return "[" + str(len(ll)) + "]%1"
 
 class ImageHandler(Handler):
     def reset(self):
         self.active = 0
         self.handler = "image"
 
-    def match(self, tag, attrs, open):
+    def match(self, tag, attrs, open, ll):
         if tag == "img":
             if open:
                 src = self.get_attr(attrs, "src")
@@ -52,8 +51,8 @@ class ImageHandler(Handler):
                 if not alt:
                     alt = "image"
                 if src:
-                    self.ll.append((alt.encode("UTF-8"),\
+                    ll.append((alt.encode("UTF-8"),\
                         src.encode("UTF-8"),\
                         self.handler.encode("UTF-8")))
                 self.reset()
-                return "%7["+ alt +"][" + str(len(self.ll)) + "]%0"
+                return "%7["+ alt +"][" + str(len(ll)) + "]%0"
