@@ -7,6 +7,8 @@
 
 from threading import Thread
 import feedparser
+import commands
+import urllib2
 import cPickle
 import shutil
 import fcntl
@@ -69,7 +71,8 @@ def main(cfg, optlist, verbose=False, force=False):
     threads = []
     for fd in cfg.feeds:
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
-        threads.append(UpdateThread(fd, fpath, force, log_func))
+        spath = cfg.feed_dir + "../scripts"
+        threads.append(UpdateThread(fd, fpath, spath, force, log_func))
         threads[-1].start()
 
     for thread in threads:
@@ -79,10 +82,11 @@ def main(cfg, optlist, verbose=False, force=False):
     return 0
 
 class UpdateThread(Thread):
-    def __init__(self, fd, fpath, force, log_func):
+    def __init__(self, fd, fpath, spath, force, log_func):
         Thread.__init__(self)
         self.fd = fd
         self.fpath = fpath
+        self.spath = spath
         self.force = force
         self.log_func = log_func
 
@@ -150,7 +154,12 @@ class UpdateThread(Thread):
             self.log_func("Updating %s" % self.fd.tag)
 
         try:
-            newfeed = feedparser.parse(feedparser.urllib2.urlopen(self.fd.URL))
+            if self.fd.URL.startswith("script:"):
+                script = self.spath + "/" + self.fd.URL[7:]
+                out = commands.getoutput(script)
+                newfeed = feedparser.parse(out)
+            else:
+                newfeed = feedparser.parse(feedparser.urllib2.urlopen(self.fd.URL))
         except:
             # Generally an exception is a connection refusal, but in any
             # case we either won't get data or can't trust the data, so
