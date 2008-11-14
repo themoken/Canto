@@ -80,8 +80,10 @@ class Renderer :
     def reader_link(self, idx, link):
         if link[2] == "browser":
             color = "%4"
+        elif link[2] == "image":
+            color = "%7"
         else:
-            color = ""
+            color = "%8"
 
         return color +"[" + str(idx) + "] " + link[0] + "%1 - " + link[1]
 

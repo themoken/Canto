@@ -80,7 +80,7 @@ class Cfg:
                               " " : "quit"}
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
-                ("green","black"),("pink","black"),(0,0),(0,0),(0,0)]
+                ("green","black"),("pink","black"),("black","black"),("blue","black"),(0,0)]
 
         self.default_rate = 5
         self.default_keep = 40

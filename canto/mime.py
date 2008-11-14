@@ -50,10 +50,10 @@ class ImageHandler(Handler):
                 src = self.get_attr(attrs, "src")
                 alt = self.get_attr(attrs, "alt")
                 if not alt:
-                    alt = "[image]"
+                    alt = "image"
                 if src:
                     self.ll.append((alt.encode("UTF-8"),\
                         src.encode("UTF-8"),\
                         self.handler.encode("UTF-8")))
                 self.reset()
-                return alt
+                return "%7["+ alt +"][" + str(len(self.ll)) + "]%0"
