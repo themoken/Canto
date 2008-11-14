@@ -24,7 +24,8 @@ class ConfigError(Exception):
 class Cfg:
     def __init__(self, conf, log_file, feed_dir):
         self.handlers = {
-            "browser" : ("firefox \"%u\"", 0, 0),
+                "browser" : { "default" : ("firefox \"%u\"", 0, 0) },
+                "image" : {}
             }
 
         self.wait_for_pid = 0
