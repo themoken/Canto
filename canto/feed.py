@@ -49,15 +49,22 @@ class Feed(tag.Tag):
         self.filter_idx = 0
     
     def update(self):
+        lockflags = fcntl.LOCK_SH
+        if self.tag:
+            lockflags |= fcntl.LOCK_NB
+
         try:
-            f = open(self.path, "rb")
-            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
-            self.ufp = cPickle.load(f)
+            f = open(self.path, "r")
+            try:
+                fcntl.flock(f.fileno(), lockflags)
+                self.ufp = cPickle.load(f)
+            except:
+                return 0
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
         except:
             return 0
-        finally:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            f.close()
 
         if not self.tag:
             tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
@@ -105,13 +112,16 @@ class Feed(tag.Tag):
         self.changed = 1
 
     def todisk(self):
-        f = open(self.path, "wb")
-        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+        f = open(self.path, "r+")
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            cPickle.dump(self.ufp, f)
+        except:
+            return 0
+        finally:
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            f.close()
 
-        cPickle.dump(self.ufp, f)
-
-        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        f.close()
         self.changed = 0
         return 1
 

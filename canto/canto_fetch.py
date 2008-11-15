@@ -103,7 +103,7 @@ class UpdateThread(Thread):
     def run(self):
         if os.path.exists(self.fpath):
             if os.path.isfile(self.fpath):
-                f = open(self.fpath, "rb")
+                f = open(self.fpath, "r")
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH)
 
                 try:
@@ -252,7 +252,7 @@ class UpdateThread(Thread):
             newfeed["entries"] = newfeed["entries"][:self.fd.keep]
 
         # Dump the output to the new file.
-        f = open(self.fpath, "wb")
+        f = open(self.fpath, "r+")
         fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
         try:
