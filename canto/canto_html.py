@@ -149,13 +149,13 @@ if __name__ == "__main__":
 
     print convert("<ul><li>Unordered</li><li>Some header text\
             <ol><li>Ordered</li><li>Also ordered</li></ol>\
-            <li>Unordered, too</li></ul>")
+            <li>Unordered, too</li></ul>")[0]
 
     print "2. Test link handler"
 
-    print convert("""<a href="test">Blahblah</a>""")
+    print convert("""<a href="test">Blahblah</a>""")[1]
 
     print "3. Test image handler"
 
     print convert("""<img src="myimage.jpg" />
-                        <img src="otherimage.jpg" alt="Sexy" />""")
+                        <img src="otherimage.jpg" alt="Sexy" />""")[1]
