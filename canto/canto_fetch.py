@@ -252,7 +252,7 @@ class UpdateThread(Thread):
             newfeed["entries"] = newfeed["entries"][:self.fd.keep]
 
         # Dump the output to the new file.
-        f = open(self.fpath, "r+")
+        f = open(self.fpath, "w")
         fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
         try:

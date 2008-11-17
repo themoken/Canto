@@ -67,7 +67,11 @@ class Feed(tag.Tag):
             return 0
 
         if not self.tag:
-            tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
+            if self.ufp.has_key("feed") and self.ufp["feed"].has_key("title"):
+                tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
+            else:
+                # Using URL for tag, no guarantees
+                tag.Tag.__init__(self, self.sorts, self.URL)
 
         self.__do_extend()
         return 1
