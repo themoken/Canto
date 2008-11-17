@@ -28,18 +28,18 @@ def test_canto_html():
 
     text, links =  convert("""<a href="test">Blahblah</a>""")
 
-    if links != [("Blahblah","test","browser","test")]:
+    if links != [("%4Blahblah","test","browser")]:
         print "FAILED"
     else:
         print "PASSED"
 
     print "\n3. Test image handler"
 
-    text,link = convert("""<img src="myimage.jpg" />
+    text,links = convert("""<img src="myimage.jpg" />
                         <img src="otherimage.jpg" alt="Sexy" />""")
 
-    if links != [("[image]","myimage.jpg","images"),\
-            ("Sexy","otherimage.jpg","images")]:
+    if links != [("image","myimage.jpg","image"),\
+            ("Sexy","otherimage.jpg","image")]:
         print "FAILED"
     else:
         print "PASSED"
