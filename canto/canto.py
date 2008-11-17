@@ -54,6 +54,7 @@ def print_common_usage():
     print "--conf      -C [path] Set configuration file. (~/.canto/conf)"
     print "--log       -L [path] Set client log file. (~/.canto/log)"
     print "--fdir      -F [path] Set feed directory. (~/.canto/feeds/)"
+    print "--sdir      -S [path] Set script directory (~/.canto/scripts/)"
 
 # Main() encompasses an instance of canto running. It sets up the config 
 # object and manages the gui objects 
@@ -69,14 +70,18 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         if sys.argv[0].endswith("canto"):
-            shortopts = 'hvulaor:i:n:D:C:L:F:'
+            shortopts = 'hvulaor:i:n:D:C:L:F:S:'
             longopts = ["help","version","update","list","checkall","opml",\
-                    "import=","url=","checknew=","dir=","conf=","log=","fdir="]
+                    "import=","url=","checknew=","dir=",\
+                    "conf=","log=","fdir=","sdir="]
+
             iam = "canto"
         elif sys.argv[0].endswith("canto-fetch"):
-            shortopts = 'hvVfdbD:C:L:F:'
+            shortopts = 'hvVfdbD:C:L:F:S:'
             longopts =   ["help","version","verbose","force","dir=",\
-                         "conf=", "log=", "fdir=","daemon","background"]
+                         "conf=", "log=", "fdir=","sdir=",\
+                         "daemon","background"]
+
             iam = "fetch"
         else:
             print "No idea how you called me..."
@@ -109,7 +114,8 @@ class Main():
 
         conf_file = conf_dir + "conf"
         feed_dir = conf_dir + "feeds/"
-        
+        script_dir = conf_dir + "scripts/"
+
         for opt, arg in optlist :
             if opt in ["-C", "--conf"] :
                 conf_file = arg
@@ -119,6 +125,10 @@ class Main():
                 feed_dir = arg
                 if feed_dir[-1] != '/' :
                     feed_dir += '/'
+            elif opt in ["-S","--sdir"] :
+                script_dir = arg
+                if script_dir[-1] != '/' :
+                    script_dir += '/'
             elif opt in ["-h","--help"] :
                 if iam == "canto":
                     print_canto_usage()
@@ -132,7 +142,7 @@ class Main():
         # Instantiate Cfg() using paths in args.
 
         try :
-            self.cfg = cfg.Cfg(conf_file, log_file, feed_dir)
+            self.cfg = cfg.Cfg(conf_file, log_file, feed_dir, script_dir)
         except cfg.ConfigError:
             sys.exit(-1)
  

@@ -68,7 +68,7 @@ def main(cfg, optlist, verbose=False, force=False):
     threads = []
     for fd in cfg.feeds:
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
-        spath = cfg.feed_dir + "../scripts"
+        spath = cfg.script_dir
         threads.append(UpdateThread(fd, fpath, spath, force, log_func))
         threads[-1].start()
 

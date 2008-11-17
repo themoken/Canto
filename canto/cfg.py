@@ -22,7 +22,7 @@ class ConfigError(Exception):
         return repr(self.value)
 
 class Cfg:
-    def __init__(self, conf, log_file, feed_dir):
+    def __init__(self, conf, log_file, feed_dir, script_dir):
         self.handlers = {
                 "browser" : { "default" : ("firefox \"%u\"", 0, 0) },
                 "image" : {}
@@ -92,6 +92,7 @@ class Cfg:
 
         self.path = conf
         self.feed_dir = feed_dir
+        self.script_dir = script_dir
 
         self.columns = 1
         self.height = 0
