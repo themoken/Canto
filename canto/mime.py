@@ -27,7 +27,6 @@ class LinkHandler(Handler):
                 href = self.get_attr(attrs, "href")
                 if href:
                     self.link = href
-                    self.extension = href.rsplit('.', 1)[-1]
                     self.active = 1
                     return "%4"
                 else:
@@ -35,8 +34,7 @@ class LinkHandler(Handler):
             else:
                 ll.append((self.content.encode("UTF-8"),\
                         self.link.encode("UTF-8"),\
-                        self.handler.encode("UTF-8"),\
-                        self.extension.encode("UTF-8")))
+                        self.handler.encode("UTF-8")))
                 self.reset()
                 return "[" + str(len(ll)) + "]%1"
 
@@ -56,7 +54,6 @@ class ImageHandler(Handler):
                     extension = src.rsplit('.',1)[-1]
                     ll.append((alt.encode("UTF-8"),\
                         src.encode("UTF-8"),\
-                        self.handler.encode("UTF-8"),\
-                        extension.encode("UTF-8")))
+                        self.handler.encode("UTF-8")))
                 self.reset()
                 return "%7["+ alt +"][" + str(len(ll)) + "]%0"

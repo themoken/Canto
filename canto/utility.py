@@ -119,10 +119,11 @@ def silentfork(path, href, text, fetch):
     return pid
 
 def goto(link, cfg):
-    title,href,handler,extension = link
+    title,href,handler = link
     if cfg.handlers.has_key(handler):
-        if cfg.handlers[handler].has_key(extension):
-            binary, text, fetch = cfg.handlers[handler][extension]
+        for k in cfg.handlers[handler].keys():
+            if href.endswith(k):
+                binary, text, fetch = cfg.handlers[handler][extension]
         else:
             binary, text, fetch = cfg.handlers[handler]["default"]
         href = href.replace("\"","%22")
