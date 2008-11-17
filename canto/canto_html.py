@@ -142,20 +142,3 @@ def convert(s):
     l = instance.links
     instance.reset()
     return (r.encode("UTF-8"),l)
-
-if __name__ == "__main__":
-    print "Testing canto_html"
-    print "1. Proper list nesting"
-
-    print convert("<ul><li>Unordered</li><li>Some header text\
-            <ol><li>Ordered</li><li>Also ordered</li></ol>\
-            <li>Unordered, too</li></ul>")[0]
-
-    print "2. Test link handler"
-
-    print convert("""<a href="test">Blahblah</a>""")[1]
-
-    print "3. Test image handler"
-
-    print convert("""<img src="myimage.jpg" />
-                        <img src="otherimage.jpg" alt="Sexy" />""")[1]
