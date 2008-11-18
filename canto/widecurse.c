@@ -53,11 +53,12 @@ static PyObject *tlen(PyObject *self, PyObject *args)
     return Py_BuildValue("i",theme_strlen(message, end));
 }
 
+#define COLOR_MEMORY 8
 static void style_box(WINDOW *win, char code)
 {
     /* This function's limited memory */
-    static int cur_colp = 1;
-    static int prev_colp = 1;
+    static int colors[COLOR_MEMORY] = {1};
+    static int color_idx = 1;
     static char attrs[6] = {0,0,0,0,0,0};
 
     if (code == 'B') {
@@ -139,13 +140,20 @@ static void style_box(WINDOW *win, char code)
             wattrset(win, 0);
     }
     else if (code == '0') {
-        cur_colp = prev_colp;
-        wattron(win, COLOR_PAIR(cur_colp));
+        color_idx = ( color_idx > 1 ) ? color_idx - 1 : 1;
+        wattron(win, COLOR_PAIR(colors[color_idx - 1]));
     }
     else if ((code >= '1') && (code <= '8')) {
-        prev_colp = cur_colp;
-        cur_colp = code - '0';
-        wattron(win, COLOR_PAIR(cur_colp));
+        if (color_idx == COLOR_MEMORY - 1) {
+            memmove(&colors[0], &colors[1], sizeof(int) * (COLOR_MEMORY - 1));
+            colors[color_idx] = code - '0';
+            wattron(win, COLOR_PAIR(colors[color_idx]));
+        } 
+        else {
+            colors[color_idx] = code - '0';
+            wattron(win, COLOR_PAIR(colors[color_idx]));
+            color_idx++;
+        }
     }
 }
 
@@ -235,9 +243,9 @@ static PyObject * mvw(PyObject *self, PyObject *args)
     width += x;
 
     int i = 0;
-    for (i = 0; x < (width - end_len); i++) {
+    for (i = 0; ((x < width - end_len) || (message[i] == '%')); i++) {
         ret = do_char(win, width - end_len, &i, &y, &x, message);
-        if(ret)
+        if (ret)
             break;
     }
 

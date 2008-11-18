@@ -24,7 +24,7 @@ class Renderer :
         self.reader_pre_rgx = []
 
         self.reader_post_rgx = [
-            (re.compile("[\\\"](.*?)[\\\"]"), "%5\"\\1\"%1"),
+            (re.compile("[\\\"](.*?)[\\\"]"), "%5\"\\1\"%0"),
             ]
 
         self.bq = "%B%1│%0%b "
@@ -34,23 +34,23 @@ class Renderer :
         self.in_on = 0
 
     def tag_head(self, tag):
-        t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%1]"
+        t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%0]%0"
         if tag.collapsed:
             if tag[0].selected():
                 return [("%B%1 > " + t + "%C", " ", " "),(" "," "," ")]
             else:
                 return [("%B   " + t + "%C"," ", " "),(" "," "," ")]
 
-        return [("%B   " + t, " ", "%C"),("%1%B┌", "─", "┐%C")]
+        return [("%B   " + t, " ", "%C"),("%1%B┌", "─", "┐%C%0")]
 
     def tag_foot(self, tag):
-        return [("%1%B└", "─", "┘%C")]
+        return [("%1%B└", "─", "┘%C%0")]
 
     def firsts(self, story):
-        base = "%C%1%B│%b "
+        base = "%C%1%B│%b%0 "
     
         if story.selected() :
-            base += "%B>%b "
+            base += "%1%B>%b%0 "
         else:
             base += "  "
 
@@ -72,7 +72,7 @@ class Renderer :
 
     def reader_head(self, story):
         title = self.do_regex(story["title"], self.story_rgx)
-        return [("%1%B" + title, " ", " "),("┌","─","┐%C")]
+        return [("%1%B" + title, " ", " "),("%1┌","─","┐%C")]
 
     def reader_foot(self, story):
         return [("%B└", "─", "┘%C")]
@@ -88,13 +88,13 @@ class Renderer :
         return color +"[" + str(idx) + "] " + link[0] + "%1 - " + link[1]
 
     def rfirsts(self, story):
-        return ("%B│%b%1 ", " ", " %1%B│%b")
+        return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
 
     def rmids(self, story):
-        return ("%B│%b%0 ", " ", " %1%B│%b")
+        return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
     
     def rends(self, story):
-        return ("%B│%b%0 ", " ", " %1%B│%b")
+        return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
 
     def __window(self, row, height, window_list):
         if height != -1:

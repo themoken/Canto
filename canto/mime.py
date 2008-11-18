@@ -36,7 +36,7 @@ class LinkHandler(Handler):
                         self.link.encode("UTF-8"),\
                         self.handler.encode("UTF-8")))
                 self.reset()
-                return "[" + str(len(ll)) + "]%1"
+                return "[" + str(len(ll)) + "]%0"
 
 class ImageHandler(Handler):
     def reset(self):

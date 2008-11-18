@@ -18,38 +18,73 @@ def test_widecurse():
     curses.cbreak()
     screen.keypad(1)
 
+    row = 0
     # Terminal styles
-    core(screen, 0, 0, 20, "Normal output", " ", "")
-    core(screen, 1, 0, 20, "%BBold output%b", " " , "")
-    core(screen, 2, 0, 20, "%UUnderline output%u", " " , "")
-    core(screen, 3, 0, 20, "%SStandout output%s", " " , "")
-    core(screen, 4, 0, 20, "%RReverse output%r", " " , "")
-    core(screen, 5, 0, 20, "%DDim output%d", " " , "")
+    core(screen, row, 0, 20, "Normal output", " ", "")
+    row += 1
+
+    core(screen, row, 0, 20, "%BBold output%b", " " , "")
+    row += 1
+
+    core(screen, row, 0, 20, "%UUnderline output%u", " " , "")
+    row += 1
+
+    core(screen, row, 0, 20, "%SStandout output%s", " " , "")
+    row += 1
+
+    core(screen, row, 0, 20, "%RReverse output%r", " " , "")
+    row += 1
+
+    core(screen, row, 0, 20, "%DDim output%d", " " , "")
+    row += 1
 
     curses.start_color()
 
     # Color output
     for i in range(8):
         curses.init_pair(i + 1, i, 0)
-        ouput = "%" + str(i + 1) + str(i + 1) + "%C"
+        ouput = "%" + str(i + 1) + str(i + 1) + "%0"
         for off,attr in enumerate(["", "%B","%U","%S"]):
-            core(screen, 6 + i, 0 + off, 20, attr + ouput, " ", "")
+            core(screen, row, 0 + off, 20, \
+                    attr + ouput + attr.lower(), " ", "")
+        row += 1
 
-    # Color layering
-    core(screen, 14, 0, 20, "%1%2 L %4 C %0 O %0 A%8", " ", "")
+    # Basic Color layering
+    core(screen, row, 0, 20, "%B%11%22%33%44%55%04%03%02%01%b", " ", "")
+    row += 1
+
+    core(screen, row, 0, 20, "%8Cleanse the palette.", " " , "")
+    row += 1
+
+    # Multi-line Color layering and end escapes
+    core(screen, row, 0, 20, "%2 This is the color 2", " ", "")
+    row += 1
+
+    core(screen, row, 0, 20, "This is color 2, too%0", " ", "")
+    row += 1
+
+    core(screen, row, 0, 20, "But not this", " ", "")
+    row += 1
 
     # Empty string with repeating . ending in <><>
-    core(screen, 15, 0, 20, "", ".","<><>")
+    core(screen, row, 0, 20, "", ".","<><>")
+    row += 1
 
     # String of exact screen width
-    core(screen, 16, 0, 20, "12345678901234567890", " ", "")
+    core(screen, row, 0, 20, "12345678901234567890", " ", "")
+    row += 1
 
     # String of exact screen witdth, after escapes
-    core(screen, 17, 0, 20, "%21234567890%51234567890", " " , "")
+    core(screen, row, 0, 20, "%21234567890%51234567890", " " , "")
+    row += 1
 
-    # String too long, "extra" should be returned to the next call
-    ret = core(screen, 18, 0, 20, "%812345678901234567890extra", " ", "")
-    core(screen, 19, 0, 20, "Left over: %s" % ret, " ", "")
+    # String too long
+    ret = core(screen, row, 0, 20, "%812345678901234567890extra", " ", "")
+    row += 1
+
+    # Left over should be "extra"
+    core(screen, row, 0, 20, "Left over: %s" % ret, " ", "")
+    row += 1
 
     screen.refresh()
     screen.getch()
