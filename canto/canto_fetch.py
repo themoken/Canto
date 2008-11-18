@@ -10,6 +10,7 @@ import feedparser
 import commands
 import urllib2
 import cPickle
+import signal
 import shutil
 import fcntl
 import time
@@ -18,11 +19,7 @@ import os
 
 def main(cfg, optlist, verbose=False, force=False):
 
-    for opt,arg in optlist:
-        if opt in ["-V","--verbose"]:
-            verbose = True
-        elif opt in ["-f","--force"]:
-            force = True
+    threads = []
 
     # Because canto-fetch isn't an ncurses application,
     # we might actually want to print to the screen!
@@ -31,6 +28,24 @@ def main(cfg, optlist, verbose=False, force=False):
         if verbose:
             print x
         cfg.log(x)
+
+    def imdone():
+        if threads != []:
+            for thread in threads:
+                thread.join()
+        log_func("Gracefully exiting Canto-fetch.")
+        return 1
+
+    killme = lambda a, b: imdone() and sys.exit(0)
+
+    signal.signal(signal.SIGTERM, killme)
+    signal.signal(signal.SIGINT, killme)
+
+    for opt,arg in optlist:
+        if opt in ["-V","--verbose"]:
+            verbose = True
+        elif opt in ["-f","--force"]:
+            force = True
 
     # Make sure that the feed_dir does, indeed, exist and is
     # actually a directory.
@@ -65,17 +80,13 @@ def main(cfg, optlist, verbose=False, force=False):
                 pass
 
     # The main canto-fetch loop.
-    threads = []
     for fd in cfg.feeds:
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
         spath = cfg.script_dir
         threads.append(UpdateThread(fd, fpath, spath, force, log_func))
         threads[-1].start()
 
-    for thread in threads:
-        thread.join()
-    
-    log_func("Gracefully exiting Canto-fetch.")
+    imdone()
     return 0
 
 class UpdateThread(Thread):
