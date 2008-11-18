@@ -355,8 +355,7 @@ class Main():
             t = None
 
             if self.cfg.wait_for_pid:
-                time.sleep(0.5)
-                continue
+                signal.pause()
 
             k = self.cfg.stdscr.getch()
 
