@@ -121,7 +121,7 @@ class UpdateThread(Thread):
                     curfeed = cPickle.load(f)
                 except:
                     self.log_func("cPickle load exception on %s" % self.fpath)
-                    return
+                    curfeed = self.emptyfeed
                 finally:
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                     f.close()
