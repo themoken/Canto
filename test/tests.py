@@ -8,123 +8,108 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-import curses
+from unittest import TestCase, TestSuite, main
 from canto.widecurse import core
+import curses
 
-def test_widecurse():
-    print "Testing widecurse"
-    screen = curses.initscr()
-    curses.noecho()
-    curses.cbreak()
-    screen.keypad(1)
+class TestCurses(TestCase):
+    def setUp(self):
+        self.screen = curses.initscr()
+        curses.start_color()
+        curses.noecho()
+        curses.cbreak()
+        self.screen.keypad(1)
 
-    row = 0
-    # Terminal styles
-    core(screen, row, 0, 20, "Normal output", " ", "")
-    row += 1
+    def tearDown(self):
+        self.screen.getch()
+        curses.endwin()
 
-    core(screen, row, 0, 20, "%BBold output%b", " " , "")
-    row += 1
+class TestWidecurse(TestCurses):
+    def l(self, x, r=" ", e=""):
+        self.row += 1
+        return core(self.screen, self.row, 0, 20, x, r, e)
 
-    core(screen, row, 0, 20, "%UUnderline output%u", " " , "")
-    row += 1
+    def runTest(self):
+        self.row = -1
 
-    core(screen, row, 0, 20, "%SStandout output%s", " " , "")
-    row += 1
+        # Terminal styles
+        self.l("Normal output")
+        self.l("%BBold output%b")
+        self.l("%UUnderline output%u")
+        self.l("%SStandout output%s")
+        self.l("%RReverse output%r")
+        self.l("%DDim output%d")
+        
+        # Color output
+        for i in range(8):
+            curses.init_pair(i + 1, i, 0)
+            ouput = "%" + str(i + 1) + str(i + 1) + "%0"
+            for off,attr in enumerate(["", "%B","%U","%S"]):
+                core(self.screen, self.row, 0 + off, 20, \
+                        attr + ouput + attr.lower(), " ", "")
+            self.row += 1
 
-    core(screen, row, 0, 20, "%RReverse output%r", " " , "")
-    row += 1
+        # Basic Color layering
+        self.l("%B%11%22%33%44%55%04%03%02%01%b")
+        self.l("%8Cleanse the palette.")
 
-    core(screen, row, 0, 20, "%DDim output%d", " " , "")
-    row += 1
+        # Multi-line Color layering and end escapes
+        self.l("%2 This is the color 2")
+        self.l("This is color 2, too%0")
+        self.l("But not this")
 
-    curses.start_color()
+        # Empty string with repeating . ending in <><>
+        self.l("", ".","<><>")
 
-    # Color output
-    for i in range(8):
-        curses.init_pair(i + 1, i, 0)
-        ouput = "%" + str(i + 1) + str(i + 1) + "%0"
-        for off,attr in enumerate(["", "%B","%U","%S"]):
-            core(screen, row, 0 + off, 20, \
-                    attr + ouput + attr.lower(), " ", "")
-        row += 1
+        # String of exact screen width
+        self.l("12345678901234567890")
 
-    # Basic Color layering
-    core(screen, row, 0, 20, "%B%11%22%33%44%55%04%03%02%01%b", " ", "")
-    row += 1
+        # String of exact screen witdth, after escapes
+        self.l("%21234567890%51234567890")
 
-    core(screen, row, 0, 20, "%8Cleanse the palette.", " " , "")
-    row += 1
+        # String too long
+        ret = self.l("%812345678901234567890extra")
 
-    # Multi-line Color layering and end escapes
-    core(screen, row, 0, 20, "%2 This is the color 2", " ", "")
-    row += 1
+        # Left over should be "extra"
+        self.l("Left over: %s" % ret)
+        self.screen.refresh()
 
-    core(screen, row, 0, 20, "This is color 2, too%0", " ", "")
-    row += 1
-
-    core(screen, row, 0, 20, "But not this", " ", "")
-    row += 1
-
-    # Empty string with repeating . ending in <><>
-    core(screen, row, 0, 20, "", ".","<><>")
-    row += 1
-
-    # String of exact screen width
-    core(screen, row, 0, 20, "12345678901234567890", " ", "")
-    row += 1
-
-    # String of exact screen witdth, after escapes
-    core(screen, row, 0, 20, "%21234567890%51234567890", " " , "")
-    row += 1
-
-    # String too long
-    ret = core(screen, row, 0, 20, "%812345678901234567890extra", " ", "")
-    row += 1
-
-    # Left over should be "extra"
-    core(screen, row, 0, 20, "Left over: %s" % ret, " ", "")
-    row += 1
-
-    screen.refresh()
-    screen.getch()
-    curses.endwin()
 
 from canto.canto_html import convert
-def test_canto_html():
-    print "Testing canto_html"
-    print "1. Proper list nesting"
+class TestCantoHTML(TestCase):
+    def runTest(self):
+        print "Testing canto_html"
+        print "1. Proper list nesting"
 
-    text, links = convert("<ul><li>Unordered</li><li>Some header text"
-            "<ol><li>Ordered</li><li>Also ordered</li></ol>"
-            "<li>Unordered, too</li></ul>")
+        text, links = convert("<ul><li>Unordered</li><li>Some header text"
+                "<ol><li>Ordered</li><li>Also ordered</li></ol>"
+                "<li>Unordered, too</li></ul>")
 
-    if text != "\n%I\n● Unordered\n● Some header text\n%I\n1.Ordered"\
-        "\n2.Also ordered%i\n\n● Unordered, too%i\n":
-        print "FAILED"
-    else:
-        print "PASSED"
+        if text != "\n%I\n● Unordered\n● Some header text\n%I\n1.Ordered"\
+            "\n2.Also ordered%i\n\n● Unordered, too%i\n":
+            print "FAILED"
+        else:
+            print "PASSED"
 
-    print "\n2. Test link handler"
+        print "\n2. Test link handler"
 
-    text, links =  convert("""<a href="test">Blahblah</a>""")
+        text, links =  convert("""<a href="test">Blahblah</a>""")
 
-    if links != [("%4Blahblah","test","browser")]:
-        print "FAILED"
-    else:
-        print "PASSED"
+        if links != [("%4Blahblah","test","browser")]:
+            print "FAILED"
+        else:
+            print "PASSED"
 
-    print "\n3. Test image handler"
+        print "\n3. Test image handler"
 
-    text,links = convert("""<img src="myimage.jpg" />
-                        <img src="otherimage.jpg" alt="Sexy" />""")
+        text,links = convert("""<img src="myimage.jpg" />
+                            <img src="otherimage.jpg" alt="Sexy" />""")
 
-    if links != [("image","myimage.jpg","image"),\
-            ("Sexy","otherimage.jpg","image")]:
-        print "FAILED"
-    else:
-        print "PASSED"
+        if links != [("image","myimage.jpg","image"),\
+                ("Sexy","otherimage.jpg","image")]:
+            print "FAILED"
+        else:
+            print "PASSED"
 
 if __name__ == "__main__":
-    test_widecurse()
-    test_canto_html()
+    main()
