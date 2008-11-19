@@ -78,38 +78,25 @@ class TestWidecurse(TestCurses):
 from canto.canto_html import convert
 class TestCantoHTML(TestCase):
     def runTest(self):
-        print "Testing canto_html"
-        print "1. Proper list nesting"
-
+        # Test list nesting
         text, links = convert("<ul><li>Unordered</li><li>Some header text"
                 "<ol><li>Ordered</li><li>Also ordered</li></ol>"
                 "<li>Unordered, too</li></ul>")
 
-        if text != "\n%I\n● Unordered\n● Some header text\n%I\n1.Ordered"\
-            "\n2.Also ordered%i\n\n● Unordered, too%i\n":
-            print "FAILED"
-        else:
-            print "PASSED"
+        self.failUnless(text == "\n%I\n● Unordered\n● Some header text\n"\
+            "%I\n1.Ordered\n2.Also ordered%i\n\n● Unordered, too%i\n")
 
-        print "\n2. Test link handler"
-
+        # Test LinkHandler
         text, links =  convert("""<a href="test">Blahblah</a>""")
 
-        if links != [("%4Blahblah","test","browser")]:
-            print "FAILED"
-        else:
-            print "PASSED"
-
-        print "\n3. Test image handler"
-
+        self.failUnless(links == [("%4Blahblah","test","browser")])
+        
+        # Test ImageHandler
         text,links = convert("""<img src="myimage.jpg" />
                             <img src="otherimage.jpg" alt="Sexy" />""")
 
-        if links != [("image","myimage.jpg","image"),\
-                ("Sexy","otherimage.jpg","image")]:
-            print "FAILED"
-        else:
-            print "PASSED"
+        self.failUnless(links == [("image","myimage.jpg","image"),\
+                ("Sexy","otherimage.jpg","image")])
 
 if __name__ == "__main__":
     main()
