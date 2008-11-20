@@ -8,21 +8,50 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from unittest import TestCase, TestSuite, main
+from unittest import TestCase, main
 from canto.widecurse import core
+from canto.interface_draw import Renderer
 import curses
+import locale
 
 class TestCurses(TestCase):
     def setUp(self):
         self.screen = curses.initscr()
         curses.start_color()
+        curses.init_pair(1, 7, 0)
+
         curses.noecho()
         curses.cbreak()
         self.screen.keypad(1)
+        self.row = -1
 
     def tearDown(self):
+        self.screen.refresh()
         self.screen.getch()
         curses.endwin()
+
+class TestIDraw(TestCurses):
+    def l(self, x):
+        bme = ((""," ",""),(""," ",""),(""," ",""))
+        self.row = self.renderer.out([(x, bme)], self.row, 100, 20, [self.screen])
+    
+    def runTest(self):
+        self.renderer = Renderer()
+        self.row = 0
+
+        # Simple quote
+        self.l("%Q%1This is a quote%q")
+        self.l(" ")
+
+        # Indent across a single line, that will break
+        self.l("%IThis is uniformly indented broken line write.%i")
+        self.l(" ")
+
+        # Multi line quote with forced breaks.
+        self.l("%QThis is a")
+        self.l("multi-line")
+        self.l("quote%q")
+
 
 class TestWidecurse(TestCurses):
     def l(self, x, r=" ", e=""):
@@ -30,8 +59,6 @@ class TestWidecurse(TestCurses):
         return core(self.screen, self.row, 0, 20, x, r, e)
 
     def runTest(self):
-        self.row = -1
-
         # Terminal styles
         self.l("Normal output")
         self.l("%BBold output%b")
@@ -76,8 +103,6 @@ class TestWidecurse(TestCurses):
         # Overflow the built-in color memory
         # This must be updated if color memory is increased
         self.l("%1z%2y%3x%4w%5v%6u%7t%8s%1r%2q%0a%0b%0c%0d%0e%0f%0g%0h%0i%0j")
-        self.screen.refresh()
-
 
 from canto.canto_html import convert
 class TestCantoHTML(TestCase):
@@ -103,4 +128,5 @@ class TestCantoHTML(TestCase):
                 ("Sexy","otherimage.jpg","image")])
 
 if __name__ == "__main__":
+    locale.setlocale(locale.LC_ALL, "")
     main()
