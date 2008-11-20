@@ -143,8 +143,7 @@ static void style_box(WINDOW *win, char code)
         if ((color_idx != COLOR_MEMORY - 1)||(!colors[color_idx]))
             color_idx = (color_idx > 1) ? color_idx - 1: 1;
         colors[color_idx] = 0;
-        if (color_idx > 0)
-            wattron(win, COLOR_PAIR(colors[color_idx - 1]));
+        wattron(win, COLOR_PAIR(colors[color_idx - 1]));
     }
     else if ((code >= '1') && (code <= '8')) {
         if (color_idx == COLOR_MEMORY - 1) {
