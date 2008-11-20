@@ -72,6 +72,10 @@ class TestWidecurse(TestCurses):
 
         # Left over should be "extra"
         self.l("Left over: %s" % ret)
+
+        # Overflow the built-in color memory
+        # This must be updated if color memory is increased
+        self.l("%1z%2y%3x%4w%5v%6u%7t%8s%1r%2q%0a%0b%0c%0d%0e%0f%0g%0h%0i%0j")
         self.screen.refresh()
 
 

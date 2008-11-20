@@ -57,8 +57,8 @@ static PyObject *tlen(PyObject *self, PyObject *args)
 static void style_box(WINDOW *win, char code)
 {
     /* This function's limited memory */
-    static int colors[COLOR_MEMORY] = {1};
-    static int color_idx = 1;
+    static int colors[COLOR_MEMORY] = {0};
+    static int color_idx = 0;
     static char attrs[6] = {0,0,0,0,0,0};
 
     if (code == 'B') {
@@ -140,12 +140,17 @@ static void style_box(WINDOW *win, char code)
             wattrset(win, 0);
     }
     else if (code == '0') {
-        color_idx = ( color_idx > 1 ) ? color_idx - 1 : 1;
-        wattron(win, COLOR_PAIR(colors[color_idx - 1]));
+        colors[color_idx] = 0;
+        color_idx = ( color_idx > 0 ) ? color_idx - 1 : 0;
+        wattron(win, COLOR_PAIR(colors[color_idx]));
     }
     else if ((code >= '1') && (code <= '8')) {
         if (color_idx == COLOR_MEMORY - 1) {
-            memmove(&colors[0], &colors[1], sizeof(int) * (COLOR_MEMORY - 1));
+            if (colors[color_idx]) {
+                int i = 0;
+                for (i = 0; i < color_idx; i++)
+                    colors[i] = colors[i + 1];
+            }
             colors[color_idx] = code - '0';
             wattron(win, COLOR_PAIR(colors[color_idx]));
         } 
