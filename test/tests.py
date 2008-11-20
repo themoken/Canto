@@ -33,14 +33,15 @@ class TestCurses(TestCase):
 class TestIDraw(TestCurses):
     def l(self, x):
         bme = ((""," ",""),(""," ",""),(""," ",""))
-        self.row = self.renderer.out([(x, bme)], self.row, 100, 20, [self.screen])
+        self.row = self.renderer.out([(x, bme)], self.row, \
+                100, 20, [self.screen])
     
     def runTest(self):
         self.renderer = Renderer()
         self.row = 0
 
         # Simple quote
-        self.l("%Q%1This is a quote%q")
+        self.l("%QThis is a quote%q")
         self.l(" ")
 
         # Indent across a single line, that will break
@@ -60,7 +61,7 @@ class TestWidecurse(TestCurses):
 
     def runTest(self):
         # Terminal styles
-        self.l("Normal output")
+        self.l("%8Normal output")
         self.l("%BBold output%b")
         self.l("%UUnderline output%u")
         self.l("%SStandout output%s")
