@@ -9,8 +9,6 @@
 #   published by the Free Software Foundation.
 
 from unittest import TestCase, main
-from canto.widecurse import core
-from canto.interface_draw import Renderer
 import curses
 import locale
 
@@ -30,6 +28,9 @@ class TestCurses(TestCase):
         self.screen.getch()
         curses.endwin()
 
+from canto.interface_draw import Renderer
+from canto.story import Story
+from canto.tag import Tag
 class TestIDraw(TestCurses):
     def l(self, x):
         bme = ((""," ",""),(""," ",""),(""," ",""))
@@ -52,8 +53,24 @@ class TestIDraw(TestCurses):
         self.l("%QThis is a")
         self.l("multi-line")
         self.l("quote%q")
+        self.l(" ")
+        
+        # Test some story rendering cases. The reader rendering
+        # will be handled separately.
 
+        ufp = {}
+        ufp["title"] = "Here, try an HTML entity on for size: &amp;"
+        ufp["canto_state"] = ["unread"]
 
+        story = Story(ufp, None, self.renderer)
+        story.idx = 0
+        story.last = 1
+
+        tag = Tag()
+
+        self.renderer.story(tag, story, self.row, 100, 20, [self.screen])
+
+from canto.widecurse import core
 class TestWidecurse(TestCurses):
     def l(self, x, r=" ", e=""):
         self.row += 1
@@ -96,14 +113,27 @@ class TestWidecurse(TestCurses):
         self.l("%21234567890%51234567890")
 
         # String too long
-        ret = self.l("%812345678901234567890extra")
+        r = self.l("%812345678901234567890extra")
 
         # Left over should be "extra"
-        self.l("Left over: %s" % ret)
+        self.l("Left over: %s" % r)
 
         # Overflow the built-in color memory
         # This must be updated if color memory is increased
         self.l("%1z%2y%3x%4w%5v%6u%7t%8s%1r%2q%0a%0b%0c%0d%0e%0f%0g%0h%0i%0j")
+        self.l(" ")
+
+        # Test word wrap
+        s = "%8A bunch of really short words, but more than one line."
+        while s:
+            s = self.l(s)
+
+        self.l(" ")
+
+        # Test word breaking
+        s = "A-really-long-slugified-huge-word"
+        while s:
+            s = self.l(s)
 
 from canto.canto_html import convert
 class TestCantoHTML(TestCase):
