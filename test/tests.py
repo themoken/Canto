@@ -11,11 +11,17 @@
 from unittest import TestCase, main
 import curses
 import locale
+import sys
+
+width_override = 0
 
 class TestCurses(TestCase):
     def setUp(self):
         self.screen = curses.initscr()
         self.screen.erase()
+        self.height, self.width = self.screen.getmaxyx()
+        if width_override:
+            self.width = width_override
         curses.start_color()
         curses.init_pair(1, 7, 0)
 
@@ -33,15 +39,61 @@ from canto.interface_draw import Renderer
 from canto.story import Story
 from canto.tag import Tag
 class TestIDraw(TestCurses):
+    def setUp(self):
+        TestCurses.setUp(self)
+        for i,c in enumerate([7,4,3,2,5]):
+            curses.init_pair(i + 1, c, 0)
+
+        self.renderer = Renderer()
+        self.row = 0
+        
+        self.ufp = {}
+        self.ufp["title"] = "Here, try an HTML entity on for size: &amp;"
+        self.ufp["description"] =\
+"""Super long string description. With word wrapping and
+line breaks
+and slugified-huge-words-just-like-the-widecurses-test-has. Also
+let's toss in some HTML, just for shits.
+<p>
+<pre><code>
+    for(i=0;i &lt; n;i++) {
+        //do something
+        list[i] = list[i + 1];
+    }
+</code></pre>
+</p>
+<p>
+<ol>
+<li>Ordered 1</li>
+<li>Ordered 2</li>
+<li>Sublist <ul><li>Unordered 1</li><li>Unordered 2</li></ul>
+<li>Ordered 4</li>
+<li><strong>Styled Ordered 5</strong></li>
+</ol>
+<p>
+<strong>Bold text</strong><br />
+<em>Emphasis text</em>"""
+
+        self.ufp["link"] = "http://somelink"
+        self.ufp["canto_state"] = ["unread"]
+
+        self.story = Story(self.ufp, None, self.renderer)
+        self.story.idx = 0
+        self.story.last = 1
+
+        self.tag = Tag()
+
     def l(self, x):
         bme = ((""," ",""),(""," ",""),(""," ",""))
         self.row = self.renderer.out([(x, bme)], self.row, \
-                100, 20, [self.screen])
+                self.height, self.width, [self.screen])
     
+class TestIDrawBlocks(TestIDraw):
     def runTest(self):
-        self.renderer = Renderer()
-        self.row = 0
+        if self.width < 20:
+            return
 
+        self.width = 20
         # Simple quote
         self.l("%QThis is a quote%q")
         self.l(" ")
@@ -55,29 +107,27 @@ class TestIDraw(TestCurses):
         self.l("multi-line")
         self.l("quote%q")
         self.l(" ")
-        
-        # Test some story rendering cases. The reader rendering
-        # will be handled separately.
 
-        ufp = {}
-        ufp["title"] = "Here, try an HTML entity on for size: &amp;"
-        ufp["canto_state"] = ["unread"]
+class TestIDrawStory(TestIDraw):
+    def runTest(self):
+        self.renderer.story(self.tag, self.story, self.row, self.height,\
+                self.width, [self.screen])
 
-        story = Story(ufp, None, self.renderer)
-        story.idx = 0
-        story.last = 1
-
-        tag = Tag()
-
-        self.renderer.story(tag, story, self.row, 100, 20, [self.screen])
+class TestIDrawReader(TestIDraw):
+    def runTest(self):
+        self.renderer.reader(self.story, self.width, 1, self.screen)
 
 from canto.widecurse import core
 class TestWidecurse(TestCurses):
     def l(self, x, r=" ", e=""):
         self.row += 1
-        return core(self.screen, self.row, 0, 20, x, r, e)
+        return core(self.screen, self.row, 0, self.width, x, r, e)
 
     def runTest(self):
+        if self.width < 20:
+            return
+
+        self.width = 20
         # Terminal styles
         self.l("%8Normal output")
         self.l("%BBold output%b")
@@ -91,7 +141,7 @@ class TestWidecurse(TestCurses):
             curses.init_pair(i + 1, i, 0)
             ouput = "%" + str(i + 1) + str(i + 1) + "%0"
             for off,attr in enumerate(["", "%B","%U","%S"]):
-                core(self.screen, self.row, 0 + off, 20, \
+                core(self.screen, self.row, 0 + off, self.width, \
                         attr + ouput + attr.lower(), " ", "")
             self.row += 1
 
@@ -160,5 +210,12 @@ class TestCantoHTML(TestCase):
                 ("Sexy","otherimage.jpg","image")])
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        try:
+            width_override = int(sys.argv[1])
+            sys.argv = sys.argv[:1]
+        except:
+            width_override = 0
+
     locale.setlocale(locale.LC_ALL, "")
     main()
