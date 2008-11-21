@@ -37,7 +37,6 @@ class Feed(tag.Tag):
         self.ufp = None
         self.sorts = sort
         self.path = dirpath
-        self.lpath = dirpath + ".lock"
         self.URL = URL
         self.cfg = cfg
         self.renderer = renderer
