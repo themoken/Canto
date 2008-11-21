@@ -15,6 +15,7 @@ import locale
 class TestCurses(TestCase):
     def setUp(self):
         self.screen = curses.initscr()
+        self.screen.erase()
         curses.start_color()
         curses.init_pair(1, 7, 0)
 
