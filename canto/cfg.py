@@ -95,12 +95,17 @@ class Cfg:
         self.height = 0
         self.width = 0
 
+        self.gui_top = 0
+        self.gui_right = 0
         self.gui_height = 0
         self.gui_width = 0
 
         self.msg_height = 1
         self.msg = None
         self.msg_tick = 0
+
+        self.reader_lines = 8
+        self.reader_orientation = "right"
 
         self.resize_hook = None
         self.new_hook = None
@@ -307,6 +312,8 @@ class Cfg:
             "renderer" : interface_draw.Renderer,
             "keys" : self.key_list,
             "reader_keys" : self.reader_key_list,
+            "reader_orientation" : self.reader_orientation,
+            "reader_lines" : self.reader_lines,
             "columns" : self.columns,
             "colors" : self.colors,
             "source_opml" : self.source_opml,
@@ -328,7 +335,8 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["filterlist", "filter_idx", "render", "columns"]:
+        for attr in ["filterlist", "filter_idx", "render", "columns",\
+                "reader_orientation", "reader_lines"]:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
 

@@ -479,11 +479,26 @@ class Main():
         self.cfg.stdscr.refresh()
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
-        self.cfg.gui_height = self.cfg.height - self.cfg.msg_height 
+        if self.cfg.resize_hook:
+            self.cfg.resize_hook(self.cfg)
+        self.cfg.columns = max(self.cfg.columns, 1)
+
+        self.cfg.gui_height = self.cfg.height - self.cfg.msg_height
         self.cfg.gui_width = self.cfg.width
 
+        if self.cfg.reader_orientation == "top":
+            self.cfg.gui_height -= self.cfg.reader_lines
+            self.cfg.gui_top = self.cfg.reader_lines
+        elif self.cfg.reader_orientation == "bottom":
+            self.cfg.gui_height -= self.cfg.reader_lines
+        elif self.cfg.reader_orientation == "left":
+            self.cfg.gui_width -= self.cfg.reader_lines
+            self.cfg.gui_right = self.cfg.reader_lines
+        elif self.cfg.reader_orientation == "right":
+            self.cfg.gui_width -= self.cfg.reader_lines
+            
         self.cfg.msg = curses.newwin(self.cfg.msg_height,\
-                self.cfg.width, self.cfg.gui_height, 0)
+                self.cfg.width, self.cfg.height - self.cfg.msg_height, 0)
         self.cfg.msg.bkgdset(curses.color_pair(1))
         self.cfg.msg.scrollok(True)
         self.cfg.msg.idlok(True)
@@ -491,10 +506,6 @@ class Main():
         self.cfg.msg.refresh()
 
         self.cfg.stdscr.keypad(1)
-
-        if self.cfg.resize_hook:
-            self.cfg.resize_hook(self.cfg)
-        self.cfg.columns = max(self.cfg.columns, 1)
 
         for g in self.key_handlers :
             g.refresh()

@@ -79,8 +79,10 @@ class Gui :
     def refresh(self):
         # Generate all of the columns
         self.window_list = [curses.newwin(self.cfg.gui_height, \
-                    self.cfg.gui_width / self.cfg.columns, 0, \
-                    (self.cfg.gui_width / self.cfg.columns) * i) \
+                    self.cfg.gui_width / self.cfg.columns, \
+                    self.cfg.gui_top,\
+                    (self.cfg.gui_width / self.cfg.columns) * i\
+                    + self.cfg.gui_right) \
                     for i in range(0, self.cfg.columns)]
 
         # Setup the backgrounds.

@@ -25,29 +25,62 @@ class Reader :
         self.width = 0
         self.height = 0
         self.show_links = 0
-        
+
         register(self)
         self.register = register
         self.deregister = deregister
         self.refresh()
 
     def refresh(self):
-        self.max_height = self.cfg.gui_height
-        self.lines, self.links = self.story.renderer.reader(self.story, \
-                self.cfg.width, self.show_links, None)
-        
-        self.height, self.width = min(self.lines, self.max_height),\
-                self.cfg.width
-        self.window = curses.newpad(self.lines, self.cfg.width)
-        self.window.bkgdset(curses.color_pair(1))
+        # It's unfortunate, but because the interface is so complex,
+        # the only way to get the number of lines it will take to completely
+        # render the reader, we actually have to render it to a None window
+        # first.
 
-        self.story.renderer.reader(self.story, self.cfg.width, \
-                self.show_links, self.window)
+        # A way to get this right off the bat would be nice, but I doubt
+        # it would enhance the performance more than one iota.
+
+        if self.cfg.reader_orientation in ["top","bottom",None]:
+            # First render for self.lines
+            self.lines, self.links = self.story.renderer.reader(self.story, \
+                        self.cfg.width, self.show_links, None)
+
+            # This is the default, old behavior (floating window)
+            if not self.cfg.reader_orientation:
+                self.height, self.width = min(self.lines, self.cfg.gui_height),\
+                        self.cfg.width
+                self.top, self.right = (0,0)
+            # Rendering the reader into a pre-existing space
+            else:
+                self.height = self.cfg.reader_lines
+                self.width = self.cfg.width
+                if self.cfg.reader_orientation == "top":
+                    self.top, self.right = (0,0)
+                else:
+                    self.top, self.right = (self.cfg.gui_height, 0)
+        else:
+            self.lines, self.links = self.story.renderer.reader(self.story, \
+                    self.cfg.reader_lines, self.show_links, None)
+
+            self.height = self.cfg.gui_height
+            self.width = self.cfg.reader_lines
+
+            if self.cfg.reader_orientation == "left":
+                self.top, self.right = (0, 0)
+            else:
+                self.top, self.right = (0, self.cfg.gui_width)
+                
+        self.window = curses.newpad(self.lines, self.width)
+        self.window.bkgdset(curses.color_pair(1))
+        self.lines, self.links = self.story.renderer.reader(self.story, \
+                self.width, self.show_links, self.window)
+
         self.draw_elements()
 
     def draw_elements(self):
         self.more = self.lines - (self.height + self.offset)
-        self.window.refresh(self.offset, 0, 0, 0, self.height - 1, self.width)
+        self.window.refresh(self.offset, 0, self.top, self.right, \
+                self.height - 1 + self.top, self.width + self.right)
 
     def toggle_show_links(self):
         self.show_links = not self.show_links
