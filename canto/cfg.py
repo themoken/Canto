@@ -17,10 +17,6 @@ import chardet
 import codecs
 import os
 
-class ConfigError(Exception):
-    def __str__(self):
-        return repr(self.value)
-
 class Cfg:
     def __init__(self, conf, log_file, feed_dir, script_dir):
         self.handlers = {
@@ -62,6 +58,7 @@ class Cfg:
                          "R" : "all_read",
                          "u" : "tag_unread",
                          "U" : "all_unread",
+                         ":" : "command",
                          "C-r" : "force_update",
                          "C-l" : "refresh",
                          "h" : "help"}
@@ -326,7 +323,7 @@ class Cfg:
         except :
             print "Invalid line in config."
             traceback.print_exc()
-            raise ConfigError
+            raise
 
         # exec cannot modify basic type
         # locals directly, so we do it by hand.

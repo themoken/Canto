@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from input import search
+from input import input, search
 from const import *
 import utility
 import reader
@@ -469,6 +469,13 @@ class Gui :
     def all_unread(self):
         for t in self.tags :
             t.all_unread()
+
+    def command(self):
+        command = input(self.cfg, "")
+        if not command:
+            return
+        locals = { "gui" : self }
+        exec(command, locals, {})
 
     def quit(self):
         if self.cfg.end_hook:

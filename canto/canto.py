@@ -143,7 +143,7 @@ class Main():
 
         try :
             self.cfg = cfg.Cfg(conf_file, log_file, feed_dir, script_dir)
-        except cfg.ConfigError:
+        except :
             sys.exit(-1)
  
         self.cfg.log("Canto v %d.%d.%d" % VERSION_TUPLE, "w")
