@@ -39,6 +39,7 @@ class Gui :
         self.keys = cfg.key_list
         self.window_list = []
         self.map = []
+        self.focus = 0
 
         self.cfg = cfg
         self.register = register
@@ -480,7 +481,11 @@ class Gui :
         exec(command, locals, {})
 
     def switch(self):
+        self.focus = 0
         return WINDOW_SWITCH
+
+    def switched(self):
+        self.focus = 1
 
     def quit(self):
         if self.cfg.end_hook:

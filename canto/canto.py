@@ -399,6 +399,8 @@ class Main():
                 actl = []
 
             for a in actl:
+                if not len(self.key_handlers):
+                    self.done()
                 r = self.key_handlers[-1].action(a)
                 if r == REFRESH_ALL:
                     self.refresh()
@@ -408,9 +410,11 @@ class Main():
                 elif r == REDRAW_ALL:
                     for k in self.key_handlers:
                         k.draw_elements()
-                elif r == WINDOW_SWITCH and len(self.key_handlers) >= 2:
+                elif r == WINDOW_SWITCH and len(self.key_handlers) >= 2\
+                        and self.cfg.reader_orientation:
                     self.key_handlers[-1], self.key_handlers[-2] =\
                             self.key_handlers[-2], self.key_handlers[-1]
+                    self.key_handlers[-1].switched()
 
     def done(self, a=None, b=None):
         # Kill the message log

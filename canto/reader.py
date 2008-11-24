@@ -18,7 +18,7 @@ class Reader :
         self.story = story
         self.cfg = cfg
         self.keys = cfg.reader_key_list
-
+        self.focus = 0
         self.more = 0
         self.offset = 0
         self.height = 0
@@ -122,7 +122,11 @@ class Reader :
         return 1
 
     def switch(self):
+        self.focus = 0
         return WINDOW_SWITCH
+
+    def switched(self):
+        self.focus = 1
 
     def alarm(self, a=None, b=None):
         pass
