@@ -476,6 +476,7 @@ class Main():
 
     def refresh(self):
         curses.endwin()
+        self.cfg.stdscr.touchwin()
         self.cfg.stdscr.refresh()
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
