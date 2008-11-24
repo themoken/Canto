@@ -461,8 +461,9 @@ class Main():
             for f in self.cfg.feeds:
                 f.tick()
                 self.filter_extend(f)
-            
-            self.key_handlers[0].alarm(self.stories)
+    
+            for h in self.key_handlers:
+                h.alarm(self.stories)
             self.key_handlers[-1].refresh()
             self.tick = 60
 
