@@ -408,6 +408,9 @@ class Main():
                 elif r == REDRAW_ALL:
                     for k in self.key_handlers:
                         k.draw_elements()
+                elif r == WINDOW_SWITCH and len(self.key_handlers) >= 2:
+                    self.key_handlers[-1], self.key_handlers[-2] =\
+                            self.key_handlers[-2], self.key_handlers[-1]
 
     def done(self, a=None, b=None):
         # Kill the message log

@@ -479,6 +479,9 @@ class Gui :
         locals = { "gui" : self }
         exec(command, locals, {})
 
+    def switch(self):
+        return WINDOW_SWITCH
+
     def quit(self):
         if self.cfg.end_hook:
             self.cfg.end_hook(self)

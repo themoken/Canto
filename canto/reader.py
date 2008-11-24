@@ -121,6 +121,12 @@ class Reader :
             utility.goto(self.links[i], self.cfg)
         return 1
 
+    def switch(self):
+        return WINDOW_SWITCH
+
+    def alarm(self, a=None, b=None):
+        pass
+    
     def action(self, a):
         if callable(a):
             r = a()
