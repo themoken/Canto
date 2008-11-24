@@ -99,10 +99,10 @@ class Renderer :
     def __window(self, row, height, window_list):
         if height != -1:
             winidx, winrow = divmod(row, height)
-            if winidx >= len(window_list):
-                window = None
-            else:
+            try :
                 window = window_list[winidx]
+            except IndexError:
+                window = None
             return (window, winrow)
         else:
             return (window_list[0], row)
