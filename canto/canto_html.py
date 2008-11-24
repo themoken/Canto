@@ -120,7 +120,7 @@ class CantoHTML(sgmllib.SGMLParser):
             if open:
                 self.result += "%6%B"
             else:
-                self.result += "%b%1"
+                self.result += "%b%0"
         elif tag in ["b", "strong"]:
             if open:
                 self.result += "%B"
