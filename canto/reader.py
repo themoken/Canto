@@ -139,4 +139,6 @@ class Reader :
         return REDRAW_ALL
 
     def destroy(self):
+        self.window.erase()
+        self.draw_elements()
         self.deregister()
