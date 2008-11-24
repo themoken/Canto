@@ -37,11 +37,11 @@ class Renderer :
         t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%0]%0"
         if tag.collapsed:
             if tag[0].selected():
-                return [("%B%1 > " + t + "%C", " ", " "),(" "," "," ")]
+                return [("%C%B%1 > " + t + "", " ", " "),(" "," "," ")]
             else:
-                return [("%B   " + t + "%C"," ", " "),(" "," "," ")]
+                return [("%C%B   " + t + ""," ", " "),(" "," "," ")]
 
-        return [("%B   " + t, " ", "%C"),("%1%B┌", "─", "┐%C%0")]
+        return [("%B   " + t, " ", ""),("%1┌", "─", "┐%C%0")]
 
     def tag_foot(self, tag):
         return [("%1%B└", "─", "┘%C%0")]
