@@ -106,8 +106,8 @@ class Cfg:
         self.msg = None
         self.msg_tick = 0
 
-        self.reader_lines = 8
-        self.reader_orientation = "right"
+        self.reader_lines = 0
+        self.reader_orientation = None
 
         self.resize_hook = None
         self.new_hook = None
