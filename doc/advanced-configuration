@@ -1,0 +1,182 @@
+If you're looking for a bit more customization, then you've come to the right place.
+
+[TOC]
+
+## Hooks
+
+Hooks are used in order to execute code on a particular event. These hooks are all used in your config by setting
+
+    somehook = somefunction
+
+A basic example of a hook, as seen in the example config is as follows:
+
+    :::python
+    def my_resize_hook(cfg):
+        cfg.columns = cfg.width / 70
+
+    resize_hook = my_resize_hook
+
+Extremely simple and effective, it resets the number of columns whenever the screen is resized.
+
+There are a number of different hooks.
+
+<table>
+<tr>
+<td>Hook name</td>
+<td>Called when...</td>
+<td>Args</td>
+</tr>
+<tr>
+<td>`start_hook`</td>
+<td>Called once, at startup.</td>
+<td>Passed the current `Gui()` object</td>
+</tr>
+<tr>
+<td>`resize_hook`</td>
+<td>Called once at startup and again every time the screen is resized.</td>
+<td>Passed the `Cfg()` object</td>
+</tr>
+<tr>
+<td>`new_hook`</td>
+<td>Called once per item, ever, regardless of state.</td>
+<td>Passed the `Tag()` and `Story()` objects for the item</td>
+</tr>
+<tr>
+<td>`select_hook`</td>
+<td>Called when an item is selected.</td>
+<td>Passed the `Tag()` and `Story()` objects for the item</td>
+</tr>
+<tr>
+<td>`unselect_hook`</td>
+<td>Called when an item is unselected.</td>
+<td>Passed the `Tag()` and `Story()` objects for the item</td>
+</tr>
+<tr>
+<td>`update_hook`</td>
+<td>Called every time the `Gui()` is refreshed with new items.</td>
+<td>Passed the current `Gui()` object.</td>
+</tr>
+<tr>
+<td>`end_hook`</td>
+<td>Called once on exit.</td>
+<td>Passed the current `Gui()` object.</td>
+</tr>
+</table>
+
+Each hook is passed the relevant information. It may require a little [browsing of the code](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=summary") to make use of them, but the ability is there. The canto.extra module already has some example hooks for setting/unsetting the xterm title. If you need help using a hook, come by #canto in irc.freenode.net.
+
+## Filters
+
+Filters allow you to arbitrarily remove items from the list. There are two types, global and feed-based.
+
+A filter takes the form of a class with at least two methods. For example, `show_unread()` from canto.extra:
+
+    :::python
+    class show_unread():
+        def __str__(self):
+            return "Show unread"
+
+        def __call__(self, tag, item):
+            return not item.wasread()
+
+The class show_unread has two methods. `__str__` returns the string representation of the filter (used for the little blurbs in the upper right corner when you change feeds), and `__call__` is the actual filter. You get the tag and the item and based on that, the filter returns 1 (keep this item) or 0 (ignore this item).
+
+Of course, they need not be so simplistic. Take `only_with` from canto.extra for example:
+
+    :::python
+    class only_with():
+        def __init__(self, keyword, **kwargs):
+            self.keyword = keyword
+            if kwargs.has_key("regex") and kwargs["regex"]:
+                self.match = re.compile(keyword)
+            else:
+                self.match = re.compile(".*" + keyword + ".*")
+
+        def __str__(self):
+            return "With %s" % self.keyword
+
+        def __call__(self, tag, item):
+            return self.match.match(item["title"])
+
+A little more complicated, but it essentially takes one argument and an optional named argument, regex. Based on that it creates a regex to match based on that keyword.
+
+Lastly, because they are classes, you can make them inherit from each other. Take `only_without` from canto.extra:
+
+    :::python
+    class only_without(only_with):
+        def __str__(self):
+            return "Without %s" % self.keyword
+
+        def __call__(self, tag, item):
+            return not self.match.match(item["title"])
+
+Back to two lines of real code, inheriting the rest from `only_with`.
+
+Filters are employed in the config with filterlist commands.
+
+For a global filter (which will be applied to all feeds), you merely add
+
+**filterlist=[Filter1(), Filter2()...]**
+
+And then you can cycle through the filters with [ and ].
+
+For a feed filter, you just have to move the filterlist command into the `add_feed()` declaration, like this:
+
+**add_feed("Thisfeed", "URL", filterlist=[Filter1(),Filter2()...])**
+
+In either case, "None" is the default filter.
+
+## Sorting
+
+Sorting a feed in Canto is just like sorting any list in Python: You define a function that determines whether one item is ahead of another. Let's look at the unread sort (from [canto/extra.py](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=blob;f=canto/extra.py;hb=HEAD"))
+
+    :::python
+    def by_unread(x, y):
+        if x.wasread() and not y.wasread():
+            return 1
+        if y.wasread() and not x.wasread():
+            return -1
+        return 0
+
+This sort makes all of the unread stories float at the top of the list. In simple terms, the sort function is passed two stories, x and y. If x has been read and y hasn't clearly x should come after y so we return a positive integer (1) meaning "x should be after y". If y was read and x hasn't, we return a negative integer (-1) meaning "y should be after x", otherwise return zero, meaning "no change."
+
+The basics of Python sorting are covered in the Python wiki [here](http://wiki.python.org/moin/HowTo/Sorting).
+
+A little note on writing a good sort function: the return value should be consistent. For example, if sort(x,y) returns 1, then `sort(y,x)` better return -1. If your values are inconsistent, the sort may not work properly some (or most) of the time. Lastly, all sorts are wrapped in an exception wrapper, so it won't kill Canto, but if your sort function throws an exception you should at least return 0 to maintain the feed's order.
+
+Wherever you can use a sort, you can also use a list of sorts. Provided all of the sorts are well behaved, they will be properly sorted within. For example:
+
+    :::python
+    change_feed("Slashdot", sort=[by_alpha, by_unread])
+
+Will sort the Slashdot feed alphabetically and then by unread (as seen above), since both sorts are well behaved, the individual parts of the list that are read and unread will also be alphabetical in their own rites.
+
+## Advanced Keybinds
+
+Keybinds can be strings or functions or lists intermixing both.
+
+A simple example:
+
+    :::python
+    def custom_keybind(gui):
+        gui.cfg.log("Selected: %s" % gui.sel["title"])
+
+    keys['b'] = custom_keybind
+
+Which makes the 'b' key print "Selected: *item-title*" to the log. Totally useless, but it illustrates a pattern. A more complex (and useful example) is the search helper from canto.extra:
+
+    :::python
+    def search(s, **kwargs):
+        if kwargs.has_key("regex") and kwargs["regex"]:
+            return lambda x : x.do_inline_search(re.compile(s))
+        else:
+            return lambda x : x.do_inline_search(re.compile(".*" + s + ".*"))
+
+Looks rather complex, but it does essentially the same thing as the only_with filter did, only this time it passes that regex to the `Gui()` `do_inline_search` function which highlights all items matching the regex.
+
+This now allows us to use an advanced keybind easily (i.e. without much Python)
+
+    :::python
+    keys['1'] = search(".*[Ll]inux.*", regex=True)
+    keys['2'] = search("Obama")
+

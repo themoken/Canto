@@ -1,0 +1,543 @@
+This covers how to customize the Canto interface.
+
+[TOC]
+
+## Colors
+
+If you're happy with the way that Canto prints out stories and everything, and just want to change the colors it uses, that's extremely easy.
+
+Canto uses the typical NCurses 8 color scheme, in which you have 8 foreground and background colors and 8 color pairs to work with. By default, Canto defines the colors like this:
+
+<table>
+<tr>
+<td>Curses Color Number</td>
+<td>Representation</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>"default"*</td>
+</tr>
+<tr>
+<td>0</td>
+<td>"black"</td>
+</tr>
+<tr>
+<td>1</td>
+<td>"red"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>"green"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>"yellow"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>"blue"</td>
+</tr>
+<tr>
+<td>5</td>
+<td>"pink" or "magenta"</td>
+</tr>
+<tr>
+<td>6</td>
+<td>"cyan"</td>
+</tr>
+<tr>
+<td>7</td>
+<td>"white"</td>
+</tr>
+</table>
+
+>*Default is terminal specific. If your terminal supports transparency, setting background to default will take advantage of that, otherwise default is usually a white or black foreground/background.
+
+<table>
+<tr>
+<td>Color Pair</td>
+<td>Definition</td>
+<td>How it's used</td>
+</tr>
+<tr>
+<td>1</td>
+<td>(White, Black)</td>
+<td>This is default color pair</td>
+</tr>
+<tr>
+<td>2</td>
+<td>(Blue, Black)</td>
+<td>This is used for unread story items.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>(Yellow, Black)</td>
+<td>This is used for read story items.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>(Green, Black)</td>
+<td>This is used for links in the reader.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>(Magenta, Black)</td>
+<td>This is used for quotes in the reader.</td>
+</tr>
+<tr>
+<td>6,7,8</td>
+<td>(Black,Black)</td>
+<td>Unused</td>
+</tr>
+</table>
+
+Color pair 1, the default color pair, is used to fill in any blank space, and is used for all of the nice line borders and the cursor.
+
+>With Ncurses colors, you sometimes have to be creative to get more than simple colors. For example, to get a dark gray, you set the color to black and apply the bold attribute (covered in the renderer section). And "magenta" without the bold attribute looks more like purple than bright pink.
+
+Example:
+
+[Screenshot](/static/s_1.png) (Not so great looking.)
+
+    colors[0] = ("red","black")
+
+This will change the default color from white/black to red/black.
+
+You can also use Python to set a lot of colors at once, useful for changing the background colors.
+
+[Screenshot](/static/s_2.png)(Also an ugly example.)
+
+    for i, (fg,bg) in enumerate(colors):
+          colors[i] = (fg, "blue")
+
+This will change all of the colors to a background blue. Like MOC's default theme. If you set all of the backgrounds to "default" instead of "blue", it would allow the terminal to set the background. I would only suggest this if you've either changed the other colors to be readable on any background, or if you're using a transparent terminal.
+
+## A simple example
+
+The easiest way to change the way that Canto outputs text is to subclass the renderer and override parts of it, rather than starting from scratch. In this series of examples, we'll change the renderer to output ASCII characters instead of nice Unicode lines for the boxes.
+
+The default renderer is designed so that you can modify small chunks without digging deep into the code. In particular, the functions `firsts()`, `mids()`, and `ends()`. Each of these correspond to the first, middle, and last lines of a multiline story and return a three part tuple.
+
+    (first, second, third)
+
+These values correspond to parts of a given a line to be printed. First, is the beginning of the line, second is the repeating character to fill space between the end of a string and third, which forms the end of the line.
+
+* * *
+
+Sounds confusing, but if, for example, I subclassed the renderer and made the `firsts()` function return something like `('|', ' ', '|')`, the first line of every story item would be bracketed by pipes.
+
+[Screenshot](/static/rs_1.png)
+
+    class MyAwesomeRenderer(renderer) :
+        def firsts(self, story):
+            return ("| ", " ", " |")
+
+    default_renderer(MyAwesomeRenderer())
+
+* * *
+
+That doesn't look quite right, on most of the items, the ASCII pipes are only one side. So let's go ahead and override `mids()` and `ends()` with the same tuple.
+
+[Screenshot](/static/rs_2.png)
+
+    class MyAwesomeRenderer(renderer) :
+        def firsts(self, story):
+            return ("| ", " ", " |")
+
+        # Added mids and ends
+        def mids(self, story):
+            return ("| ", " ", " |")
+        def ends(self, story):
+            return ("| ", " ", " |")
+
+    default_renderer(MyAwesomeRenderer())
+
+* * *
+
+>Note that there are applied on a line by line basis, there is no mixing (i.e. using `firsts()` and `ends()` if the item is only a line long.
+
+ Okay, that looks a little better, but the head of the feed and the foot of the feed are still Unicode. For that, we override `tag_head` and `tag_foot`.
+
+[Screenshot](/static/rs_3.png)
+
+    class MyAwesomeRenderer(renderer) :
+        def firsts(self, story):
+            return ("| ", " ", " |")
+        def mids(self, story):
+            return ("| ", " ", " |")
+        def ends(self, story):
+            return ("| ", " ", " |")
+
+        # Added tag_head and tag_foot
+        def tag_head(self, tag):
+            # t looks like " Slashdot [10]"
+            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+            return [(t, " ", " "),("+","-","+")]
+
+        def tag_foot(self, tag):
+            return [("+","-","+")]
+
+    default_renderer(MyAwesomeRenderer())
+
+Both tag_head and tag_foot return a list of tuples. In Python, the `+` operator concatenates strings, `str()` can coerce an integer (`tag.unread`) to a string. Each tuple in the list corresponds to a line on the screen. So, in `tag_head` we have the Feed [unread] on one line and then an ASCII box top on the second, just like 'tag_foot' returns.
+
+>Note that even if you're returning only one line, you have to make a list.
+
+* * *
+
+Okay, so we've successfully eliminated the Unicode lines characters! But there's one problem: we have no idea where the cursor is...
+
+Simple fix is to now add an if statement to 'firsts()'.
+
+[Screenshot](/static/rs_4.png)
+
+        def firsts(self, story):
+            base = "| "
+            if story.selected():
+                base += "> "
+            else:
+                base += "  "
+            return (base, " ", " |")
+
+So now we have a fully function, Unicode line free interface. The reader and input boxes aren't handled, but those can be handled easily by similary override `rfirsts()`, `rmids()`, `rends()`, and the `box()` function. This will be covered later.
+
+## Applying decorations
+
+The previous renderer example stripped out all of the Unicode lines from the default client, but unfortunately, it also took all of the color and highlighting with it.
+
+I like the Unicode, so I've put that back in. Here it is.
+
+[Screenshot](/static/rd_1.png)
+
+    class MyAwesomeRenderer(renderer) :
+        def firsts(self, story):
+            base = "│ "
+
+            if story.selected():
+                base += "> "
+            else :
+                base += "  "
+            return (base," ", " │")
+        def mids(self, story):
+            return ("│    ", " ", " │")
+        def ends(self, story):
+            return ("│    ", " ", " │")
+
+        def tag_head(self, tag):
+            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+            return [("   " + t," "," "),("┌","─","┐")]
+
+        def tag_foot(self, tag):
+            return [("└","─","┘")]
+
+    default_renderer(MyAwesomeRenderer())
+
+Note the first line.
+
+* * *
+
+The current example interface is pretty drab, so let's add some colors. Let's color code whether a story has been read or not.
+
+[Screenshot](/static/rd_2.png)
+
+        def firsts(self, story):
+            base = "│ "
+
+            if story.selected():
+                base += "> "
+            else:
+                base += "  "
+
+            # Apply %3 to read stories and %2 to unread stories.
+            if story.wasread():
+                base += "%3"
+            else:
+                base += "%2"
+
+            return (base, " ", " │")
+
+Applying color pair three (yellow) to read stories and color_pair two (blue) to unread stories certainly added a [splash of color](/static/rd_2.png), but that's not really what we were looking for.
+
+* * *
+
+A simple solution is to add `%1` to go back to the default color pair at the end of each item.
+
+[Screenshot](/static/rd_3.png)
+
+        def firsts(self, story):
+            base = "│ "
+
+            if story.selected():
+                base += "> "
+            else :
+                base += "  "
+
+            if story.wasread():
+                base += "%3"
+            else :
+                base += "%2"
+    
+        #Add %1 to end of each possible line
+            return (base," "," %1│")
+        def mids(self, story):
+            return ("│    "," "," %1│")
+        def ends(self, story):
+            return ("│    ", " ", " %1│")
+
+
+That looks a little better, but there are still some drawing errors (notice the uncolored multiline item).
+
+* * *
+
+So how to get colors to persist? Using `%0` will return to the color that was enabled previous to the current color. So we add `%0` to the end of each tuple, and bracket everything we want to be white with `%1%0`. We also explicitly state that we want the headers and footers to be white as well, to prevent colors from bleeding over.
+
+[Screenshot](/static/rd_4.png)
+
+    class MyAwesomeRenderer(renderer) :
+        def firsts(self, story):
+            base = "%1│ "
+
+            if story.selected():
+                base += "> "
+            else :
+                base += "  "
+
+            if story.wasread():
+                base += "%3"
+            else :
+                base += "%2"
+
+        # Bracket the ends with %1%0 instead
+            return (base, " ", " %1│%0")
+        def mids(self, story):
+            return ("%1│%0    ", " ", " %1│%0")
+        def ends(self, story):
+            return ("%1│%0    ", " ", " %1│%0")
+
+        # For tag_head and tag_foot, add %1 to the start to ensure the right
+        # color is applied right off the bat.
+
+        def tag_head(self, tag):
+            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+            return [("%1   " + t," "," "),("┌","─","┐")]
+
+        def tag_foot(self, tag):
+            return [("%1└","─","┘")]
+
+    default_renderer(MyAwesomeRenderer())
+
+* * *
+
+Much better. Now, to further emphasize unread feeds, let's add the bold decoration to them.
+
+[Screenshot](/static/rd_5.png)
+
+        def firsts(self, story):
+            base = "%1│ "
+
+            if story.selected():
+                base += "> "
+            else :
+                base += "  "
+
+            if story.wasread():
+                base += "%3"
+            else :
+                base += "%2%B"  # Added %B (bold) decoration
+
+* * *
+
+Ah. Looks like the same problem that we had with the colors, the bold decoration is spilling over to everything else. Much like `%0` reverted to the previous color, the `%N` decoration temporarily cancels all decorations and `%n` returns to the previous decoration. Unlike other decorations which are stackable, no other decorations can be applied until `%n` is seen. `%C` clears all of the decoration state, like `%N`, but is not recoverable.
+
+>Note that the `%N` and `%C` escapes are rarely actually necessary. By properly opening and closing style you can achieve the same effects most often. These two are only provided for convenience and clarity. For example, `%C`is only used in the default theme on `tag_foot` and `reader_foot`, to show that no information should be persisting to the next drawing command.
+
+So let's add the temporary `%N` decoration and the `%C` to the end.
+
+[Screenshot](/static/rd_6.png)
+
+        def firsts(self, story):
+            base = "%1│ "
+
+            if story.selected():
+                base += "> "
+            else :
+                base += "  "
+
+            if story.wasread():
+                base += "%3"
+            else :
+                base += "%2%B"
+
+            # Finally bracket with %N%n (normalizing) decoration.
+            return (base, " ", " %1%N│%n%0")
+        def mids(self, story):
+            return ("%1%N│%n%0    ", " ", " %1%N│%n%0")
+        def ends(self, story):
+            return ("%1%N│%n%0    ", " ", " %C%1│%0")
+
+
+
+
+* * *
+
+Excellent. No bleed over of colors or decorations. Much nicer looking interface. Here's a copy of the final config additions.
+
+    class MyAwesomeRenderer(renderer) :
+        def firsts(self, story):
+            base = "%1│ "
+
+            if story.selected():
+                base += "> "
+            else :
+                base += "  "
+
+            if story.wasread():
+                base += "%3"
+            else :
+                base += "%2%B"
+
+            return (base, " ", " %1%N│%n%0")
+        def mids(self, story):
+            return ("%1%N│%n%0    ", " ", " %1%N│%n%0")
+        def ends(self, story):
+            return ("%1%N│%n%0    ", " ", " %C%1│%0")
+
+        def tag_head(self, tag):
+            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+            return [("%1   " + t," "," "),("┌","─","┐")]
+
+        def tag_foot(self, tag):
+            return [("%1└","─","┘")]
+
+    default_renderer(MyAwesomeRenderer())
+
+## Decoration overview
+
+When you actually want to manipulate more than simple color changes, you'll have to use "decorations", that is color or other attributes like bolding.
+
+You can apply these by using decoration escapes, which take the form `%x`. They are defined as follows.
+
+<table>
+<tr>
+<td>Escape</td>
+<td>Effect</td>
+</tr>
+<tr>
+<td>`%0`</td>
+<td>This will enable the color that was enabled before the current color</td>
+</tr>
+<tr>
+<td>`%1 - %8`</td>
+<td>Enable color pair 1-8</td>
+</tr>
+<tr>
+<td>`%B %b`</td>
+<td>Enable/disable bold.</td>
+</tr>
+<tr>
+<td>`%U %u`</td>
+<td>Enable/disable underline.</td>
+</tr>
+<tr>
+<td>`%S %s`</td>
+<td>Enable/disable standout.</td>
+</tr>
+<tr>
+<td>`%R %r`</td>
+<td>Enable/disable reverse.</td>
+</tr>
+<tr>
+<td>`%D %d`</td>
+<td>Enable/disable dim.</td>
+</tr>
+<tr>
+<td>`%N %n`</td>
+<td>Enable/disable normal.*</td>
+</tr>
+<tr>
+<td>`%C`</td>
+<td>Clear all non-color decorations.</td>
+</tr>
+</table>
+
+> The `%N` decoration temporarily disables all non-color decorations (like `%C`), but when `%n` is found, it returns to the previous set of non-color decorations. Unlike all of the other non-color decorations, this *does not* stack; you cannot enable another non-color decoration after `%N` and before `%n`.
+
+Some of the non-color decorations only work on some terminals. YMMV.
+
+Color decorations are enabled once and after they are seen, that color is invariable one. Non-color decorations, however, keep track of how many times they have been turned on. For example:
+
+`%B%B%B%b%b` **This is still bold** `%b` this isn't
+
+## Object reference for styling
+
+In the above examples, we used functions like `story.wasread()`, and variables like tag.tag. This is where those are documented.
+
+###Story
+
+<table>
+<tr>
+<td>Call</td>
+<td>Result</td>
+</tr>
+<tr>
+<td>`story.wasread()`</td>
+<td>True if story has been read, False otherwise.</td>
+</tr>
+<tr>
+<td>`story.marked()`</td>
+<td>True if story has been marked (by hand or by a search), False otherwise</td>
+</tr>
+<tr>
+<td>`story.selected()`</td>
+<td>True if the story is selected, False otherwise.</td>
+</tr>
+<tr>
+<td>`story.idx`</td>
+<td>The index of the story within the tag.</td>
+</tr>
+<tr>
+<td>`story.last`</td>
+<td>True if story is the last story in the feed, False otherwise.</td>
+</tr>
+<tr>
+<td>`story["key"]`</td>
+<td>Returns story content. Keys usually include "title","link","description", and "id". You can find a list of common elements from the feedparser docs ([here](http://feedparser.org/docs/basic.html)).</td>
+</tr>
+</table>
+
+### Tag
+
+<table>
+<tr>
+<td>Call</td>
+<td>Result</td>
+</tr>
+<tr>
+<td>`tag.tag`</td>
+<td>Text of tag matching (usu. the feed handle)</td>
+</tr>
+<tr>
+<td>`tag.collapsed`</td>
+<td>True if tag is collapsed, False otherwise.</td>
+</tr>
+<tr>
+<td>`tag.unread`</td>
+<td>Number of unread items in the tag.</td>
+</tr>
+<tr>
+<td>`tag.read`</td>
+<td>Number of read items in the tag.</td>
+</tr>
+<tr>
+<td>`tag`</td>
+<td>Tag in it's basic form is a list of stories.</td>
+</tr>
+</table>
+
+Note that as mentioned above, any time you get a string from a tag or story object, it is best to `.encode("UTF-8")` them, to avoid raising exceptions about trying to coerce non-ASCII characters into ASCII.
+
+## Styling the reader
+
+The reader is simple to style. It follows the same form as the `first()`, `mids()`, `ends()` that the main interface uses. The content of the reader is essentially the same as the content of a single story.
+
+The only difference is that you use `rfirsts()`, `rmids()`, `rends()`, `reader_head()` and `reader_foot()`.

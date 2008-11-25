@@ -1,0 +1,84 @@
+The compulsory Frequently Asked Questions page.
+
+[TOC]
+
+## Why Canto?
+
+**The interface.**<br />
+I'm not sure how people can stand three-pane readers. Graphical or console, I don't want to tab around multiple windows to read my news. The way I read, I want all of the headlines out where I can see them with minimal cruft. It should be one key stroke to do most common actions.
+
+**Extensibility**<br />
+Everything used to configure Canto is actually part of the Python interpreter. It has all of the power of Python anywhere. Hooks are provided to allow you to perform actions on particular events (start,stop,update,resize,select,unselect), filters allow you to filter items out on arbitrary terms (globally or on a feed basis), and intelligent keybinds allow you to script your way to pretty much anything you want. 
+
+Examples:
+
+- Use a keybind to write the item to a file, or mail it to a friend.
+- Use a filter to only browse through items you haven't read yet.
+- Use a custom renderer for a feed to display extra information on its items.
+- Sort feeds by date, alphabetically, by length, or by number of comments in article
+- Keybind your favorite search terms to cycle through them.
+- Detect that your terminal is xterm or a tty and set the browser appropriately
+- Arbitrary things, like change the theme based on the time of day
+
+The point being that, with all of Python behind it, you can manipulate Canto in new and inventive ways without any help from me. My limited vision doesn't encumber how you use the software.
+
+**Theming**<br />
+All of the drawing code is done by a simple class full of literate Python. If you want to modify how anything is drawn to the screen, subclass the renderer, change anything you want and voila... Canto now draws differently. Sounds a lot harder than it is.
+
+This allows you a lot of flexibility to do things like highlight particular keywords, or change the way a particular feed is drawn, or even what stories are drawn at all. Again, just because I didn't think to add support to the reader for what you want to do, doesn't mean you can't do it.
+
+## Does Canto support Atom feeds?
+
+Yes. Canto uses [feedparser](http://feedparser.org) which is capable of parsing virtually any syndicated news format on the planet and aside from that, Canto doesn't care.
+
+## Does Canto support OPML?
+
+Yes, as of 0.5.2, Canto support importing from/export to OPML, as well as adding feeds from an OPML file via config using ([source_opml](http://codezen.org:8000/canto/config/#source_opml)).
+
+## Does Canto support Unicode/UTF-8?
+
+Yes. As long as your terminal and its font can support it, then Canto can output it. If you can't see certain characters try using a pan-Unicode font (like unifont) with your terminal. Then you can read all of your Unicode Klingon characters.
+
+## What does Canto require?
+
+Canto 0.5.0 requires Python 2.4 or better, ncurses 5.5 or better, [feedparser](http://feedparser.org), and [chardet](http://chardet.feedparser.org). There are packages for all four of these dependencies in most major distributions.
+
+To **build** Canto: GCC or another standards compliant C compiler, ncurses header files, and python header files (for compiling the core code).
+
+## Why ncurses?
+
+I am one of those internet nutjobs that believe that the mouse shouldn't have made it as far as it has in the world. I like to be able to do everything from the keyboard, and a lot of times that means using console apps because they seem to be the only ones not following the click-button paradigm.
+
+There's also the fact that virtually every Unix-like distro has ncurses installed by default, so that the user doesn't have to choose apps based on what will best integrate into their desktop. How many times have you found a piece of software and are disappointed because it doesn't really fit with everything else? People in Gnome running Amarok know exactly what I'm talking about.
+
+Then there's the fact that I like to read news from in SSH sessions (very nice when you're on campus, or at work).
+
+And finally, I just really dig text-interfaces. [XMonad](http://xmonad.org) and have six million xterms running with [vim](http://www.vim.org),[mutt](http://mutt.org), and [moc](http://moc.daper.net) at all times.
+
+## Why Python?
+
+The previous iteration of this project was in C (NRSS, which I still support and will maintain if anyone gives me bugs). Now C is great. I love C. I do my daily work in C and I enjoy it.
+
+But when it comes to *having fun* while coding, Python is the way to go. I know you take a speed hit, but that's why the core drawing logic is in C (surprise!). And there's one thing that I've learned while bugfixing NRSS, and that's that it's no fun.
+
+In addition, Mark Pilgrim's excellent [feedparser](http://feedparser.org) and [chardet](http://chardet.feedparser.org) libraries are native to Python, and they make life a lot easier.
+
+Lastly, Python is also second only to Perl in system adoption and... God knows I wouldn't want to write this in Perl =).
+
+## What license is Canto under?
+
+Canto is [GPLv2](http://www.gnu.org/licenses/old-licenses/gpl-2.0.html) software. Just like all the other software **real** men write.
+
+## What platform does Canto run on?
+
+*Theoretically*, Canto should run under any Unix-like OS with Python and a compatible ncurses library. Everything is in Python, and the core drawing code is known to have compiled on Linux and the three major BSD's (although that doesn't necessarily mean it runs).
+
+Testing of Canto, however, hasn't been done extensively on any system other than Linux x86/amd64, because that's what I (and 99% of the desktop users) have at home.
+
+## Where should I request features /  report bugs?
+
+You can send me mail (jack at codezen dot org). If you do that, make sure you mention canto in the subject, or my filters might get you.
+
+Preferably, you can join IRC (irc.freenode.net #canto) and bring up the bug there. That way, we can get more information together and fix your bug faster. If you aren't able to get a hold of me in IRC (asleep, at work, etc.) and don't want to idle in the channel, email is your best bet.
+
+Bugs will be fixed (provided they're actually bugs) as soon as possible. If your bug crashes Canto, a copy of the console output and ~/.canto/log would be helpful. If your bug includes a particular feed that's acting strange, include the URL and/or a copy of the XML. If  Feature requests will be accepted if I think they're cool enough and not easily achievable through configuration. Patches should be `git-diff` or `diff -ru` output.

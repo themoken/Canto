@@ -1,0 +1,417 @@
+This is where we'll go into the magic of `~/.canto/conf`. This file is actually parsed and driven by the Python interpreter itself, so it's immensely powerful. It has the entirety of the Python language behind it, and allows for an incredible amount of flexibility.
+
+If you've already gone through the basics, then you might be looking for [Advanced Configuration](/canto/advconfig/). That's were all the neat hooks and filters are covered.
+
+[TOC]
+
+## Example Config ##
+
+This gives a fairly comprehensive view of the config. Everything that is not defined in it, is defined in **canto.extra**, which you can browse [here](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=blob;f=canto/extra.py;hb=master)
+
+    :::python
+    from canto.extra import *
+    import os
+
+    if os.getenv("TERM") == "linux":
+        browser="elinks \"%u\""
+        text_browser = True
+    else:
+        browser="firefox \"%u\""
+        text_browser = False
+
+    def my_resize_hook(cfg):
+        cfg.columns = cfg.width / 70
+
+    resize_hook = my_resize_hook
+    select_hook = set_xterm_title
+    end_hook = clear_xterm_title
+
+    filterlist=[None, show_unread()]
+
+    reader_keys["."] = ["destroy","next_unread","reader"]
+    reader_keys[","] = ["destroy","prev_unread","reader"]
+
+    keys['x'] = ["just_read","next_item"]
+    keys['1'] = search(".*[Ll]inux.*", regex=True)
+    keys['2'] = search("Obama")
+
+    add_feed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot",
+            renderer=slashdot_renderer(),\
+            filterlist=[None, only_with("Windows"), only_without("Windows")])
+    change_feed("Slashdot", sort=by_alpha)
+
+    add_feed("OSNews", "http://osnews.com/files/recent.xml")
+    add_feed("Damn Interesting", "http://www.damninteresting.com/?feed=rss2")
+    add_feed("Reddit", "http://reddit.com/.rss")
+    add_feed("Proggit", "http://programming.reddit.com/.rss")
+    add_feed("Lambda the Ultimate", "http://lambda-the-ultimate.org/rss.xml")
+    add_feed("WTF?", "http://syndication.thedailywtf.com/TheDailyWtf")
+    add_feed("Stuff White People Like", "http://stuffwhitepeoplelike.wordpress.com/feed/")
+    add_feed("KernelTrap", "http://kerneltrap.org/node/feed")
+    add_feed("Mithridates", "http://mithridates.blogspot.com/feeds/posts/default")
+    add_feed("Canto", "http://codezen.org/canto/feeds/latest")
+    add_feed("Planet Lisp", "http://planet.lisp.org/rss20.xml")
+    add_feed("Google News", "http://news.google.com/?output=rss", rate=30, keep=100)
+
+## add_feed()
+**add_feed(("name"|None), "URL", [rate=],[keep=],[renderer=],[filterlist=],[sort=])**
+
+`add_feed()` is the most basic function of Canto's config. It simply adds a feed to your feed list. Note that for compatibility reasons, `addfeed()` (without the underscore) is also acceptable. If `None` is specified for the first argument, the name of the feed is determined from the feed's content.
+
+Example:
+
+    :::python
+    add_feed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot", rate=10, keep=20)
+
+In this example, Slashdot gets added to your feed list. It's updated every 10 minutes (default is 5), and only 20 stories will be stored on disk. Both keyword arguments (rate and keep) are optional, so 
+
+    :::python
+    add_feed("Reddit", "http://reddit.com/.rss")
+
+Is also valid. 
+
+The **filterlist** and **sort** options are covered [here](/canto/advconfig) and the renderer option is covered [here](/canto/style/#per-feed-theming).
+
+## change_feed()
+**change_feed("name", [rate=],[keep=],[renderer=],[filterlist=],[sort=])**
+
+`change_feed` acts identically to add_feed, but (as you would imagine) changes already added feeds. This currently only works on feeds added with `source_opml()` or `add_feed()` with a name specified at config time.
+
+## source_opml()
+**source_opml("path", [append=True/False])**
+
+`source_opml` allows you to add feeds from an opml file at run time, rather than permanently. If you're interested in permanently adding or exporting your feeds with OPML, use `canto -i` and `canto -o` to import and export, respectively.
+
+Example:
+
+    :::python
+    source_opml("/home/myuser/feeds.opml")
+
+That append option determines whether the feeds added will be appended to your config file. If true, they will be added in the same manner as `canto -i`. Note that this will be appended every time the config is executed, so only use it if you're sure you want to add the `add_feed` statements to your config.
+
+## source_urls()
+**source_urls("path", [append=True/False])**
+
+`source_urls` works similarly to `source_opml`, except it generates `add_feed` statements from a newline delimited list of URLs.
+
+## Setting defaults
+**default_rate(rate), default_keep(keep), default_sort(sort), and default_filterlist(filterlist)**
+
+The functions set the default rate in minutes and number of stories to keep for each feed added after the call. Both of these can be called at any point, and will not change previously entered feeds.
+
+Example:
+
+    :::python
+    # These are actually Canto's defaults.
+    default_rate(5)
+    default_keep(40)
+
+## browser
+
+`browser` is how you set the path to your favorite browser. The escape `%u` will be replaced with the URL when it's executed, and it's recommended to put escaped quotes around it (as shown).
+
+As a note, some graphical browsers will steal focus from Canto when executed. Firefox 3 in particular. There's nothing I can do. With Firefox, at least, a work around is to set `browser.tabs.loadDivertedInBackground` to `True` in your about:config. That will load new tabs and not automatically switch to them and steal your focus.
+
+Another solution, at least in [XMonad](http://xmonad.org) is to have your browser open on another desktop. That will probably work in a lot of tiling window managers.
+
+Example:
+
+    :::python
+    browser = "firefox \"%u\""
+
+## text_browser
+
+This setting sets whether Canto should surrender terminal control to a text based browser. If `text_browser` is `True`, the browser will be opened and Canto will wait until the process is done before redrawing the screen and continuing. Otherwise, Canto will merely execute the command and continue.
+
+Example:
+
+    :::python
+    text_browser = 1
+
+## keys
+
+**keys["somekey"] = str, list of strings, function, list of functions**
+
+**reader_keys["somekey"] = str, list of strings, function, list of functions**
+
+Canto has two main GUI elements. The main view, which lists the headlines, and the reader, which gives you more details on a particular story. Each of these views has a different set of possible keybinds.
+
+The format of somekey follows the convention of `C-` for Ctrl, and `M-` for meta (usu. Alt). So, to bind Ctrl-Alt-J to a function somekey would be `C-M-j`, or `M-C-j` (order doesn't matter). In addition, more complex non-printable characters are looked up in the Python curses module. You can find a list of curses keys [here](http://www.mkssoftware.com/docs/man3/curs_getch.3.asp), which is the manpage for `getch`.
+
+Also note that multiple keys can be bound to a single function, and multiple functions can be assigned to a single key. If you wish to unbind a key, set it to `None`.
+
+The functions you can bind to are:
+
+### Main view keys
+<table>
+<tr>
+<td>Name</td>
+<td>Function</td>
+<td>Default Binding</td>
+</tr>
+<tr>
+<td>`help`</td>
+<td>Shows the man page (has all of these bindings listed).</td>
+<td>`h`</td>
+</tr>
+<tr>
+<td>`next_item`</td>
+<td>Move to the next item.</td>
+<td>`KEY_DOWN / j`</td>
+</tr>
+<tr>
+<td>`prev_item`</td>
+<td>Move to the previous item.</td>
+<td>`KEY_UP / k`</td>
+</tr>
+<tr>
+<td>`next_tag`</td>
+<td>Move to the next feed/group of items</td>
+<td>`KEY_NPAGE`</td>
+</tr>
+<tr>
+<td>`prev_tag`</td>
+<td>Move to the previous feed/group of items.</td>
+<td>`KEY_PPAGE`</td>
+</tr>
+<tr>
+<td>`just_read`</td>
+<td>Mark current story read and nothing else.</td>
+<td>`KEY_RIGHT`</td>
+</tr>
+<tr>
+<td>`just_unread`</td>
+<td>Mark current story unread and nothing else.</td>
+<td>`KEY_LEFT`</td>
+</tr>
+<tr>
+<td>`goto`</td>
+<td>Open the current story in your browser.</td>
+<td>`g`</td>
+</tr>
+<tr>
+<td>`inline_search`</td>
+<td>Mark all stories matching a search.</td>
+<td>`f`</td>
+</tr>
+<tr>
+<td>`next_mark`</td>
+<td>Go to the next marked story.</td>
+<td>`n`</td>
+</tr>
+<tr>
+<td>`prev_mark`</td>
+<td>Go to the previous marked story.</td>
+<td>`p`</td>
+</tr>
+<tr>
+<td>`next_unread`</td>
+<td>Go to the next unread story.</td>
+<td>`.`</td>
+</tr>
+<tr>
+<td>`prev_unread`</td>
+<td>Go to the previous unread story.</td>
+<td>`,`</td>
+</tr>
+<tr>
+<td>`reader`</td>
+<td>Open the reader.</td>
+<td>`Space`</td>
+</tr>
+<tr>
+<td>`toggle_collapse_tag`</td>
+<td>Collapse/Show a feed/group of items.</td>
+<td>`c`</td>
+</tr>
+<tr>
+<td>`set_collapse_all`</td>
+<td>Collapse on all feeds/groups.</td>
+<td>`C`</td>
+</tr>
+<tr>
+<td>`unset_collapse_all`</td>
+<td>Uncollapse all feeds/groups.</td>
+<td>`V`</td>
+</tr>
+<tr>
+<td>`toggle_mark`</td>
+<td>Mark/unmark an item.</td>
+<td>`m`</td>
+</tr>
+<tr>
+<td>`all_unmarked`</td>
+<td>Unmark all items</td>
+<td>`M`</td>
+</tr>
+<tr>
+<td>`tag_read`</td>
+<td>Set all stories in a feed/group read.</td>
+<td>`r`</td>
+</tr>
+<tr>
+<td>`all_read`</td>
+<td>Set all stories read.</td>
+<td>`R`</td>
+</tr>
+<tr>
+<td>`tag_unread`</td>
+<td>Set all stories in a feed/group unread.</td>
+<td>`u`</td>
+</tr>
+<tr>
+<td>`all_unread`</td>
+<td>Set all stories unread.</td>
+<td>`U`</td>
+</tr>
+<tr>
+<td>`force_update`</td>
+<td>Reread stories from disk.</td>
+<td>`C-r`</td>
+</tr>
+<tr>
+<td>`refresh`</td>
+<td>Redraw the screen.</td>
+<td>`C-l`</td>
+</tr>
+<tr>
+<td>`quit`</td>
+<td>Quit Canto.</td>
+<td>`q`</td>
+</tr>
+<tr>
+<td>`next_filter`</td>
+<td>Apply next global filter.</td>
+<td>`]`</td>
+</tr>
+<tr>
+<td>`prev_filter`</td>
+<td>Apply previous global filter</td>
+<td>`]`</td>
+</tr>
+<tr>
+<td>`next_feed_filter`</td>
+<td>Apply next feed filter</td>
+<td>`}`</td>
+</tr>
+<tr>
+<td>`prev_feed_filter`</td>
+<td>Apply previous feed filter</td>
+<td>`{`</td>
+</tr>
+</table>
+
+###Reader keys
+
+
+<table>
+<tr>
+<td>`scroll_down`</td>
+<td>Scrolls, if there's more text.</td>
+<td>`KEY_DOWN / j`</td>
+</tr>
+<tr>
+<td>`scroll_up`</td>
+<td>Scroll up, if not at the top.</td>
+<td>`KEY_UP / k`</td>
+</tr>
+<tr>
+<td>`page_down`</td>
+<td>Page down.</td>
+<td>`KEY_NPAGE`</td>
+</tr>
+<tr>
+<td>`page_up`</td>
+<td>Page Up.</td>
+<td>`KEY_PPAGE`</td>
+</tr>
+<tr>
+<td>`["destroy","next_item","reader"]`</td>
+<td>Goto the next story without closing the reader.</td>
+<td>`n`</td>
+</tr>
+<tr>
+<td>`["destroy","prev_item","reader"]`</td>
+<td>Goto the previous story without closing the reader.</td>
+<td>`p`</td>
+</tr>
+<tr>
+<td>`goto`</td>
+<td>Go to a specific link listed inside the item text.</td>
+<td>`g`</td>
+</tr>
+<tr>
+<td>`toggle_show_links`</td>
+<td>Show/hide the list of links at the bottom of the reader.</td>
+<td>`l`</td>
+</tr>
+<tr>
+<td>`quit`</td>
+<td>Quit</td>
+<td>`space`</td>
+</tr>
+</table>
+Examples:
+
+Set z in the main screen to open the story's link in a browser.
+
+    :::python
+    keys["z"] = "goto"
+
+Set Ctrl-Alt-F1 to help.
+
+    :::python
+    keys["C-M-KEY_F1"] = "help"
+
+Set 'j' to scroll up in the reader.
+
+    :::python
+    reader_keys["j"] = "scroll_up"
+
+Set 'x' to set current item read and move to the next item.
+
+    :::python
+    keys["x"] = ["just_read","next_item"]
+
+## columns
+
+The Canto interface can be split into as many columns as you like. Canto defaults to one column, and will log a warning if you give it a negative number. Zero columns, however, will silently revert to one column, so that you can do simple math for columns. Typically you don't want to set columns once though, you more likely want to put column adjustments into a `resize_hook`.
+
+Example:
+
+    :::python
+    columns = 2
+
+## Advanced
+
+There are a handful of other configuration options that you can use.
+
+**renderer = RendererClass**
+
+**colors = [(fg,bg)...]**
+
+These allow you to change (radically, I might add) the way that Canto draws the screen, and (a little more safely) change the default colors used to display. These are covered in detail on the [styling](/canto/style/) page.
+
+**filterlist = [(filter|None)...]**
+
+Filters are covered [here](/canto/advconfig/#filters)
+
+**start_hook = function**
+
+**new_hook = function**
+
+**resize_hook = function**
+
+**alarm_hook = function**
+
+**select_hook = function**
+
+**unselect_hook = function**
+
+**end_hook = function**
+
+Hooks are covered [here](/canto/advconfig/#hooks).
+
+**Sorting** feeds arbitrarily is covered [here](/canto/advconfig/#sorting).
+
+As are a lot of other goodies, like writing your own [arbitrary keybinds](/canto/advconfig/#advanced-keybinds).
