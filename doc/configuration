@@ -16,7 +16,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
         link_handler("elinks \"%u\"", text=True)
         image_handler("fbi \"%u\"", text=True, fetch=True)
     else:
-        link_handler("swiftfox \"%u\"")
+        link_handler("firefox \"%u\"")
         image_handler("xli \"%u\"", fetch=True)
         link_handler("evince \"%u\"", fetch=True, ext="pdf")
         select_hook = set_xterm_title
@@ -111,27 +111,34 @@ Example:
     default_rate(5)
     default_keep(40)
 
-## browser
+## Content Handlers
+**link_handler(path, [text=],[fetch=],[ext=])**
+**image_handler(path, [text=],[fetch=],[ext=])**
 
-`browser` is how you set the path to your favorite browser. The escape `%u` will be replaced with the URL when it's executed, and it's recommended to put escaped quotes around it (as shown).
+These are wrapper functions replacing the old `browser` commands from < 0.6.0.
+`link_handler` handles content that's contained in <a> tags, while
+`image_handler` handles <img> content. The `path` argument is the path to the
+binary, with "%u" in place of the URL. `text` should be set to `True` if Canto
+should wait for the program (like a text-browser), and `fetch` should be set to
+`True` if the content must be fetched (if your program can only open local
+files).
 
-As a note, some graphical browsers will steal focus from Canto when executed. Firefox 3 in particular. There's nothing I can do. With Firefox, at least, a work around is to set `browser.tabs.loadDivertedInBackground` to `True` in your about:config. That will load new tabs and not automatically switch to them and steal your focus.
-
-Another solution, at least in [XMonad](http://xmonad.org) is to have your browser open on another desktop. That will probably work in a lot of tiling window managers.
-
-Example:
-
-    :::python
-    browser = "firefox \"%u\""
-
-## text_browser
-
-This setting sets whether Canto should surrender terminal control to a text based browser. If `text_browser` is `True`, the browser will be opened and Canto will wait until the process is done before redrawing the screen and continuing. Otherwise, Canto will merely execute the command and continue.
+The `ext` argument can be used to associate a particular handler only with links
+ending with a certain string.
 
 Example:
-
     :::python
-    text_browser = 1
+    # Your default link handlers
+    link_handler("firefox \"%u\"")
+
+    # xli can't open internet URLs
+    image_handler("xli \"%u\"", fetch=True)
+
+    # dedicated PDF handler
+    link_handler("evince \"%u\"", fetch=True, ext="pdf")
+
+    # text-browser
+    link_handler("elinks \"%u\"", text=True)
 
 ## keys
 
