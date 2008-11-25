@@ -27,7 +27,7 @@ import fcntl
 
 class Feed(tag.Tag):
     def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist,
-            sort):
+            sort, username, password):
 
         if t:
             tag.Tag.__init__(self, sort, t)
@@ -46,6 +46,8 @@ class Feed(tag.Tag):
         self.changed = 0
         self.filterlist = filterlist
         self.filter_idx = 0
+        self.username = username
+        self.password = password
     
     def update(self):
         lockflags = fcntl.LOCK_SH

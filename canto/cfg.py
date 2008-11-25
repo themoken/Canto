@@ -204,8 +204,12 @@ class Cfg:
             return -1
 
         for key in ["keep","rate","renderer","filterlist","sort"]:
-            if not kwargs.has_key(key):
+            if not key in kwargs:
                 kwargs[key] = getattr(self, "default_" + key)
+
+        for key in ["username","password"]:
+            if not key in kwargs:
+                kwargs[key] = None
 
         kwargs = self.wrap_args(kwargs)
 
@@ -219,7 +223,9 @@ class Cfg:
                     kwargs["keep"],\
                     kwargs["renderer"],\
                     kwargs["filterlist"],\
-                    kwargs["sort"]))
+                    kwargs["sort"],
+                    kwargs["username"],
+                    kwargs["password"]))
             return 1
         return -1
 
