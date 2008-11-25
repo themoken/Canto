@@ -19,11 +19,6 @@ import os
 
 class Cfg:
     def __init__(self, conf, log_file, feed_dir, script_dir):
-        self.handlers = {
-                "browser" : { "default" : ("firefox \"%u\"", 0, 0) },
-                "image" : {}
-            }
-
         self.wait_for_pid = 0
         self.log_file = log_file
 
@@ -311,7 +306,6 @@ class Cfg:
         locals = {"addfeed":self.addfeed,
             "add_feed":self.addfeed,
             "change_feed":self.change_feed,
-            "handlers":self.handlers,
             "default_sort" : self.set_default_sort,
             "default_filterlist" : self.set_default_filterlist,
             "default_rate" : self.set_default_rate,

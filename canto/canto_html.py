@@ -17,6 +17,10 @@ import sgmllib
 import re
 
 sgmllib.charref = re.compile('&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]')
+handlers = {
+        "browser" : { "default" : ("firefox \"%u\"", 0, 0) },
+        "image" : {}
+}
 
 class CantoHTML(sgmllib.SGMLParser):
 

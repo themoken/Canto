@@ -8,7 +8,7 @@
 #   published by the Free Software Foundation.
 
 import interface_draw
-
+import mime
 import time
 import os
 import re
@@ -26,6 +26,28 @@ class slashdot_renderer(interface_draw.Renderer):
         return [("%1%B" + title, " ", " "),\
                 ("%bfrom the " + story["slash_department"] +\
                 " department%B", " ", " "),("┌","─","┐%C")]
+
+def __handler(handlers, path, **kwargs):
+    if not "text" in kwargs:
+        kwargs["text"] = False
+    if not "fetch" in kwargs:
+        kwargs["fetch"] = False
+    if not "ext" in kwargs:
+        kwargs["ext"] = None
+    handlers.update({kwargs["ext"] : (path, kwargs["text"], kwargs["fetch"])})
+
+# *_handler, add an <img> or <a> handler 
+#
+# Usage : *_handler("my program", [named args])
+#   where text = this handler is a text program
+#       fetch = this handler needs content to be fetched to a temp file
+#       ext = extension this handler is associated with
+
+def image_handler(path, **kwargs):
+    __handler(mime.handlers["image"], path, **kwargs)
+
+def link_handler(path, **kwargs):
+    __handler(mime.handlers["browser"], path, **kwargs)
 
 # Filter for filtering out all read stories.
 #
