@@ -13,18 +13,19 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     import os
 
     if os.getenv("TERM") == "linux":
-        browser="elinks \"%u\""
-        text_browser = True
+        link_handler("elinks \"%u\"", text=True)
+        image_handler("fbi \"%u\"", text=True, fetch=True)
     else:
-        browser="firefox \"%u\""
-        text_browser = False
+        link_handler("swiftfox \"%u\"")
+        image_handler("xli \"%u\"", fetch=True)
+        link_handler("evince \"%u\"", fetch=True, ext="pdf")
+        select_hook = set_xterm_title
+        end_hook = clear_xterm_title
 
     def my_resize_hook(cfg):
         cfg.columns = cfg.width / 70
 
     resize_hook = my_resize_hook
-    select_hook = set_xterm_title
-    end_hook = clear_xterm_title
 
     filterlist=[None, show_unread()]
 
@@ -35,10 +36,14 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     keys['1'] = search(".*[Ll]inux.*", regex=True)
     keys['2'] = search("Obama")
 
+    # About as tricked out as a single feeds gets...
     add_feed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot",
             renderer=slashdot_renderer(),\
             filterlist=[None, only_with("Windows"), only_without("Windows")])
     change_feed("Slashdot", sort=by_alpha)
+
+    # Password protected feed.
+    add_feed("Protected Feed", username="myuser", password="secr3t")
 
     add_feed("OSNews", "http://osnews.com/files/recent.xml")
     add_feed("Damn Interesting", "http://www.damninteresting.com/?feed=rss2")
@@ -54,7 +59,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     add_feed("Google News", "http://news.google.com/?output=rss", rate=30, keep=100)
 
 ## add_feed()
-**add_feed(("name"|None), "URL", [rate=],[keep=],[renderer=],[filterlist=],[sort=])**
+**add_feed(("name"|None), "URL", [rate=],[keep=],[renderer=],[filterlist=],[sort=],[username=],[password=])**
 
 `add_feed()` is the most basic function of Canto's config. It simply adds a feed to your feed list. Note that for compatibility reasons, `addfeed()` (without the underscore) is also acceptable. If `None` is specified for the first argument, the name of the feed is determined from the feed's content.
 
@@ -73,7 +78,7 @@ Is also valid.
 The **filterlist** and **sort** options are covered [here](/canto/advconfig) and the renderer option is covered [here](/canto/style/#per-feed-theming).
 
 ## change_feed()
-**change_feed("name", [rate=],[keep=],[renderer=],[filterlist=],[sort=])**
+**change_feed("name", [rate=],[keep=],[renderer=],[filterlist=],[sort=],[username=],[password=])**
 
 `change_feed` acts identically to add_feed, but (as you would imagine) changes already added feeds. This currently only works on feeds added with `source_opml()` or `add_feed()` with a name specified at config time.
 
