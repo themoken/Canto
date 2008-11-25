@@ -19,6 +19,11 @@ import os
 
 class Cfg:
     def __init__(self, conf, log_file, feed_dir, script_dir):
+        self.handlers = {
+            "browser" : { None : ("firefox \"%u\"", 0, 0) },
+            "image" : {}
+        }
+
         self.wait_for_pid = 0
         self.log_file = log_file
 
@@ -319,7 +324,9 @@ class Cfg:
             "columns" : self.columns,
             "colors" : self.colors,
             "source_opml" : self.source_opml,
-            "source_urls" : self.source_urls}
+            "source_urls" : self.source_urls,
+            "link_handler" : self.link_handler,
+            "image_handler" : self.image_handler}
 
         # The entirety of the config is read in first (rather
         # than using execfile) because the config could be in
@@ -425,3 +432,21 @@ class Cfg:
             self.filter_idx -= 1
             return 1
         return 0
+
+    def handler(self, handlers, path, **kwargs):
+        if not "text" in kwargs:
+            kwargs["text"] = False
+        if not "fetch" in kwargs:
+            kwargs["fetch"] = False
+        if not "ext" in kwargs:
+            kwargs["ext"] = None
+        handlers.update(\
+                {kwargs["ext"] : (path, kwargs["text"], kwargs["fetch"])})
+
+    def image_handler(self, path, **kwargs):
+        self.handler(self.handlers["image"], path, **kwargs)
+
+    def link_handler(self, path, **kwargs):
+        self.handler(self.handlers["browser"], path, **kwargs)
+
+

@@ -5,11 +5,6 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-handlers = {
-        "browser" : { None : ("firefox \"%u\"", 0, 0) },
-        "image" : {}
-}
-
 class Handler():
     def __init__(self):
         self.reset()

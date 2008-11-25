@@ -11,7 +11,6 @@ import tempfile
 import urllib2
 import signal 
 import curses
-import mime
 import sys
 import re
 import os
@@ -121,13 +120,13 @@ def silentfork(path, href, text, fetch):
 
 def goto(link, cfg):
     title,href,handler = link
-    if mime.handlers.has_key(handler):
-        for k in [h for h in mime.handlers[handler].keys() if h]:
+    if cfg.handlers.has_key(handler):
+        for k in [h for h in cfg.handlers[handler].keys() if h]:
             if href.endswith(k):
-                binary, text, fetch = mime.handlers[handler][k]
+                binary, text, fetch = cfg.handlers[handler][k]
                 break
         else:
-            binary, text, fetch = mime.handlers[handler][None]
+            binary, text, fetch = cfg.handlers[handler][None]
         href = href.replace("\"","%22")
 
         if text:
