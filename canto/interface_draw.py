@@ -177,7 +177,7 @@ class Renderer :
                 # Detect an infinite loop caused by start, and canto
                 # trying to be smart about wrapping =).
 
-                if s and s.endswith(t):
+                if s == t:
                     s = core(window, winrow, 0, width, s, " ","")
                 line += 1
 

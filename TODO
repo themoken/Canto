@@ -1,0 +1,25 @@
+0.6.0 TODO (in no particular order)
+===
+- Determine whether "reader stacking" is illegal OR implement a better way to
+denote how many readers are open.
+    * Status bar?
+        - This would solve a number of problems other than this one. For
+        example, 90% of the time the message bar is blank and useless, it would
+        be a good way to fill the space.
+
+- Refactor interface_draw calls to take **kwargs or a dict
+    * Use "focus" in style somehow
+    * Complete any other breakage
+
+- Round out tests
+    * Better way to test graphical output?
+    * Doctests?
+
+- Import the Textpad code into the codebase and modify for UTF-8 input and
+better prompt support.
+
+- Either wrap : commands OR import only safe functions OR explicitly make it
+debug-only (i.e. add a flag to enable them).
+
+- Helpers
+    * link/image_handler with kwargs for text/fetch.
