@@ -110,11 +110,12 @@ class UpdateThread(Thread):
         self.emptyfeed = {"canto_state":[], "entries":[], "canto_update":0,
                         "canto_version":VERSION_TUPLE}
 
-    # Now we attempt to load the previous feed information.
 
-    def run(self):
+    def get_curfeed(self):
+        curfeed = self.emptyfeed
         if os.path.exists(self.fpath):
             if os.path.isfile(self.fpath):
+                prevtime = os.stat(self.fpath).st_mtime
                 f = open(self.fpath, "r")
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH)
 
@@ -122,7 +123,7 @@ class UpdateThread(Thread):
                     curfeed = cPickle.load(f)
                 except:
                     self.log_func("cPickle load exception on %s" % self.fpath)
-                    curfeed = self.emptyfeed
+                    return self.emptyfeed
                 finally:
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                     f.close()
@@ -136,9 +137,14 @@ class UpdateThread(Thread):
                     shutil.rmtree(self.fpath)
                 else:
                     os.unlink(self.fpath)
-                curfeed = self.emptyfeed
-        else:
-            curfeed = self.emptyfeed
+        return curfeed
+
+    # Now we attempt to load the previous feed information.
+
+    def run(self):
+        prevtime = 0
+
+        curfeed = self.get_curfeed()
 
         # Determine whether it's been long enough between
         # updates to warrant refetching the feed.
@@ -254,41 +260,61 @@ class UpdateThread(Thread):
                 else:
                     entry["id"] = None
 
-            # Then search through the current feed to
-            # make item state persistent.
+        # Then search through the current feed to
+        # make item state persistent, and loop until
+        # it's safe to update on disk.
 
-            for centry in curfeed["entries"]:
-                if entry["id"] == centry["id"]:
-                    entry["canto_state"] = centry["canto_state"]
-                    
-                    # The entry is removed so that later it's
-                    # not a candidate for being appended to the
-                    # end of the feed.
+        while 1:
+            for entry in newfeed["entries"]:
+                for centry in curfeed["entries"]:
+                    if entry["id"] == centry["id"]:
+                        entry["canto_state"] = centry["canto_state"]
+                        
+                        # The entry is removed so that later it's
+                        # not a candidate for being appended to the
+                        # end of the feed.
 
-                    curfeed["entries"].remove(centry)
+                        curfeed["entries"].remove(centry)
+                        break
+
+                # Apply default state to genuinely new items.
+                if not entry.has_key("canto_state"):
+                    entry["canto_state"] = [ self.fd.tag, "unread", "*", "new"]
+
+            # Tailor the list to the correct number of items.
+            if len(newfeed["entries"]) < self.fd.keep:
+                newfeed["entries"] += \
+                    curfeed["entries"][:self.fd.keep - len(newfeed["entries"])]
+            else:
+                newfeed["entries"] = newfeed["entries"][:self.fd.keep]
+
+            # Dump the output to the new file.
+            f = open(self.fpath, "w")
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+
+            # The feed was modified out from under us.
+            if prevtime and prevtime != os.stat(self.fpath).st_mtime:
+                newer_curfeed = self.get_curfeed()
+
+                # There was an actual c-f update done, bail
+                if newer_curfeed["canto_update"] != curfeed["canto_update"]:
+                    self.log_func("%s updated already, bailing" % self.fd.tag)
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    f.close()
                     break
 
-            # Apply default state to genuinely new items.
-            if not entry.has_key("canto_state"):
-                entry["canto_state"] = [ self.fd.tag, "unread", "*", "new"]
+                # Just a state modification by the client, update and continue.
+                else:
+                    curfeed = newer_curfeed
+                    continue
+            try:
+                cPickle.dump(newfeed, f)
+            except:
+                self.log_func("cPickle dump exception on %s" % self.fpath)
+                raise
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
 
-        # Tailor the list to the correct number of items.
-        if len(newfeed["entries"]) < self.fd.keep:
-            newfeed["entries"] += \
-                curfeed["entries"][:self.fd.keep - len(newfeed["entries"])]
-        else:
-            newfeed["entries"] = newfeed["entries"][:self.fd.keep]
-
-        # Dump the output to the new file.
-        f = open(self.fpath, "w")
-        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-
-        try:
-            cPickle.dump(newfeed, f)
-        except:
-            self.log_func("cPickle dump exception on %s" % self.fpath)
-            raise
-        finally:
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            f.close()
+            break
 
