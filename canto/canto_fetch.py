@@ -285,6 +285,7 @@ class UpdateThread(Thread):
                     curfeed = newer_curfeed
                     continue
 
+            f.seek(0, 0)
             f.truncate()
             try:
                 cPickle.dump(newfeed, f)
