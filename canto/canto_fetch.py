@@ -57,17 +57,6 @@ def main(cfg, optlist, verbose=False, force=False):
         os.unlink(cfg.feed_dir)
         os.mkdir(cfg.feed_dir)
 
-    # Rename any < 0.5.5 tag named files with > 0.5.5 URL named files.
-
-    for file in os.listdir(cfg.feed_dir):
-        for tag, URL in [(f.tag, f.URL) for f in cfg.feeds if f.tag ]:
-            if file == tag.replace("/"," "):
-                log_func("Detected old disk format, converting.")
-                target = cfg.feed_dir + file
-                newname = cfg.feed_dir + URL.replace("/"," ")
-                os.rename(target, newname)
-                break
-
     # Remove any crap out of the directory. This is mostly for
     # cleaning up when the user has removed a feed from the configuration.
 
@@ -113,30 +102,18 @@ class UpdateThread(Thread):
 
     def get_curfeed(self):
         curfeed = self.emptyfeed
-        if os.path.exists(self.fpath):
-            if os.path.isfile(self.fpath):
-                self.prevtime = os.stat(self.fpath).st_mtime
-                f = open(self.fpath, "r")
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+        if os.path.exists(self.fpath) and os.path.isfile(self.fpath):
+            self.prevtime = os.stat(self.fpath).st_mtime
+            f = open(self.fpath, "r")
+            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
 
-                try:
-                    curfeed = cPickle.load(f)
-                except:
-                    self.log_func("cPickle load exception on %s" % self.fpath)
-                    return self.emptyfeed
-                finally:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                    f.close()
-            else:
-                # This is a directory, then it's most likely a 
-                # canto < 0.5.0 info, so we kill it.
-
-                self.log_func("%s is not normal file, old format?" % self.fpath)
-                self.log_func("  Deleting...")
-                if os.path.isdir(self.fpath):
-                    shutil.rmtree(self.fpath)
-                else:
-                    os.unlink(self.fpath)
+            try:
+                curfeed = cPickle.load(f)
+            except:
+                self.log_func("cPickle load exception on %s" % self.fpath)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
 
         return curfeed
 
@@ -288,16 +265,13 @@ class UpdateThread(Thread):
                 newfeed["entries"] = newfeed["entries"][:self.fd.keep]
 
             # Dump the output to the new file.
-            dummy = open(self.fpath, "a")
-            fcntl.flock(dummy.fileno(), fcntl.LOCK_EX)
-            f = open(self.fpath, "w")
-            f.truncate()
+            f = open(self.fpath, "a")
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
             # The feed was modified out from under us.
             if self.prevtime and self.prevtime != os.stat(self.fpath).st_mtime:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
-                fcntl.flock(dummy.fileno(), fcntl.LOCK_UN)
-                dummy.close()
 
                 newer_curfeed = self.get_curfeed()
 
@@ -310,15 +284,16 @@ class UpdateThread(Thread):
                 else:
                     curfeed = newer_curfeed
                     continue
+
+            f.truncate()
             try:
                 cPickle.dump(newfeed, f)
             except:
                 self.log_func("cPickle dump exception on %s" % self.fpath)
                 raise
             finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
-                fcntl.flock(dummy.fileno(), fcntl.LOCK_UN)
-                dummy.close()
 
             break
 

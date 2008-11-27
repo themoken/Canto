@@ -120,6 +120,7 @@ class Feed(tag.Tag):
         f = open(self.path, "r+")
         try:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            f.truncate()
             cPickle.dump(self.ufp, f)
         except:
             return 0
