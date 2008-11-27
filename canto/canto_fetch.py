@@ -137,6 +137,7 @@ class UpdateThread(Thread):
                     shutil.rmtree(self.fpath)
                 else:
                     os.unlink(self.fpath)
+
         return curfeed
 
     # Now we attempt to load the previous feed information.
@@ -287,14 +288,16 @@ class UpdateThread(Thread):
                 newfeed["entries"] = newfeed["entries"][:self.fd.keep]
 
             # Dump the output to the new file.
+            dummy = open(self.fpath, "a")
+            fcntl.flock(dummy.fileno(), fcntl.LOCK_EX)
             f = open(self.fpath, "w")
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            f.truncate()
 
             # The feed was modified out from under us.
             if self.prevtime and self.prevtime != os.stat(self.fpath).st_mtime:
-
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
+                fcntl.flock(dummy.fileno(), fcntl.LOCK_UN)
+                dummy.close()
 
                 newer_curfeed = self.get_curfeed()
 
@@ -313,8 +316,9 @@ class UpdateThread(Thread):
                 self.log_func("cPickle dump exception on %s" % self.fpath)
                 raise
             finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
+                fcntl.flock(dummy.fileno(), fcntl.LOCK_UN)
+                dummy.close()
 
             break
 
