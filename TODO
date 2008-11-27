@@ -20,6 +20,3 @@ better prompt support.
 
 - Either wrap : commands OR import only safe functions OR explicitly make it
 debug-only (i.e. add a flag to enable them).
-
-- Helpers
-    * link/image_handler with kwargs for text/fetch.
