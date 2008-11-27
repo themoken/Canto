@@ -98,6 +98,7 @@ class UpdateThread(Thread):
         self.spath = spath
         self.force = force
         self.log_func = log_func
+        self.prevtime = 0
 
         # This emptyfeed forms a skeleton for any canto feed.
         # Canto_state is a place holder. Canto_update is the
@@ -110,12 +111,11 @@ class UpdateThread(Thread):
         self.emptyfeed = {"canto_state":[], "entries":[], "canto_update":0,
                         "canto_version":VERSION_TUPLE}
 
-
     def get_curfeed(self):
         curfeed = self.emptyfeed
         if os.path.exists(self.fpath):
             if os.path.isfile(self.fpath):
-                prevtime = os.stat(self.fpath).st_mtime
+                self.prevtime = os.stat(self.fpath).st_mtime
                 f = open(self.fpath, "r")
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH)
 
@@ -142,8 +142,6 @@ class UpdateThread(Thread):
     # Now we attempt to load the previous feed information.
 
     def run(self):
-        prevtime = 0
-
         curfeed = self.get_curfeed()
 
         # Determine whether it's been long enough between
@@ -293,14 +291,16 @@ class UpdateThread(Thread):
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
             # The feed was modified out from under us.
-            if prevtime and prevtime != os.stat(self.fpath).st_mtime:
+            if self.prevtime and self.prevtime != os.stat(self.fpath).st_mtime:
+
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
+
                 newer_curfeed = self.get_curfeed()
 
                 # There was an actual c-f update done, bail
                 if newer_curfeed["canto_update"] != curfeed["canto_update"]:
                     self.log_func("%s updated already, bailing" % self.fd.tag)
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                    f.close()
                     break
 
                 # Just a state modification by the client, update and continue.
