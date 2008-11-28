@@ -13,7 +13,9 @@ import signal
 import re
 
 def input(cfg, prompt):
-    cfg.message(prompt + ": ")
+    cfg.message("%B%1" + prompt + ":%b ")
+
+    cfg.msg.move(0, len(prompt) + 2)
 
     temp = signal.getsignal(signal.SIGALRM)
     signal.signal(signal.SIGALRM, signal.SIG_IGN)

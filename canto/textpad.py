@@ -32,6 +32,7 @@ class Textbox:
         (self.maxy, self.maxx) = win.getmaxyx()
         self.maxy = self.maxy - 1
         self.maxx = self.maxx - 1
+        self.minx = win.getyx()[1]
         self.stripspaces = 1
         self.lastcmd = None
         win.keypad(1)
@@ -64,7 +65,7 @@ class Textbox:
         elif ch == ascii.SOH:                           # ^a
             self.win.move(y, 0)
         elif ch in (ascii.STX,curses.KEY_LEFT, ascii.BS,curses.KEY_BACKSPACE):
-            if x > 0:
+            if x > self.minx:
                 self.win.move(y, x-1)
             elif y == 0:
                 pass
@@ -72,7 +73,8 @@ class Textbox:
                 self.win.move(y-1, self._end_of_line(y-1))
             else:
                 self.win.move(y-1, self.maxx)
-            if ch in (ascii.BS, curses.KEY_BACKSPACE):
+            if ch in (ascii.BS, curses.KEY_BACKSPACE)\
+                    and x > self.minx:
                 self.win.delch()
         elif ch == ascii.EOT:                           # ^d
             self.win.delch()
@@ -134,12 +136,10 @@ class Textbox:
                 result = result + "\n"
         return result
 
-    def edit(self, validate=None):
+    def edit(self):
         "Edit in the widget window and collect the results."
         while 1:
             ch = self.win.getch()
-            if validate:
-                ch = validate(ch)
             if not ch:
                 continue
             if not self.do_command(ch):
