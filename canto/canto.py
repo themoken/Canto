@@ -387,9 +387,9 @@ class Main():
             # communicate with each other. They are otherwise
             # entirely independent.
 
-            if hasattr(self.cfg.key_handlers[-1], "keys"):
-                if self.cfg.key_handlers[-1].keys.has_key(t):
-                    actl = self.cfg.key_handlers[-1].keys[t]
+            if hasattr(self.cfg.key_handlers[self.cfg.cur_kh], "keys"):
+                if self.cfg.key_handlers[self.cfg.cur_kh].keys.has_key(t):
+                    actl = self.cfg.key_handlers[self.cfg.cur_kh].keys[t]
                 else:
                     actl = []
             elif t:
@@ -400,7 +400,7 @@ class Main():
             for a in actl:
                 if not len(self.cfg.key_handlers):
                     self.done()
-                r = self.cfg.key_handlers[-1].action(a)
+                r = self.cfg.key_handlers[self.cfg.cur_kh].action(a)
                 if r == REFRESH_ALL:
                     self.refresh()
                 elif r == ALARM:
@@ -410,9 +410,11 @@ class Main():
                     for k in self.cfg.key_handlers:
                         k.draw_elements()
                 elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2:
-                    self.cfg.key_handlers[-1], self.cfg.key_handlers[-2] =\
-                            self.cfg.key_handlers[-2], self.cfg.key_handlers[-1]
-                    self.cfg.key_handlers[-1].draw_elements()
+                    if self.cfg.cur_kh == len(self.cfg.key_handlers) - 1:
+                        self.cfg.cur_kh = 0
+                    else:
+                        self.cfg.cur_kh += 1
+                    self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
                     self.update_focus()
 
     def done(self, a=None, b=None):
@@ -463,7 +465,7 @@ class Main():
     
             for h in self.cfg.key_handlers:
                 h.alarm(self.stories)
-            self.cfg.key_handlers[-1].refresh()
+            self.cfg.key_handlers[self.cfg.cur_kh].refresh()
             self.tick = 60
 
         self.cfg.msg_tick -= 1
@@ -523,10 +525,11 @@ class Main():
         if len(self.cfg.key_handlers):
             for h in self.cfg.key_handlers:
                 h.focus = 0
-            self.cfg.key_handlers[-1].focus = 1
+            self.cfg.key_handlers[self.cfg.cur_kh].focus = 1
 
     def push_handler(self, handler):
         self.cfg.key_handlers.append(handler)
+        self.cfg.cur_kh = len(self.cfg.key_handlers) - 1
         self.update_focus()
 
     def pop_handler(self):
@@ -534,6 +537,7 @@ class Main():
         if len(self.cfg.key_handlers):
            for h in self.cfg.key_handlers:
                h.refresh()
+        self.cfg.cur_kh = max(self.cfg.cur_kh - 1, 0)
         self.update_focus()
 
     # Filter extend extends self.stories with items passing through

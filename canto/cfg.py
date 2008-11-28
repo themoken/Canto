@@ -97,6 +97,7 @@ class Cfg:
         # window, receiving keys.
 
         self.key_handlers = []
+        self.cur_kh = -1
 
         self.path = conf
         self.feed_dir = feed_dir
