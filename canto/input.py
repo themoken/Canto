@@ -13,7 +13,7 @@ import signal
 import re
 
 def input(cfg, prompt):
-    cfg.msg.addstr("\n" + prompt + ": ")
+    cfg.message(prompt + ": ")
 
     temp = signal.getsignal(signal.SIGALRM)
     signal.signal(signal.SIGALRM, signal.SIG_IGN)
