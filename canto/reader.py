@@ -31,6 +31,11 @@ class Reader :
         self.deregister = deregister
         self.refresh()
 
+    def __str__(self):
+        if self.focus:
+            return "%B[" + self.story["title"][:10] + "]%b"
+        return "[" + self.story["title"][:10] + "]"
+
     def refresh(self):
         # It's unfortunate, but because the interface is so complex,
         # the only way to get the number of lines it will take to completely
@@ -122,11 +127,7 @@ class Reader :
         return 1
 
     def switch(self):
-        self.focus = 0
         return WINDOW_SWITCH
-
-    def switched(self):
-        self.focus = 1
 
     def alarm(self, a=None, b=None):
         pass

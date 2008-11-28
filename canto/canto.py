@@ -8,11 +8,12 @@
 #   published by the Free Software Foundation.
 
 from const import *
+from gui import Gui
+
 import canto_fetch
 import utility
 import cfg
 import tag
-import gui
 
 import signal
 import locale
@@ -257,12 +258,12 @@ class Main():
             print """<body>"""
             for feed in self.cfg.feeds:
                 if "atom" in feed.ufp["version"]:
-                    type = "pie"
+                    t = "pie"
                 else:
-                    type = "rss"
+                    t = "rss"
 
                 print """\t<outline text="%s" xmlUrl="%s" type="%s" />""" %\
-                        (feed.tag, feed.URL, type)
+                        (feed.tag, feed.URL, t)
 
             print """</body>"""
             print """</opml>"""
@@ -304,13 +305,6 @@ class Main():
 
         self.cfg.log("Curses initialized.")
     
-        # Key handlers is a stack-like list that contains all "inputs"
-        # that can take keys from the user. Generally, this is every
-        # graphical class open at a time. The last item being the top
-        # window, receiving keys.
-
-        self.key_handlers = []
-
         # Tag_list is created with an empty tag for each feed. A Feed()
         # is a child class of Tag(), however, new Tags() are created 
         #   A) To ensure that none of the gui classes use feed attributes
@@ -324,7 +318,7 @@ class Main():
                 tag_list.append(t)
 
         # Instantiate the base Gui class
-        gui.Gui(self.cfg, self.stories, tag_list, self.push_handler, \
+        Gui(self.cfg, self.stories, tag_list, self.push_handler, \
                 self.pop_handler)
 
         self.cfg.log("GUI initialized.")
@@ -349,7 +343,7 @@ class Main():
         self.cfg.log("Beginning main loop.")
 
         while 1:
-            if not len(self.key_handlers):
+            if not len(self.cfg.key_handlers):
                 self.done()
 
             t = None
@@ -388,9 +382,9 @@ class Main():
             # communicate with each other. They are otherwise
             # entirely independent.
 
-            if hasattr(self.key_handlers[-1], "keys"):
-                if self.key_handlers[-1].keys.has_key(t):
-                    actl = self.key_handlers[-1].keys[t]
+            if hasattr(self.cfg.key_handlers[-1], "keys"):
+                if self.cfg.key_handlers[-1].keys.has_key(t):
+                    actl = self.cfg.key_handlers[-1].keys[t]
                 else:
                     actl = []
             elif t:
@@ -399,22 +393,22 @@ class Main():
                 actl = []
 
             for a in actl:
-                if not len(self.key_handlers):
+                if not len(self.cfg.key_handlers):
                     self.done()
-                r = self.key_handlers[-1].action(a)
+                r = self.cfg.key_handlers[-1].action(a)
                 if r == REFRESH_ALL:
                     self.refresh()
                 elif r == ALARM:
                     self.tick = 1
                     self.alarm()
                 elif r == REDRAW_ALL:
-                    for k in self.key_handlers:
+                    for k in self.cfg.key_handlers:
                         k.draw_elements()
-                elif r == WINDOW_SWITCH and len(self.key_handlers) >= 2\
+                elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2\
                         and self.cfg.reader_orientation:
-                    self.key_handlers[-1], self.key_handlers[-2] =\
-                            self.key_handlers[-2], self.key_handlers[-1]
-                    self.key_handlers[-1].switched()
+                    self.cfg.key_handlers[-1], self.cfg.key_handlers[-2] =\
+                            self.cfg.key_handlers[-2], self.cfg.key_handlers[-1]
+                    self.update_focus()
 
     def done(self, a=None, b=None):
         # Kill the message log
@@ -462,9 +456,9 @@ class Main():
                 f.tick()
                 self.filter_extend(f)
     
-            for h in self.key_handlers:
+            for h in self.cfg.key_handlers:
                 h.alarm(self.stories)
-            self.key_handlers[-1].refresh()
+            self.cfg.key_handlers[-1].refresh()
             self.tick = 60
 
         self.cfg.msg_tick -= 1
@@ -513,21 +507,29 @@ class Main():
 
         self.cfg.stdscr.keypad(1)
 
-        for g in self.key_handlers :
+        for g in self.cfg.key_handlers :
             g.refresh()
 
     # These two functions are known as register() and deregister()
     # to the gui objects, and let the Main() class know when a gui
     # object should start or stop receiving input.
 
+    def update_focus(self):
+        if len(self.cfg.key_handlers):
+            for h in self.cfg.key_handlers:
+                h.focus = 0
+            self.cfg.key_handlers[-1].focus = 1
+
     def push_handler(self, handler):
-        self.key_handlers.append(handler)
+        self.cfg.key_handlers.append(handler)
+        self.update_focus()
 
     def pop_handler(self):
-        self.key_handlers.pop()
-        if len(self.key_handlers):
-           for h in self.key_handlers:
+        self.cfg.key_handlers.pop()
+        if len(self.cfg.key_handlers):
+           for h in self.cfg.key_handlers:
                h.refresh()
+        self.update_focus()
 
     # Filter extend extends self.stories with items passing through
     # the global filter. The Feed() objects are never changed.

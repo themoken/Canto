@@ -77,6 +77,11 @@ class Gui :
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
 
+    def __str__(self):
+        if self.focus:
+            return "%B[base]%b"
+        return "[base]"
+
     def refresh(self):
         # Generate all of the columns
         self.window_list = [curses.newwin(self.cfg.gui_height, \
@@ -481,11 +486,7 @@ class Gui :
         exec(command, locals, {})
 
     def switch(self):
-        self.focus = 0
         return WINDOW_SWITCH
-
-    def switched(self):
-        self.focus = 1
 
     def quit(self):
         if self.cfg.end_hook:
