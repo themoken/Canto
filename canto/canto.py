@@ -404,10 +404,10 @@ class Main():
                 elif r == REDRAW_ALL:
                     for k in self.cfg.key_handlers:
                         k.draw_elements()
-                elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2\
-                        and self.cfg.reader_orientation:
+                elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2:
                     self.cfg.key_handlers[-1], self.cfg.key_handlers[-2] =\
                             self.cfg.key_handlers[-2], self.cfg.key_handlers[-1]
+                    self.cfg.key_handlers[-1].draw_elements()
                     self.update_focus()
 
     def done(self, a=None, b=None):
