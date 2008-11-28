@@ -10,7 +10,7 @@
 #   This was inspired by Aaron Swartz's html2text, but doesn't do
 #   file IO, doesn't do markdown, and doesn't shy away from Unicode.
 
-from mime import LinkHandler, ImageHandler
+from handlers import LinkHandler, ImageHandler
 
 import htmlentitydefs
 import sgmllib
