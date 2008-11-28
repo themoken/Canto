@@ -469,8 +469,7 @@ class Main():
 
         self.cfg.msg_tick -= 1
         if self.cfg.msg_tick == 0:
-            self.cfg.msg.erase()
-            self.cfg.msg.refresh()
+            self.cfg.status()
 
         signal.alarm(1)
 
@@ -509,8 +508,6 @@ class Main():
         self.cfg.msg = curses.newwin(self.cfg.msg_height,\
                 self.cfg.width, self.cfg.height - self.cfg.msg_height, 0)
         self.cfg.msg.bkgdset(curses.color_pair(1))
-        self.cfg.msg.scrollok(True)
-        self.cfg.msg.idlok(True)
         self.cfg.msg.erase()
         self.cfg.msg.refresh()
 

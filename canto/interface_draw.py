@@ -231,3 +231,6 @@ class Renderer :
             self.rends(story))] for x in l], row, -1, width, [window])
         row = self.simple_out(self.reader_foot(story), row, -1, width, [window])
         return row, links
+
+    def status(self, bar, height, width, str):
+        self.simple_out([(str, " ", "")], 0, height, width, [bar])

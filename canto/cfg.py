@@ -106,6 +106,8 @@ class Cfg:
         self.msg = None
         self.msg_tick = 0
 
+        self.status = self.default_status
+
         self.reader_lines = 0
         self.reader_orientation = None
 
@@ -166,14 +168,15 @@ class Cfg:
 
     def message(self, s):
         if self.msg:
-            self.msg.addstr(s)
+            self.default_renderer.status(self.msg, self.msg_height,\
+                    self.width, s)
             self.msg_tick = self.default_msg_tick
             self.msg.refresh()
 
     # Simple append log.
 
     def log(self, message, mode="a"):
-        self.message("\n" + message)
+        self.message(message)
         try:
             f = open(self.log_file, mode)
             f.write(message + "\n")
@@ -449,4 +452,5 @@ class Cfg:
     def link_handler(self, path, **kwargs):
         self.handler(self.handlers["browser"], path, **kwargs)
 
-
+    def default_status(self):
+        self.message("%8%B" + ("Canto %s.%s.%s" % VERSION_TUPLE) + "%b%0")
