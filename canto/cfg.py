@@ -432,6 +432,8 @@ class Cfg:
 
     @source
     def source_url(self, URL, **kwargs):
+        if kwargs.has_key("tag"):
+            return [(kwargs["tag"], URL)]
         return [(None, URL)]
 
     # Key-binds for feed based filtering.

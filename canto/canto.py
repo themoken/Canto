@@ -24,7 +24,7 @@ import sys
 import os
 
 def print_canto_usage():
-    print "USAGE: canto [-hvulanDCLF]"
+    print "USAGE: canto [-hvulaniortDCLF]"
     print "--help      -h        This help."
     print "--version   -v        Print version info."
     print "--update    -u        Fetch updates before running."
@@ -36,11 +36,12 @@ def print_canto_usage():
     print "--opml      -o        Convert conf to OPML and print to stdout."
     print "--import    -i [path] Add feeds from OPML file to conf."
     print "--url       -r [url]  Add feed at URL to conf."
+    print "--tag       -t [tag]  Set tag (for -r)"
     print ""
     print_common_usage()
 
 def print_fetch_usage():
-    print "USAGE: canto-fetch [-hvVfdDCLF]"
+    print "USAGE: canto-fetch [-hvVfdbDCLF]"
     print "--help       -h       This help."
     print "--version    -v       Print version info."
     print "--verbose    -V       Print extra info while running."
@@ -71,10 +72,10 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         
         if sys.argv[0].endswith("canto"):
-            shortopts = 'hvulaor:i:n:D:C:L:F:S:'
+            shortopts = 'hvulaor:t:i:n:D:C:L:F:S:'
             longopts = ["help","version","update","list","checkall","opml",\
                     "import=","url=","checknew=","dir=",\
-                    "conf=","log=","fdir=","sdir="]
+                    "conf=","log=","fdir=","sdir=", "tag="]
 
             iam = "canto"
         elif sys.argv[0].endswith("canto-fetch"):
@@ -177,6 +178,8 @@ class Main():
         flags = 0 
         feed_ct = None
         opml_file = None
+        url = None
+        newtag = None
 
         for opt, arg in optlist :
             if opt in ["-u","--update"] :
@@ -196,13 +199,15 @@ class Main():
             elif opt in ["-r","--url"] :
                 flags |= IN_URL
                 url = arg
+            elif opt in ["-t","--tag"] :
+                newtag = arg
 
         if flags & IN_OPML:
             self.cfg.source_opml(opml_file, append=True)
             print "OPML imported."
 
         if flags & IN_URL:
-            self.cfg.source_url(url, append=True)
+            self.cfg.source_url(url, append=True, tag=newtag)
             print "URL added."
 
         if flags & (IN_OPML + IN_URL):
