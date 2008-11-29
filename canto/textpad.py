@@ -33,6 +33,9 @@ class Textbox:
         self.maxy = self.maxy - 1
         self.maxx = self.maxx - 1
         self.minx = win.getyx()[1]
+
+        self.result = ""
+
         self.stripspaces = 1
         self.lastcmd = None
         win.keypad(1)
@@ -53,16 +56,7 @@ class Textbox:
         "Process a single editing command."
         (y, x) = self.win.getyx()
         self.lastcmd = ch
-        if ascii.isprint(ch):
-            if y < self.maxy or x < self.maxx:
-                # The try-catch ignores the error we trigger from some curses
-                # versions by trying to write into the lowest-rightmost spot
-                # in the window.
-                try:
-                    self.win.addch(ch)
-                except curses.error:
-                    pass
-        elif ch == ascii.SOH:                           # ^a
+        if ch == ascii.SOH:                           # ^a
             self.win.move(y, 0)
         elif ch in (ascii.STX,curses.KEY_LEFT, ascii.BS,curses.KEY_BACKSPACE):
             if x > self.minx:
@@ -118,23 +112,18 @@ class Textbox:
                 self.win.move(y-1, x)
                 if x > self._end_of_line(y-1):
                     self.win.move(y-1, self._end_of_line(y-1))
-        return 1
+        elif ch > 0 and (y < self.maxy or x < self.maxx):
+            # The try-catch ignores the error we trigger from some curses
+            # versions by trying to write into the lowest-rightmost spot
+            # in the window.
+            try:
+                self.win.addch(ch)
+            except curses.error:
+                pass
 
-    def gather(self):
-        "Collect and return the contents of the window."
-        result = ""
-        for y in range(self.maxy+1):
-            self.win.move(y, 0)
-            stop = self._end_of_line(y)
-            if stop == 0 and self.stripspaces:
-                continue
-            for x in range(self.maxx+1):
-                if self.stripspaces and x > stop:
-                    break
-                result = result + chr(ascii.ascii(self.win.inch(y, x)))
-            if self.maxy > 0:
-                result = result + "\n"
-        return result
+            self.result += unichr(ch)
+
+        return 1
 
     def edit(self):
         "Edit in the widget window and collect the results."
@@ -145,4 +134,4 @@ class Textbox:
             if not self.do_command(ch):
                 break
             self.win.refresh()
-        return self.gather()
+        return self.result
