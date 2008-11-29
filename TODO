@@ -4,12 +4,11 @@
     * Use "focus" in style somehow
     * Complete any other breakage
 
+- Add ability to skip directly to feed #n
+
 - Round out tests
     * Better way to test graphical output?
     * Doctests?
-
-- Import the Textpad code into the codebase and modify for UTF-8 input and
-better prompt support.
 
 - Either wrap : commands OR import only safe functions OR explicitly make it
 debug-only (i.e. add a flag to enable them).

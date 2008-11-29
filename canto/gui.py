@@ -419,9 +419,9 @@ class Gui :
                     else:
                         story.unmark()
 
-        self.prev_mark()
-        self.next_mark()
-        self.draw_elements()
+            self.prev_mark()
+            self.next_mark()
+            self.draw_elements()
 
     @noitem_unsafe
     def toggle_mark(self):
