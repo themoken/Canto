@@ -478,13 +478,6 @@ class Gui :
         for t in self.tags :
             t.all_unread()
 
-    def command(self):
-        command = input(self.cfg, "")
-        if not command:
-            return
-        locals = { "gui" : self }
-        exec(command, locals, {})
-
     def switch(self):
         return WINDOW_SWITCH
 

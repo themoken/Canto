@@ -9,6 +9,3 @@
 - Round out tests
     * Better way to test graphical output?
     * Doctests?
-
-- Either wrap : commands OR import only safe functions OR explicitly make it
-debug-only (i.e. add a flag to enable them).

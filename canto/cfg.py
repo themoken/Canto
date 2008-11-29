@@ -60,7 +60,6 @@ class Cfg:
                          "R" : "all_read",
                          "u" : "tag_unread",
                          "U" : "all_unread",
-                         ":" : "command",
                          "C-r" : "force_update",
                          "C-l" : "refresh",
                          "\t" : "switch",
