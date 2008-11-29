@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from input import input
+from input import num_input
 from const import *
 import utility
 
@@ -115,15 +115,13 @@ class Reader :
             self.offset = 0
 
     def goto(self):
-        self.dogoto(input(self.cfg, "Link Number"))
+        self.dogoto(num_input(self.cfg, "Link Number"))
 
-    def dogoto(self, s):
-        try : i = int(s)
-        except:
+    def dogoto(self, n):
+        if n == None:
             return
-
-        if i < len(self.links):
-            utility.goto(self.links[i], self.cfg)
+        if n < len(self.links):
+            utility.goto(self.links[n], self.cfg)
         return 1
 
     def switch(self):

@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from input import input, search
+from input import input, search, num_input
 from const import *
 import utility
 import reader
@@ -322,6 +322,54 @@ class Gui :
         # the top of the screen (as prev_tag does inherently)
         # so that the user's eye isn't lost.
         self.offset = min(self.sel.row, max(0, self.max_offset))
+
+    def goto_tag(self) :
+        self.goto_tagn(num_input(self.cfg, "Absolute Tag"))
+
+    def goto_reltag(self) :
+        self.goto_reltagn(num_input(self.cfg, "Tag"))
+
+    # Goto_tagn goes to an absolute #'d tag. So the third
+    # tag defined in your configuration will always be '3'
+
+    @noitem_unsafe
+    def goto_tagn(self, num):
+        if num == None:
+            return
+
+        if num < 0:
+            num = len(self.tags) + num
+        num = min(len(self.tags) - 1, num)
+
+        while num > self.sel.tag_idx:
+            self.next_tag()
+    
+        while num < self.sel.tag_idx:
+            self.prev_tag()
+
+    # Goto_reltagn goes to a tag relative to what's visible.
+
+    @noitem_unsafe
+    def goto_reltagn(self, num):
+        if num == None:
+            return
+
+        def rel_search(map):
+            idx = -1
+            cur = -1
+            for item in map:
+                if item.tag_idx != cur:
+                    cur = item.tag_idx
+                    idx += 1
+                    if idx == num:
+                        break
+            return cur
+
+        if num < 0:
+            num = -1 * num - 1
+            self.goto_tagn(rel_search(reversed(self.map)))
+        else:
+            self.goto_tagn(rel_search(self.map))
 
     @noitem_unsafe
     @change_selected

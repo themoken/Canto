@@ -106,6 +106,19 @@ def input(cfg, prompt):
 
     return term
 
+def num_input(cfg, prompt):
+    term = input(cfg, prompt)
+    if not term:
+        return
+
+    try:
+        term = int(term)
+    except:
+        cfg.log("Not a number.")
+        return None
+
+    return term
+
 def search(cfg, prompt):
     term = input(cfg, prompt)
     if not term :
