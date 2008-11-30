@@ -19,11 +19,10 @@ import re
 #        renderer=slashdot_renderer()
 
 class slashdot_renderer(interface_draw.Renderer):
-    def reader_head(self, story):
-        title = self.do_regex(story["title"], \
-                [self.story_rgx, self.common_rgx])
+    def reader_head(self, dict):
+        title = self.do_regex(dict["story"]["title"], self.story_rgx)
         return [("%1%B" + title, " ", " "),\
-                ("%bfrom the " + story["slash_department"] +\
+                ("%bfrom the " + dict["story"]["slash_department"] +\
                 " department%B", " ", " "),("┌","─","┐%C")]
 
 # Adds a "tablist" to the default Canto config.

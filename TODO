@@ -1,10 +1,12 @@
 0.6.0 TODO (in no particular order)
 ===
-- Refactor interface_draw calls to take **kwargs or a dict
-    * Use "focus" in style somehow
-    * Complete any other breakage
-
 - Change add_feed to take one argument, moving tag into kwargs as a list
+
+- Fix strange artifacts with > 1 readers
+
+- Redraw newly focused window on switch
+
+- Catch case with reader_orientation set and not reader_lines
 
 - Make tag lists configurable
 

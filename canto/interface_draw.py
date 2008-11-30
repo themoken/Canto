@@ -33,48 +33,51 @@ class Renderer :
         self.indent = "  "
         self.in_on = 0
 
-    def tag_head(self, tag):
-        t = "%1" + tag.tag + " [%2" + str(tag.unread) + "%0]%0"
-        if tag.collapsed:
-            if tag[0].selected():
+    def tag_head(self, dict):
+        t = "%1" + dict["tag"].tag + " [%2" + str(dict["tag"].unread) + "%0]%0"
+        if dict["tag"].collapsed:
+            if dict["tag"][0].selected():
                 return [("%C%B%1 > " + t + "", " ", " "),(" "," "," ")]
             else:
                 return [("%C%B   " + t + ""," ", " "),(" "," "," ")]
 
         return [("%B   " + t, " ", ""),("%1┌", "─", "┐%C%0")]
 
-    def tag_foot(self, tag):
+    def tag_foot(self, dict):
         return [("%1%B└", "─", "┘%C%0")]
 
-    def firsts(self, story):
+    def firsts(self, dict):
         base = "%C%1%B│%b%0 "
     
-        if story.selected() :
-            base += "%1%B>%b%0 "
+        if dict["story"].selected() :
+            if dict["cfg"].key_handlers[0].focus:
+                base += "%1%B>%b%0 "
+            else:
+                base += "%1%B_%b%0 "
         else:
             base += "  "
 
-        if story.marked():
+        if dict["story"].marked():
             base += "%1%B"
         else:
-            if story.wasread():
+            if dict["story"].wasread():
                 base += "%3"
             else:
                 base += "%2%B"
 
         return (base, " ", " %1%B│%b%0")
 
-    def mids(self, story):
+    def mids(self, dict):
         return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
-    def ends(self, story):
+    def ends(self, dict):
         return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
 
-    def reader_head(self, story):
-        title = self.do_regex(story["title"], self.story_rgx)
+    def reader_head(self, dict):
+        title = self.do_regex(dict["story"]["title"], self.story_rgx)
         return [("%1%B" + title, " ", " "),("%1┌","─","┐%C")]
 
-    def reader_foot(self, story):
+    def reader_foot(self, dict):
         return [("%B└", "─", "┘%C")]
 
     def reader_link(self, idx, link):
@@ -87,13 +90,13 @@ class Renderer :
 
         return color +"[" + str(idx) + "] " + link[0] + "%1 - " + link[1]
 
-    def rfirsts(self, story):
+    def rfirsts(self, dict):
         return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
 
-    def rmids(self, story):
+    def rmids(self, dict):
         return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
     
-    def rends(self, story):
+    def rends(self, dict):
         return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
 
     def __window(self, row, height, window_list):
@@ -189,30 +192,34 @@ class Renderer :
             s = rgx.sub(rep,s)
         return s
     
-    def story(self, tag, story, row, height, width, window_list):
+    def story(self, cfg, tag, story, row, height, width, window_list):
         title = self.do_regex(story["title"], self.story_rgx)
         title = title.lstrip().rstrip()
 
+        d = {"tag": tag, "story" : story, "cfg" : cfg }
+
         if story.idx == 0:
-            row = self.simple_out(self.tag_head(tag),\
+            row = self.simple_out(self.tag_head(d),\
                 row, height, width, window_list)
 
         if not tag.collapsed:
-            row = self.out([[title, (self.firsts(story), self.mids(story), \
-                    self.ends(story))]],
+            row = self.out([[title, (self.firsts(d), self.mids(d), \
+                    self.ends(d))]],
                     row, height, width, window_list)
             
             if story.last:
-                row = self.simple_out(self.tag_foot(tag),\
+                row = self.simple_out(self.tag_foot(d),\
                     row, height, width, window_list)
     
         return row
 
-    def reader(self, story, width, show_links, window):
+    def reader(self, cfg, story, width, show_links, window):
         if story.has_key("content"):
             s = story["content"][0]["value"]
         else:
             s = story["description"]
+
+        d = {"story" : story, "cfg" : cfg }
 
         s = self.do_regex(s, self.reader_pre_rgx)
         s,links = canto_html.convert(s)
@@ -226,10 +233,10 @@ class Renderer :
             for idx,link in enumerate(links):
                 l.append(self.reader_link(idx, link))
 
-        row = self.simple_out(self.reader_head(story), 0, -1, width, [window])
-        row = self.out([[x, (self.rfirsts(story), self.rmids(story),
-            self.rends(story))] for x in l], row, -1, width, [window])
-        row = self.simple_out(self.reader_foot(story), row, -1, width, [window])
+        row = self.simple_out(self.reader_head(d), 0, -1, width, [window])
+        row = self.out([[x, (self.rfirsts(d), self.rmids(d),
+            self.rends(d))] for x in l], row, -1, width, [window])
+        row = self.simple_out(self.reader_foot(d), row, -1, width, [window])
         return row, links
 
     def status(self, bar, height, width, str):

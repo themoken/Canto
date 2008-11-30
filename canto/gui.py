@@ -120,7 +120,7 @@ class Gui :
         for i, feed in enumerate(self.tags):
             for item in feed:
                 if not feed.collapsed or item.idx == 0:
-                    item.lines = item.print_item(feed, 0, self)
+                    item.lines = item.print_item(self.cfg, feed, 0, self)
                     if item.lines:
                         # item.tag_idx is the story's only reference
                         # to its current Tag()
@@ -151,7 +151,7 @@ class Gui :
                     # If row is offscreen down
                     if item.row > self.lines + self.offset:
                         break
-                    item.print_item(self.tags[item.tag_idx], row, self)
+                    item.print_item(self.cfg, self.tags[item.tag_idx], row, self)
                 row += item.lines
         else:
             row = -1

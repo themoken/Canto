@@ -31,7 +31,6 @@ def daemonize():
     os.close(1)
     os.close(2)
 
-
 def convcolor(c):
     colordir = {"default" : -1, 
             "black" : 0, 

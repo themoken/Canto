@@ -89,7 +89,7 @@ class Story():
     def unselect(self):
         self.sel = 0
 
-    def print_item(self, tag, row, i):
-        return self.renderer.story(tag, self, row, \
+    def print_item(self, cfg, tag, row, i):
+        return self.renderer.story(cfg, tag, self, row, \
                 i.cfg.gui_height, i.cfg.gui_width / i.cfg.columns, \
                 i.window_list)
