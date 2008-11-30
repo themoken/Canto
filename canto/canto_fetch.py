@@ -200,6 +200,12 @@ class UpdateThread(Thread):
         # Make state persist between feeds
         newfeed["canto_state"] = curfeed["canto_state"]
         newfeed["canto_update"] = time.time()
+
+        # We can set this here, without checking curfeed.
+        # Any migration should be done in the get_curfeed function,
+        # when the old data is first loaded.
+
+        newfeed["canto_version"] = VERSION_TUPLE
         
         # For all content that we would usually use, we convert
         # it to UTF-8 and escape all %s with \. Feedparser
