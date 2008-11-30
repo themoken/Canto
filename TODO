@@ -4,7 +4,14 @@
     * Use "focus" in style somehow
     * Complete any other breakage
 
-- Add ability to skip directly to feed #n
+- Change add_feed to take one argument, moving tag into kwargs as a list
+
+- Make tag lists configurable
+
+- Fix input past end of the window.
+
+- Make default status bar configurable
+    * Move tablist status bar into extra...
 
 - Round out tests
     * Better way to test graphical output?
