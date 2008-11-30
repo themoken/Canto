@@ -468,5 +468,5 @@ class Cfg:
         self.handler(self.handlers["browser"], path, **kwargs)
 
     def default_status(self):
-        self.message("%8%B" + ("Canto %s.%s.%s " % VERSION_TUPLE) +\
-                "%b%2" + " ".join([str(x) for x in self.key_handlers]) + "%0", 1)
+        return "%8%B" + ("Canto %s.%s.%s " % VERSION_TUPLE) +\
+                "%b%2" + " ".join([str(x) for x in self.key_handlers]) + "%0"
