@@ -416,7 +416,7 @@ class Gui :
         utility.goto(("", self.sel["link"], "browser"), self.cfg)
 
     def help(self):
-        self.cfg.wait_for_pid = utility.silentfork("man canto", 1)
+        self.cfg.wait_for_pid = utility.silentfork("man canto", "", 1, 0)
 
     @noitem_unsafe
     def reader(self) :
