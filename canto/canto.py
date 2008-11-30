@@ -170,7 +170,8 @@ class Main():
                     canto_fetch.main(self.cfg, optlist)
                     time.sleep(60)
                     try :
-                        self.cfg = cfg.Cfg(conf_file, log_file, feed_dir)
+                        self.cfg = cfg.Cfg(conf_file, log_file, feed_dir,\
+                                script_dir)
                     except:
                         pass
             sys.exit(canto_fetch.main(self.cfg, optlist))
