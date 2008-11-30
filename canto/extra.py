@@ -26,6 +26,12 @@ class slashdot_renderer(interface_draw.Renderer):
                 ("%bfrom the " + story["slash_department"] +\
                 " department%B", " ", " "),("┌","─","┐%C")]
 
+# Adds a "tablist" to the default Canto config.
+
+def tabbed_status(cfg):
+    return "%8%BCanto » %b%2" + \
+            " ".join([str(x) for x in cfg.key_handlers]) + "%0"
+
 # Filter for filtering out all read stories.
 #
 # Usage : filterlist=[None, show_unread()]

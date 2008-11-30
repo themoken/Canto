@@ -8,9 +8,6 @@
 
 - Make tag lists configurable
 
-- Make default status bar configurable
-    * Move tablist status bar into extra...
-
 - Round out tests
     * Better way to test graphical output?
     * Doctests?
