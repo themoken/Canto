@@ -117,7 +117,7 @@ class Cfg:
         self.msg = None
         self.msg_tick = 0
 
-        self.status = self.default_status
+        self.status = default_status
 
         self.reader_lines = 0
         self.reader_orientation = None
@@ -333,6 +333,7 @@ class Cfg:
             "default_keep" : self.set_default_keep,
             "default_renderer" : self.set_default_renderer,
             "renderer" : interface_draw.Renderer,
+            "status" : self.status,
             "keys" : self.key_list,
             "reader_keys" : self.reader_key_list,
             "reader_orientation" : self.reader_orientation,
@@ -361,7 +362,7 @@ class Cfg:
         # locals directly, so we do it by hand.
 
         for attr in ["filterlist", "filter_idx", "render", "columns",\
-                "reader_orientation", "reader_lines"]:
+                "reader_orientation", "reader_lines", "status"]:
             if locals.has_key(attr):
                 setattr(self, attr, locals[attr])
 
@@ -467,6 +468,6 @@ class Cfg:
     def link_handler(self, path, **kwargs):
         self.handler(self.handlers["browser"], path, **kwargs)
 
-    def default_status(self):
-        return "%8%B" + ("Canto %s.%s.%s " % VERSION_TUPLE) +\
-                "%b%2" + " ".join([str(x) for x in self.key_handlers]) + "%0"
+def default_status(cfg):
+    return "%8%B" + ("Canto %s.%s.%s " % VERSION_TUPLE) +\
+            "%b%2" + " ".join([str(x) for x in cfg.key_handlers]) + "%0"

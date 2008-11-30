@@ -471,7 +471,7 @@ class Main():
 
         self.cfg.msg_tick -= 1
         if self.cfg.msg_tick == 0:
-            self.cfg.message(self.cfg.status(), 1)
+            self.cfg.message(self.cfg.status(self.cfg), 1)
 
         signal.alarm(1)
 
