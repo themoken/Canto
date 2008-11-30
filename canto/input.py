@@ -39,10 +39,13 @@ class InputBox:
     def refresh(self):
         self.win.move(0, self.minx)
         maxx = self.win.getmaxyx()[1]
-        maxx -= self.minx
-        self.win.addstr(self.result[-maxx:].encode("UTF-8", "replace"))
+        try:
+            self.win.addstr(self.result[-1 * (maxx - self.minx):]\
+                    .encode("UTF-8", "replace"))
+        except:
+            pass
         self.win.clrtoeol()
-        self.win.move(0, self.x)
+        self.win.move(0, min(self.x, maxx - 1))
         self.win.refresh()
 
     def key(self, ch):

@@ -8,8 +8,6 @@
 
 - Make tag lists configurable
 
-- Fix input past end of the window.
-
 - Make default status bar configurable
     * Move tablist status bar into extra...
 
