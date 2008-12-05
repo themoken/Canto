@@ -2,10 +2,6 @@
 ===
 - Change add_feed to take one argument, moving tag into kwargs as a list
 
-- Fix strange artifacts with > 1 readers
-
-- Redraw newly focused window on switch
-
 - Catch case with reader_orientation set and not reader_lines
 
 - Make tag lists configurable

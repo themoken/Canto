@@ -411,12 +411,14 @@ class Main():
                     for k in self.cfg.key_handlers:
                         k.draw_elements()
                 elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2:
+                    oldcur = self.cfg.key_handlers[self.cfg.cur_kh]
                     if self.cfg.cur_kh == len(self.cfg.key_handlers) - 1:
                         self.cfg.cur_kh = 0
                     else:
                         self.cfg.cur_kh += 1
-                    self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
                     self.update_focus()
+                    oldcur.draw_elements()
+                    self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
 
     def done(self, a=None, b=None):
         # Kill the message log
@@ -534,12 +536,12 @@ class Main():
         self.update_focus()
 
     def pop_handler(self):
-        self.cfg.key_handlers.pop()
+        self.cfg.key_handlers.remove(self.cfg.key_handlers[self.cfg.cur_kh])
+        self.cfg.cur_kh = max(self.cfg.cur_kh - 1, 0)
+        self.update_focus()
         if len(self.cfg.key_handlers):
            for h in self.cfg.key_handlers:
                h.refresh()
-        self.cfg.cur_kh = max(self.cfg.cur_kh - 1, 0)
-        self.update_focus()
 
     # Filter extend extends self.stories with items passing through
     # the global filter. The Feed() objects are never changed.

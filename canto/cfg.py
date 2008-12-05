@@ -80,7 +80,7 @@ class Cfg:
                               "h" : ["destroy","help"],
                               "q" : ["destroy","quit"],
                               "\t" : "switch",
-                              " " : ["quit", "switch"]}
+                              " " : "quit"}
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
                 ("green","black"),("pink","black"),("black","black"),("blue","black"),(0,0)]
