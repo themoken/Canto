@@ -267,7 +267,7 @@ class Gui :
     def action(self, a):
         # Allows user defined functions to manipulate Gui()
 
-        if callable(a):
+        if hasattr(a, "__call__"):
             r = a(self)
         else:
             f = getattr(self, a, None)

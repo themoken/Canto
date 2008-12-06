@@ -131,7 +131,7 @@ class Reader :
         pass
     
     def action(self, a):
-        if callable(a):
+        if hasattr(a, "__call__"):
             r = a()
         else:
             r = 0

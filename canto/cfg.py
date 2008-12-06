@@ -201,10 +201,10 @@ class Cfg:
     # and ensures that sort is a list.
 
     def wrap_args(self, kwargs):
-        if kwargs.has_key("filterlist"):
+        if "filterlist" in kwargs:
             kwargs["filterlist"] = \
                     [self.filter_dec(x) for x in kwargs["filterlist"]]
-        if kwargs.has_key("sort"):
+        if "sort" in kwargs:
             if type(kwargs["sort"]) != type([]):
                 kwargs["sort"] = [kwargs["sort"]]
             kwargs["sort"] = [self.hook_dec(x) for x in kwargs["sort"]]
@@ -269,7 +269,7 @@ class Cfg:
 
         feed = l[0]
         for key in ["keep","rate","renderer","filterlist","sort"]:
-            if kwargs.has_key(key):
+            if key in kwargs:
                 setattr(feed, key, kwargs[key])
 
     # This decorator-like function is used to wrap
@@ -363,13 +363,13 @@ class Cfg:
 
         for attr in ["filterlist", "filter_idx", "render", "columns",\
                 "reader_orientation", "reader_lines", "status"]:
-            if locals.has_key(attr):
+            if attr in locals:
                 setattr(self, attr, locals[attr])
 
         # Wrap hooks in the exception handler
         for hook in ["resize_hook","new_hook","select_hook","update_hook",\
                 "unselect_hook","start_hook","end_hook"]:
-            if locals.has_key(hook):
+            if hook in locals:
                 setattr(self, hook, self.hook_dec(locals[hook]))
 
         # Wrap filters in exception handler
@@ -388,7 +388,7 @@ class Cfg:
     def source(fn):
         def source_dec(self, *args, **kwargs):
             append = False
-            if kwargs.has_key("append"):
+            if "append" in kwargs:
                 append = kwargs["append"]
                 file = open(self.path, "a")
 
@@ -410,9 +410,9 @@ class Cfg:
         l = []
         def start(name, attrs) : 
             if name == "outline" and (\
-                ((attrs.has_key("type") and\
+                (("type" in attrs and\
                 attrs["type"] in ["pie","rss"])) or\
-                not attrs.has_key("type")):
+                not ("type" in attrs)):
 
                 l.append((attrs["text"].encode("UTF-8"),attrs["xmlUrl"]))
 
@@ -435,7 +435,7 @@ class Cfg:
 
     @source
     def source_url(self, URL, **kwargs):
-        if kwargs.has_key("tag"):
+        if "tag" in kwargs:
             return [(kwargs["tag"], URL)]
         return [(None, URL)]
 

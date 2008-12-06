@@ -214,7 +214,7 @@ class Renderer :
         return row
 
     def reader(self, cfg, story, width, show_links, window):
-        if story.has_key("content"):
+        if "content" in story:
             s = story["content"][0]["value"]
         else:
             s = story["description"]

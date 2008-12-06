@@ -65,7 +65,7 @@ class show_marked():
 class only_with():
     def __init__(self, keyword, **kwargs):
         self.keyword = keyword
-        if kwargs.has_key("regex") and kwargs["regex"]:
+        if "regex" in kwargs and kwargs["regex"]:
             self.match = re.compile(keyword)
         else:
             self.match = re.compile(".*" + keyword + ".*")
@@ -92,7 +92,7 @@ class only_without(only_with):
 #         keys["2"] = search(".*[Ll]inux.*, regex=True)
 
 def search(s, **kwargs):
-    if kwargs.has_key("regex") and kwargs["regex"]:
+    if "regex" in kwargs and kwargs["regex"]:
         return lambda x : x.do_inline_search(re.compile(s))
     else:
         return lambda x : x.do_inline_search(re.compile(".*" + s + ".*"))

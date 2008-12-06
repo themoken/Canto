@@ -11,25 +11,23 @@
 #   file IO, doesn't do markdown, and doesn't shy away from Unicode.
 
 from handlers import LinkHandler, ImageHandler
-
+from HTMLParser import HTMLParser
 import htmlentitydefs
-import sgmllib
 import re
 
-sgmllib.charref = re.compile('&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]')
 handlers = {
         "browser" : { "default" : ("firefox \"%u\"", 0, 0) },
         "image" : {}
 }
 
-class CantoHTML(sgmllib.SGMLParser):
+class CantoHTML(HTMLParser):
 
     # Reset is used, instead of __init__ so a single
     # instance of the class can parse multiple HTML
     # fragments.
 
     def reset(self):
-        sgmllib.SGMLParser.reset(self)
+        HTMLParser.reset(self)
         self.result = ""
         self.list_stack = []
         self.verbatim = 0
@@ -39,10 +37,10 @@ class CantoHTML(sgmllib.SGMLParser):
 
     # unknown_* funnel all tags to handle_tag
 
-    def unknown_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, attrs):
         self.handle_tag(tag, attrs, 1)
 
-    def unknown_endtag(self, tag):
+    def handle_endtag(self, tag):
         self.handle_tag(tag, {}, 0)
 
     def handle_data(self, text):
@@ -69,7 +67,7 @@ class CantoHTML(sgmllib.SGMLParser):
         return unichr(c)
 
     def convert_entityref(self, ref):
-        if htmlentitydefs.name2codepoint.has_key(ref):
+        if ref in htmlentitydefs.name2codepoint:
             return unichr(htmlentitydefs.name2codepoint[ref])
         return "[?]"
 

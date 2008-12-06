@@ -133,7 +133,7 @@ class UpdateThread(Thread):
         # it out of the previously downloaded info.
 
         if not self.fd.tag:
-            if curfeed.has_key("feed") and curfeed["feed"].has_key("title"):
+            if "feed" in curfeed and "title" in curfeed["feed"]:
                 self.fd.tag = curfeed["feed"]["title"]
                 self.log_func("Updating %s" % self.fd.tag)
             else:
@@ -177,7 +177,7 @@ class UpdateThread(Thread):
             return
 
         if not self.fd.tag:
-            if newfeed.has_key("feed") and newfeed["feed"].has_key("title"):
+            if "feed" in newfeed and "title" in newfeed["feed"]:
                 self.fd.tag = newfeed["feed"]["title"].encode("UTF-8")
             else:
                 self.log_func("Ugh. Defaulting to URL for tag. No guarantees.")
@@ -192,7 +192,7 @@ class UpdateThread(Thread):
         # These exceptions are recoverable and their objects are
         # un-Picklable so we log it and remove the value.
 
-        if newfeed.has_key("bozo_exception"):
+        if "bozo_exception" in newfeed:
             self.log_func("Recoverable error in feed %s: %s" % 
                         (self.fd.tag, newfeed["bozo_exception"]))
             newfeed["bozo_exception"] = None
@@ -222,7 +222,7 @@ class UpdateThread(Thread):
                 newfeed["feed"][key] = encode_and_escape(newfeed["feed"][key])
 
         for entry in newfeed["entries"]:
-            if entry.has_key("content"):
+            if "content" in entry:
                 for c in entry["content"]:
                     c["value"] = encode_and_escape(c["value"])
 
@@ -234,10 +234,10 @@ class UpdateThread(Thread):
             # If the item didn't come with a GUID, then
             # use link and then title as an identifier.
 
-            if not entry.has_key("id"):
-                if entry.has_key("link"):
+            if not "id" in entry:
+                if "link" in entry:
                     entry["id"] = entry["link"]
-                elif entry.has_key("title"):
+                elif "title" in entry:
                     entry["id"] = entry["title"]
                 else:
                     entry["id"] = None
@@ -260,7 +260,7 @@ class UpdateThread(Thread):
                         break
 
                 # Apply default state to genuinely new items.
-                if not entry.has_key("canto_state"):
+                if not "canto_state" in entry:
                     entry["canto_state"] = [ self.fd.tag, "unread", "*", "new"]
 
             # Tailor the list to the correct number of items.

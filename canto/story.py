@@ -36,13 +36,13 @@ class Story():
         return 1
 
     def __getitem__(self, key):
-        if self.ufp.has_key(key):
+        if key in self.ufp:
             return self.ufp[key]
         else:
             return ""
 
-    def has_key(self, key):
-        return self.ufp.has_key(key)
+    def __contains__(self, key):
+        return key in self.ufp
 
     def __tagwrap(self, tag, i):
         if i == 0:

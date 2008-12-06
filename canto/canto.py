@@ -389,7 +389,7 @@ class Main():
             # entirely independent.
 
             if hasattr(self.cfg.key_handlers[self.cfg.cur_kh], "keys"):
-                if self.cfg.key_handlers[self.cfg.cur_kh].keys.has_key(t):
+                if t in self.cfg.key_handlers[self.cfg.cur_kh].keys:
                     actl = self.cfg.key_handlers[self.cfg.cur_kh].keys[t]
                 else:
                     actl = []

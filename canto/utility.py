@@ -49,7 +49,7 @@ def convcolor(c):
         else:
             return 0
     elif type(c) == str:
-        if colordir.has_key(c):
+        if c in colordir:
             return colordir[c]
     return 0
 
@@ -119,7 +119,7 @@ def silentfork(path, href, text, fetch):
 
 def goto(link, cfg):
     title,href,handler = link
-    if cfg.handlers.has_key(handler):
+    if handler in cfg.handlers:
         for k in [h for h in cfg.handlers[handler].keys() if h]:
             if href.endswith(k):
                 binary, text, fetch = cfg.handlers[handler][k]
