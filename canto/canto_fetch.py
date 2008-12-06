@@ -132,17 +132,19 @@ class UpdateThread(Thread):
         # Attempt to set the tag, if unspecified, by grabbing
         # it out of the previously downloaded info.
 
-        if not self.fd.tag:
+        if not self.fd.base_set:
             if "feed" in curfeed and "title" in curfeed["feed"]:
-                self.fd.tag = curfeed["feed"]["title"]
-                self.log_func("Updating %s" % self.fd.tag)
+                replace = lambda x: x or curfeed["feed"]["title"]
+                self.fd.tags = [ replace(x) for x in self.fd.tags]
+                self.fd.base_set = 1
+                self.log_func("Updating %s" % self.fd.tags[0])
             else:
                 # This is the first time we've gotten this URL,
                 # so just use the URL since we don't know the title.
 
                 self.log_func("New feed %s" % self.fd.URL)
         else:
-            self.log_func("Updating %s" % self.fd.tag)
+            self.log_func("Updating %s" % self.fd.tags[0])
 
         try:
             if self.fd.URL.startswith("script:"):
@@ -172,17 +174,17 @@ class UpdateThread(Thread):
             # case we either won't get data or can't trust the data, so
             # just skip processing this feed.
 
-            self.log_func("Exception trying to get feed: %s" % \
-                    sys.exc_info()[1])
+            self.log_func("Exception trying to get feed %s : %s" % \
+                    (self.fd.tags[0], sys.exc_info()[1]))
             return
 
-        if not self.fd.tag:
-            if "feed" in newfeed and "title" in newfeed["feed"]:
-                self.fd.tag = newfeed["feed"]["title"].encode("UTF-8")
-            else:
+        if not self.fd.base_set:
+            if "feed" not in newfeed or "title" not in newfeed["feed"]:
                 self.log_func("Ugh. Defaulting to URL for tag. No guarantees.")
                 newfeed["feed"]["title"] = self.fd.URL
-                self.fd.tag = self.fd.URL
+
+            replace = lambda x: x or newfeed["feed"]["title"]
+            self.fd.tags = [ replace(x) for x in self.fd.tags]
 
         # Feedparser returns a very nice dict of information.
         # if there was something wrong with the feed (usu. encodings
@@ -194,7 +196,7 @@ class UpdateThread(Thread):
 
         if "bozo_exception" in newfeed:
             self.log_func("Recoverable error in feed %s: %s" % 
-                        (self.fd.tag, newfeed["bozo_exception"]))
+                        (self.fd.tags[0], newfeed["bozo_exception"]))
             newfeed["bozo_exception"] = None
 
         # Make state persist between feeds
@@ -261,7 +263,8 @@ class UpdateThread(Thread):
 
                 # Apply default state to genuinely new items.
                 if not "canto_state" in entry:
-                    entry["canto_state"] = [ self.fd.tag, "unread", "*", "new"]
+                    entry["canto_state"] = self.fd.tags + \
+                            ["unread", "*", "new"]
 
             # Tailor the list to the correct number of items.
             if len(newfeed["entries"]) < self.fd.keep:
@@ -283,7 +286,8 @@ class UpdateThread(Thread):
 
                 # There was an actual c-f update done, bail
                 if newer_curfeed["canto_update"] != curfeed["canto_update"]:
-                    self.log_func("%s updated already, bailing" % self.fd.tag)
+                    self.log_func("%s updated already, bailing" %
+                            self.fd.tags[0])
                     break
 
                 # Just a state modification by the client, update and continue.

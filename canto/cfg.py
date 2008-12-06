@@ -215,7 +215,7 @@ class Cfg:
     # so that subsequent commands can reference it ASAP, and
     # so that set defaults are applied at that point.
 
-    def addfeed(self, tag, URL, **kwargs):
+    def addfeed(self, URL, **kwargs):
         if (not URL) or URL == "":
             return -1
 
@@ -227,6 +227,9 @@ class Cfg:
             if not key in kwargs:
                 kwargs[key] = None
 
+        if not "tags" in kwargs:
+            kwargs["tags"] = [None]
+
         kwargs = self.wrap_args(kwargs)
 
         # The tag is the only thing that has to be unique, so we ignore
@@ -234,11 +237,12 @@ class Cfg:
 
         if not URL in [f.URL for f in self.feeds]:
             self.feeds.append(feed.Feed(self, self.feed_dir +\
-                    URL.replace("/", " "), tag, URL,\
-                    kwargs["rate"],\
-                    kwargs["keep"],\
-                    kwargs["renderer"],\
-                    kwargs["filterlist"],\
+                    URL.replace("/", " "), URL,
+                    kwargs["tags"],
+                    kwargs["rate"],
+                    kwargs["keep"],
+                    kwargs["renderer"],
+                    kwargs["filterlist"],
                     kwargs["sort"],
                     kwargs["username"],
                     kwargs["password"]))

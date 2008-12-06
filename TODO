@@ -1,7 +1,5 @@
 0.6.0 TODO (in no particular order)
 ===
-- Change add_feed to take one argument, moving tag into kwargs as a list
-
 - Catch case with reader_orientation set and not reader_lines
 
 - Make tag lists configurable

@@ -26,28 +26,34 @@ import fcntl
 # has_changed() has been called by one of the Story() items Feed() contains.
 
 class Feed(list):
-    def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist,
-            sort, username, password):
+    def __init__(self, cfg, dirpath, URL, tags, rate, keep, \
+            renderer, filterlist, sort, username, password):
 
-        self.base_tag = t
-        self.ufp = None
-        self.sorts = sort
-        self.path = dirpath
+        # Configuration set settings
+        self.tags = tags
+        self.base_set = 0
+
         self.URL = URL
-        self.cfg = cfg
+        self.sorts = sort
         self.renderer = renderer
         self.rate = rate
         self.time = 1
         self.keep = keep
-        self.changed = 0
-        self.filterlist = filterlist
-        self.filter_idx = 0
         self.username = username
         self.password = password
-    
+
+        self.filterlist = filterlist
+        self.filter_idx = 0
+
+        # Other necessities
+        self.path = dirpath
+        self.cfg = cfg
+        self.changed = 0
+        self.ufp = None
+   
     def update(self):
         lockflags = fcntl.LOCK_SH
-        if self.base_tag:
+        if self.base_set:
             lockflags |= fcntl.LOCK_NB
 
         try:
@@ -63,12 +69,15 @@ class Feed(list):
         except:
             return 0
 
-        if not self.base_tag:
+        if not self.base_set:
             if "feed" in self.ufp and "title" in self.ufp["feed"]:
-                self.base_tag = self.ufp["feed"]["title"]
+                replace = lambda x: x or self.ufp["feed"]["title"]
+                self.tags = [ replace(x) for x in self.tags]
+                self.base_set = 1
             else:
                 # Using URL for tag, no guarantees
-                self.base_tag = self.URL
+                self.tags = [self.URL] + self.tags
+                self.base_set = 1
 
         self.__do_extend()
         return 1
@@ -78,13 +87,13 @@ class Feed(list):
     # .extend is overridden by Tag() which Feed() inherits from.
 
     def __do_extend(self):
-        # clear
         del self[:]
 
-        # This happens if the base_tag was changed.
+        # This happens if any tags were added.
         for entry in self.ufp["entries"]:
-            if entry["canto_state"][0] != self.base_tag:
-                entry["canto_state"][0] = self.base_tag
+            for tag in self.tags:
+                if tag not in entry["canto_state"]:
+                    entry["canto_state"].append(tag)
 
         if self.filterlist[self.filter_idx]:
             self.extend(filter(\

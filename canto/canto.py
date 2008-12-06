@@ -255,7 +255,7 @@ class Main():
         # Print out a feed list, bail
         if flags & FEED_LIST:
             for f in self.cfg.feeds:
-                print f.base_tag
+                print f.tags[0]
             sys.exit(0)
 
         if flags & OUT_OPML:
@@ -269,7 +269,7 @@ class Main():
                     t = "rss"
 
                 print """\t<outline text="%s" xmlUrl="%s" type="%s" />""" %\
-                        (feed.base_tag, feed.URL, t)
+                        (feed.tags[0], feed.URL, t)
 
             print """</body>"""
             print """</opml>"""
@@ -316,7 +316,7 @@ class Main():
 
         tag_list = []
         for f in self.cfg.feeds:
-            t = tag.Tag(f.sorts, f.base_tag)
+            t = tag.Tag(f.sorts, f.tags[0])
             if t not in tag_list:
                 tag_list.append(t)
 
