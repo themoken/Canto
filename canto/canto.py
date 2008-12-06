@@ -255,7 +255,7 @@ class Main():
         # Print out a feed list, bail
         if flags & FEED_LIST:
             for f in self.cfg.feeds:
-                print f.tag
+                print f.base_tag
             sys.exit(0)
 
         if flags & OUT_OPML:
@@ -269,7 +269,7 @@ class Main():
                     t = "rss"
 
                 print """\t<outline text="%s" xmlUrl="%s" type="%s" />""" %\
-                        (feed.tag, feed.URL, t)
+                        (feed.base_tag, feed.URL, t)
 
             print """</body>"""
             print """</opml>"""
@@ -278,15 +278,12 @@ class Main():
         # Handle -a/-n flags (print number of new items)
 
         if flags & CHECK_NEW:
-            if feed_ct:
-                for f in self.cfg.feeds:
-                    if f.tag == feed_ct:
-                        print f.unread
-                        break
-                else:
-                    print "Feed not found."
-            else:
-                print sum([f.unread for f in self.cfg.feeds])
+            if not feed_ct:
+                feed_ct = "*"
+
+            check_tag = tag.Tag([None], feed_ct)
+            check_tag.extend(self.stories)
+            print check_tag.unread
             sys.exit(0)
 
 
@@ -319,7 +316,7 @@ class Main():
 
         tag_list = []
         for f in self.cfg.feeds:
-            t = tag.Tag([None], f.tag)
+            t = tag.Tag([None], f.base_tag)
             if t not in tag_list:
                 tag_list.append(t)
 

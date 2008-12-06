@@ -25,15 +25,11 @@ import fcntl
 # Each feed will also only write its status back to disk on tick() and only if
 # has_changed() has been called by one of the Story() items Feed() contains.
 
-class Feed(tag.Tag):
+class Feed(list):
     def __init__(self, cfg, dirpath, t, URL, rate, keep, renderer, filterlist,
             sort, username, password):
 
-        if t:
-            tag.Tag.__init__(self, sort, t)
-        else:
-            self.tag = None
-
+        self.base_tag = t
         self.ufp = None
         self.sorts = sort
         self.path = dirpath
@@ -51,7 +47,7 @@ class Feed(tag.Tag):
     
     def update(self):
         lockflags = fcntl.LOCK_SH
-        if self.tag:
+        if self.base_tag:
             lockflags |= fcntl.LOCK_NB
 
         try:
@@ -67,12 +63,12 @@ class Feed(tag.Tag):
         except:
             return 0
 
-        if not self.tag:
+        if not self.base_tag:
             if "feed" in self.ufp and "title" in self.ufp["feed"]:
-                tag.Tag.__init__(self, self.sorts, self.ufp["feed"]["title"])
+                self.base_tag = self.ufp["feed"]["title"]
             else:
                 # Using URL for tag, no guarantees
-                tag.Tag.__init__(self, self.sorts, self.URL)
+                self.base_tag = self.URL
 
         self.__do_extend()
         return 1
@@ -82,12 +78,13 @@ class Feed(tag.Tag):
     # .extend is overridden by Tag() which Feed() inherits from.
 
     def __do_extend(self):
-        self.clear()
+        # clear
+        del self[:]
 
-        # This happens if the feed name was changed.
+        # This happens if the base_tag was changed.
         for entry in self.ufp["entries"]:
-            if entry["canto_state"][0] != self.tag:
-                entry["canto_state"][0] = self.tag
+            if entry["canto_state"][0] != self.base_tag:
+                entry["canto_state"][0] = self.base_tag
 
         if self.filterlist[self.filter_idx]:
             self.extend(filter(\
