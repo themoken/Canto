@@ -4,6 +4,13 @@
 
 - Make tag lists configurable
 
+- Ensure that all feed-specific sort/filter-type operations can
+    be done with a keybind, rather than cycling through a list
+
+- Website docs
+
+- Code doc review
+
 - Round out tests
     * Better way to test graphical output?
     * Doctests?
