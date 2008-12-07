@@ -44,6 +44,7 @@ class Feed(list):
 
         self.filterlist = filterlist
         self.filter_idx = 0
+        self.filter_override = None
 
         # Other necessities
         self.path = dirpath
@@ -95,17 +96,22 @@ class Feed(list):
                 if tag not in entry["canto_state"]:
                     entry["canto_state"].append(tag)
 
-        if self.filterlist[self.filter_idx]:
-            self.extend(filter(\
-                    lambda x: self.filterlist[self.filter_idx](self,x),\
-                    [story.Story(entry, self, self.renderer)\
-                    for entry in self.ufp["entries"]]))
+        if self.filter_override:
+            filt = self.filter_override
+        elif self.filterlist[self.filter_idx]:
+            filt = self.filterlist[self.filter_idx]
         else:
-            self.extend(\
-                    [story.Story(entry, self, self.renderer) \
+            self.extend([story.Story(entry, self, self.renderer)\
                     for entry in self.ufp["entries"]])
+            return
+
+        self.extend(filter(\
+                lambda x: filt(self,x),\
+                [story.Story(entry, self, self.renderer)\
+                for entry in self.ufp["entries"]]))
 
     def next_filter(self):
+        self.filter_override = None
         if self.filter_idx < len(self.filterlist) - 1:
             self.filter_idx += 1
             self.__do_extend()
@@ -113,6 +119,7 @@ class Feed(list):
         return 0
 
     def prev_filter(self):
+        self.filter_override = None
         if self.filter_idx > 0:
             self.filter_idx -= 1
             self.__do_extend()

@@ -433,6 +433,17 @@ class Gui :
         return dec
 
     @change_filter
+    def set_filter(self, filt):
+        self.cfg.filter_override = filt
+        return (1, filt)
+
+    @noitem_unsafe
+    @change_filter
+    def set_feed_filter(self, filt):
+        self.sel.feed.filter_override = filt
+        return (1, filt)
+
+    @change_filter
     def next_filter(self):
         return (self.cfg.next_filter(),\
                 self.cfg.filterlist[self.cfg.filter_idx])

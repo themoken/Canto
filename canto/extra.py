@@ -29,7 +29,7 @@ class slashdot_renderer(interface_draw.Renderer):
 
 def tabbed_status(cfg):
     return "%8%BCanto » %b%2" + \
-            " ".join([str(x) for x in cfg.key_handlers]) + "%0"
+            " ".join([str(x) for x in cfg.key_handlers]) + "%1"
 
 # Filter for filtering out all read stories.
 #
@@ -85,6 +85,14 @@ class only_without(only_with):
 
     def __call__(self, tag, item):
         return not self.match.match(item["title"])
+
+# Set the global filter 
+
+def set_filter(filter):
+    return lambda x : x.set_filter(filter)
+
+def set_feed_filter(filter):
+    return lambda x : x.set_feed_filter(filter)
 
 # Creates a keybind for searching for a keyword or regex.
 #

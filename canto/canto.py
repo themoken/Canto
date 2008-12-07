@@ -544,8 +544,12 @@ class Main():
     # the global filter. The Feed() objects are never changed.
 
     def filter_extend(self, t):
-        if self.cfg.filterlist[self.cfg.filter_idx]:
-            self.stories.extend(filter(lambda x:
-                self.cfg.filterlist[self.cfg.filter_idx](t,x), t))
+        if self.cfg.filter_override:
+            filt = self.cfg.filter_override
+        elif self.cfg.filterlist[self.cfg.filter_idx]:
+            filt = self.cfg.filterlist[self.cfg.filter_idx]
         else:
             self.stories.extend(t)
+            return
+        
+        self.stories.extend(filter(lambda x: filt(t,x), t))

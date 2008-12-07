@@ -132,6 +132,7 @@ class Cfg:
 
         self.filterlist = [None]
         self.filter_idx = 0
+        self.filter_override = None
 
         self.no_conf = 0
 
@@ -445,12 +446,14 @@ class Cfg:
 
     # Key-binds for feed based filtering.
     def next_filter(self):
+        self.filter_override = None
         if self.filter_idx < len(self.filterlist) - 1:
             self.filter_idx += 1
             return 1
         return 0
 
     def prev_filter(self):
+        self.filter_override = None
         if self.filter_idx > 0:
             self.filter_idx -= 1
             return 1
