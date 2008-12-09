@@ -3,6 +3,11 @@
 - Catch case with reader_orientation set and not reader_lines
 
 - Make tag lists configurable
+    * Make Tag() init use kwargs
+    * Keep a list of pre-configured Tags in cfg,
+        so that filters/sorts etc. can be set before
+        the Tag object is actually needed.
+        - Wrap that in a nice config wrapper
 
 - Ensure that all feed-specific sort/filter-type operations can
     be done with a keybind, rather than cycling through a list
