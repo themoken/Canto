@@ -71,14 +71,13 @@ class Feed(list):
             return 0
 
         if not self.base_set:
+            self.base_set = 1
             if "feed" in self.ufp and "title" in self.ufp["feed"]:
                 replace = lambda x: x or self.ufp["feed"]["title"]
                 self.tags = [ replace(x) for x in self.tags]
-                self.base_set = 1
             else:
                 # Using URL for tag, no guarantees
                 self.tags = [self.URL] + self.tags
-                self.base_set = 1
 
         self.__do_extend()
         return 1
@@ -109,6 +108,15 @@ class Feed(list):
                 lambda x: filt(self,x),\
                 [story.Story(entry, self, self.renderer)\
                 for entry in self.ufp["entries"]]))
+
+        if not len(self):
+            d = { "title" : "No unfiltered items.",
+                  "description" : "You've filtered out everything!",
+                  "canto_state" : self.tags + ["unread","*"],
+                  "id" : None
+                }
+            stub = story.Story(d , self, self.renderer)
+            self.append(stub)
 
     def next_filter(self):
         self.filter_override = None
