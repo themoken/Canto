@@ -6,6 +6,10 @@
 
 - Ensure that all feed-specific sort/filter-type operations can
     be done with a keybind, rather than cycling through a list
+        X - Done for global/feed filters
+
+- Attempt to force strange drawing errors before release (not sure
+        if they'll come up when I'm not crashing around under the hood)
 
 - Website docs
 
