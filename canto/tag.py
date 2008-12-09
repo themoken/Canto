@@ -7,15 +7,23 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+import story
+
 class Tag(list):
-    def __init__(self, sort = [None], c = "*"):
+    def __init__(self, cfg, sort = [None], filterlist = [None], c = "*"):
         list.__init__(self)
+        self.cfg = cfg
         self.tag = c
         self.collapsed = 0
         self.start = 0
         self.read = 0
         self.unread = 0
         self.sorts = sort
+        self.last_iter = []
+
+        self.filterlist = filterlist
+        self.filter_idx = 0
+        self.filter_override = None
 
     def __eq__(self, other):
         return self.tag == other.tag
@@ -50,12 +58,43 @@ class Tag(list):
             self.unread += 1
             self.read -= 1
 
-    def extend(self, iter):
-        list.extend(self, [s for s in iter if self.tag in s["canto_state"]])
+    def next_filter(self):
+        self.filter_override = None
+        if self.filter_idx < len(self.filterlist) - 1:
+            self.filter_idx += 1
+            return 1
+        return 0
 
-        for s in self.sorts:
-            if s:
-                list.sort(self, s)
+    def prev_filter(self):
+        self.filter_override = None
+        if self.filter_idx > 0:
+            self.filter_idx -= 1
+            return 1
+        return 0
+
+    def extend(self, iter):
+        self.last_iter = iter
+        matched_tag = [s for s in iter if self.tag in s["canto_state"]]
+
+        filt = self.filter_override or self.filterlist[self.filter_idx]
+        if filt:
+            list.extend(self, filter(lambda x: filt(self, x), matched_tag))
+        else:
+            list.extend(self, matched_tag)
+
+        if filt and not len(self):
+            d = { "title" : "No unfiltered items.",
+                  "description" : "You've filtered out everything!",
+                  "canto_state" : [self.tag, "unread"],
+                  "id" : None
+                }
+
+            stub = story.Story(d , None, self.cfg.default_renderer)
+            self.append(stub)
+        else:
+            for s in self.sorts:
+                if s:
+                    list.sort(self, s)
 
         lt = len(self)
         for i in range(lt):

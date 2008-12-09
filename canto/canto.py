@@ -281,7 +281,7 @@ class Main():
             if not feed_ct:
                 feed_ct = "*"
 
-            check_tag = tag.Tag([None], feed_ct)
+            check_tag = tag.Tag(self.cfg, [None], [None], feed_ct)
             check_tag.extend(self.stories)
             print check_tag.unread
             sys.exit(0)
@@ -316,7 +316,7 @@ class Main():
 
         tag_list = []
         for f in self.cfg.feeds:
-            t = tag.Tag(f.sorts, f.tags[0])
+            t = tag.Tag(self.cfg, f.sorts, self.cfg.tag_filterlist, f.tags[0])
             if t not in tag_list:
                 tag_list.append(t)
 

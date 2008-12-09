@@ -40,8 +40,8 @@ class Cfg:
                          "KEY_PPAGE" : "prev_tag",
                          "[" : "prev_filter",
                          "]" : "next_filter",
-                         "{" : "prev_feed_filter",
-                         "}" : "next_feed_filter",
+                         "{" : "prev_tag_filter",
+                         "}" : "next_tag_filter",
                          "l" : "next_tag",
                          "o" : "prev_tag",
                          "g" : "goto",
@@ -87,7 +87,7 @@ class Cfg:
 
         self.default_rate = 5
         self.default_keep = 40
-        self.default_filterlist = [None]
+        self.default_filter = None
         self.default_sort = None
         self.default_renderer = interface_draw.Renderer()
         self.default_msg_tick = 5
@@ -130,6 +130,7 @@ class Cfg:
         self.end_hook = None
         self.update_hook = None
 
+        self.tag_filterlist=[None]
         self.filterlist = [None]
         self.filter_idx = 0
         self.filter_override = None
@@ -220,7 +221,7 @@ class Cfg:
         if (not URL) or URL == "":
             return -1
 
-        for key in ["keep","rate","renderer","filterlist","sort"]:
+        for key in ["keep","rate","renderer","filter", "sort"]:
             if not key in kwargs:
                 kwargs[key] = getattr(self, "default_" + key)
 
@@ -243,7 +244,7 @@ class Cfg:
                     kwargs["rate"],
                     kwargs["keep"],
                     kwargs["renderer"],
-                    kwargs["filterlist"],
+                    kwargs["filter"],
                     kwargs["sort"],
                     kwargs["username"],
                     kwargs["password"]))
@@ -367,7 +368,8 @@ class Cfg:
         # locals directly, so we do it by hand.
 
         for attr in ["filterlist", "filter_idx", "render", "columns",\
-                "reader_orientation", "reader_lines", "status"]:
+                "reader_orientation", "reader_lines", "status",\
+                "tag_filterlist"]:
             if attr in locals:
                 setattr(self, attr, locals[attr])
 

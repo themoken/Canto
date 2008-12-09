@@ -27,24 +27,23 @@ import fcntl
 
 class Feed(list):
     def __init__(self, cfg, dirpath, URL, tags, rate, keep, \
-            renderer, filterlist, sort, username, password):
+            renderer, filter, sort, username, password):
 
         # Configuration set settings
         self.tags = tags
         self.base_set = 0
 
         self.URL = URL
-        self.sorts = sort
         self.renderer = renderer
         self.rate = rate
         self.time = 1
         self.keep = keep
         self.username = username
         self.password = password
+        self.sorts = sort
 
-        self.filterlist = filterlist
-        self.filter_idx = 0
-        self.filter_override = None
+        # Hard filter
+        self.filter = filter
 
         # Other necessities
         self.path = dirpath
@@ -79,64 +78,21 @@ class Feed(list):
                 # Using URL for tag, no guarantees
                 self.tags = [self.URL] + self.tags
 
-        self.__do_extend()
+        self.extend(self.ufp["entries"])
         return 1
 
-    # __do_extend creates a Story() object out of each of the
-    # ["entries"] in the UFP item. It's important to note that
-    # .extend is overridden by Tag() which Feed() inherits from.
-
-    def __do_extend(self):
+    def extend(self, entries):
         del self[:]
 
         # This happens if any tags were added.
-        for entry in self.ufp["entries"]:
+        for entry in entries:
             for tag in self.tags:
                 if tag not in entry["canto_state"]:
                     entry["canto_state"].append(tag)
 
-        if self.filter_override:
-            filt = self.filter_override
-        elif self.filterlist[self.filter_idx]:
-            filt = self.filterlist[self.filter_idx]
-        else:
-            self.extend([story.Story(entry, self, self.renderer)\
-                    for entry in self.ufp["entries"]])
-            return
-
-        self.extend(filter(\
-                lambda x: filt(self,x),\
-                [story.Story(entry, self, self.renderer)\
-                for entry in self.ufp["entries"]]))
-
-        if not len(self):
-            # This won't propagate on disk, because it never
-            # gets into the UFP dict.
-
-            d = { "title" : "No unfiltered items.",
-                  "description" : "You've filtered out everything!",
-                  "canto_state" : self.tags + ["unread","*"],
-                  "id" : None
-                }
-
-            stub = story.Story(d , self, self.renderer)
-            self.append(stub)
-
-    def next_filter(self):
-        self.filter_override = None
-        if self.filter_idx < len(self.filterlist) - 1:
-            self.filter_idx += 1
-            self.__do_extend()
-            return 1
-        return 0
-
-    def prev_filter(self):
-        self.filter_override = None
-        if self.filter_idx > 0:
-            self.filter_idx -= 1
-            self.__do_extend()
-            return 1
-        return 0
+        list.extend(self, filter(self.filter,\
+                [story.Story(entry, self, self.renderer) \
+                for entry in entries]))
 
     def has_changed(self):
         self.changed = 1

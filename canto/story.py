@@ -51,7 +51,9 @@ class Story():
             self.ufp["canto_state"].append(tag)
         elif i == -1 and tag in self.ufp["canto_state"]:
             self.ufp["canto_state"].remove(tag)
-        self.feed.has_changed()
+
+        if self.feed:
+            self.feed.has_changed()
 
     def wasread(self):
         return self.__tagwrap("read", 0)

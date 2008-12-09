@@ -429,7 +429,7 @@ class Gui :
             r,f = fn(self, *args)
             if r:
                 self.cfg.log("Filter: %s" % f)
-                return self.force_update()
+                return self.force_update(0)
         return dec
 
     @change_filter
@@ -439,8 +439,8 @@ class Gui :
 
     @noitem_unsafe
     @change_filter
-    def set_feed_filter(self, filt):
-        self.sel.feed.filter_override = filt
+    def set_tag_filter(self, filt):
+        self.tags[self.sel.tag_idx].filter_override = filt
         return (1, filt)
 
     @change_filter
@@ -450,9 +450,10 @@ class Gui :
     
     @noitem_unsafe
     @change_filter
-    def next_feed_filter(self):
-        return (self.sel.feed.next_filter(),\
-                self.sel.feed.filterlist[self.sel.feed.filter_idx])
+    def next_tag_filter(self):
+        return (self.tags[self.sel.tag_idx].next_filter(),\
+                self.tags[self.sel.tag_idx].filterlist[\
+                self.tags[self.sel.tag_idx].filter_idx])
 
     @change_filter
     def prev_filter(self):
@@ -461,9 +462,10 @@ class Gui :
 
     @noitem_unsafe
     @change_filter
-    def prev_feed_filter(self):
-        return (self.sel.feed.prev_filter(),\
-                self.sel.feed.filterlist[self.sel.feed.filter_idx])
+    def prev_tag_filter(self):
+        return (self.tags[self.sel.tag_idx].prev_filter(),\
+                self.tags[self.sel.tag_idx].filterlist[\
+                self.tags[self.sel.tag_idx].filter_idx])
 
     @noitem_unsafe
     def inline_search(self):
@@ -515,8 +517,10 @@ class Gui :
     def unset_collapse_all(self):
         self.__collapse_all(0)
 
-    def force_update(self):
-        self.cfg.log("Forcing update.")
+    def force_update(self, v = 1):
+        if v:
+            self.cfg.log("Forcing update.")
+
         for f in self.cfg.feeds :
             f.time = 1
         return ALARM

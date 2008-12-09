@@ -91,8 +91,8 @@ class only_without(only_with):
 def set_filter(filter):
     return lambda x : x.set_filter(filter)
 
-def set_feed_filter(filter):
-    return lambda x : x.set_feed_filter(filter)
+def set_tag_filter(filter):
+    return lambda x : x.set_tag_filter(filter)
 
 # Creates a keybind for searching for a keyword or regex.
 #
