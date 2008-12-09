@@ -110,11 +110,15 @@ class Feed(list):
                 for entry in self.ufp["entries"]]))
 
         if not len(self):
+            # This won't propagate on disk, because it never
+            # gets into the UFP dict.
+
             d = { "title" : "No unfiltered items.",
                   "description" : "You've filtered out everything!",
                   "canto_state" : self.tags + ["unread","*"],
                   "id" : None
                 }
+
             stub = story.Story(d , self, self.renderer)
             self.append(stub)
 

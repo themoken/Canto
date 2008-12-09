@@ -429,7 +429,7 @@ class Gui :
             r,f = fn(self, *args)
             if r:
                 self.cfg.log("Filter: %s" % f)
-                return ALARM
+                return self.force_update()
         return dec
 
     @change_filter
