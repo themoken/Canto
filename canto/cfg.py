@@ -417,7 +417,7 @@ class Cfg:
             l = fn(self, *args, **kwargs)
 
             for f in l:
-                if self.addfeed(f[0], tags=[f[1]]) and append:
+                if self.add(f[0], tags=[f[1]]) and append:
                     if f[1]:
                         file.write("""add("%s", tags=["%s"])\n""" % f) 
                     else:
