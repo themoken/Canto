@@ -132,15 +132,15 @@ class CantoHTML(HTMLParser):
 instance = CantoHTML()
 def ent_wrapper(match):
     return CantoHTML.convert_entityref(instance,\
-         match.groups()[0]).encode("UTF-8")
+         match.groups()[0])
 
 def char_wrapper(match):
     return CantoHTML.convert_charref(instance,\
-        match.groups()[0]).encode("UTF-8")
+        match.groups()[0])
 
 def convert(s):
-    instance.feed(unicode(s,"UTF-8"))
+    instance.feed(s)
     r = instance.result
     l = instance.links
     instance.reset()
-    return (r.encode("UTF-8"),l)
+    return (r,l)

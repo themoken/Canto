@@ -183,7 +183,7 @@ class UpdateThread(Thread):
                 self.log_func("Ugh. Defaulting to URL for tag. No guarantees.")
                 newfeed["feed"]["title"] = self.fd.URL
 
-            replace = lambda x: x or newfeed["feed"]["title"].encode("UTF-8")
+            replace = lambda x: x or newfeed["feed"]["title"]
             self.fd.tags = [ replace(x) for x in self.fd.tags]
 
         # Feedparser returns a very nice dict of information.
@@ -214,14 +214,13 @@ class UpdateThread(Thread):
         # almost without exception gives us all string in Unicode
         # so none of these should fail.
 
-        def encode_and_escape(s):
-            s = s.encode("UTF-8")
+        def escape(s):
             s = s.replace("\\","\\\\")
             return s.replace("%", "\\%")
 
         for key in newfeed["feed"]:
             if type(newfeed["feed"][key]) in [unicode,str]:
-                newfeed["feed"][key] = encode_and_escape(newfeed["feed"][key])
+                newfeed["feed"][key] = escape(newfeed["feed"][key])
 
         for entry in newfeed["entries"]:
             for subitem in ["content","enclosures"]:
@@ -229,11 +228,11 @@ class UpdateThread(Thread):
                     for e in entry[subitem]:
                         for k in e.keys():
                             if type(e[k]) in [unicode,str]:
-                                e[k] = encode_and_escape(e[k])
+                                e[k] = escape(e[k])
 
             for key in entry.keys():
                 if type(entry[key]) in [unicode,str]:
-                    entry[key] = encode_and_escape(entry[key])
+                    entry[key] = escape(entry[key])
 
         for entry in newfeed["entries"]:
             # If the item didn't come with a GUID, then
@@ -267,7 +266,7 @@ class UpdateThread(Thread):
                 # Apply default state to genuinely new items.
                 if not "canto_state" in entry:
                     entry["canto_state"] = self.fd.tags + \
-                            ["unread", "*", "new"]
+                            [u"unread", u"*", u"new"]
 
             # Tailor the list to the correct number of items.
             if len(newfeed["entries"]) < self.fd.keep:

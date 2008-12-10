@@ -7,97 +7,102 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+
 from widecurse import core, tlen
 import canto_html
+
+import locale
 import re
 
 class Renderer :
     def __init__(self):
         self.story_rgx = [
             # Eliminate extraneous HTML
-            (re.compile("<.*?>"), ""),
-            (re.compile("&(\w{1,8});"), canto_html.ent_wrapper),
-            (re.compile("&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"),
+            (re.compile(u"<.*?>"), u""),
+            (re.compile(u"&(\w{1,8});"), canto_html.ent_wrapper),
+            (re.compile(u"&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"),
                 canto_html.char_wrapper)
             ]
 
         self.reader_pre_rgx = []
 
         self.reader_post_rgx = [
-            (re.compile("[\\\"](.*?)[\\\"]"), "%5\"\\1\"%0"),
+            (re.compile(u"[\\\"](.*?)[\\\"]"), u"%5\"\\1\"%0"),
             ]
 
-        self.bq = "%B%1│%0%b "
+        self.bq = u"%B%1│%0%b "
         self.bq_on = 0
 
-        self.indent = "  "
+        self.indent = u"  "
         self.in_on = 0
 
     def tag_head(self, dict):
-        t = "%1" + dict["tag"].tag + " [%2" + str(dict["tag"].unread) + "%0]%0"
+        t = u"%1" + dict["tag"].tag + u" [%2" + unicode(dict["tag"].unread)\
+                + u"%0]%0"
         if dict["tag"].collapsed:
             if dict["tag"][0].selected():
-                return [("%C%B%1 > " + t + "", " ", " "),(" "," "," ")]
+                return [(u"%C%B%1 > " + t + u"", u" ", u" "),(u" ",u" ",u" ")]
             else:
-                return [("%C%B   " + t + ""," ", " "),(" "," "," ")]
+                return [(u"%C%B   " + t + u"",u" ", u" "),(u" ",u" ",u" ")]
 
-        return [("%B   " + t, " ", ""),("%1┌", "─", "┐%C%0")]
+        return [(u"%B   " + t, u" ", u""),(u"%1┌", u"─", u"┐%C%0")]
 
     def tag_foot(self, dict):
-        return [("%1%B└", "─", "┘%C%0")]
+        return [(u"%1%B└", u"─", u"┘%C%0")]
 
     def firsts(self, dict):
-        base = "%C%1%B│%b%0 "
+        base = u"%C%1%B│%b%0 "
     
         if dict["story"].selected() :
             if dict["cfg"].key_handlers[0].focus:
-                base += "%1%B>%b%0 "
+                base += u"%1%B>%b%0 "
             else:
-                base += "%1%B_%b%0 "
+                base += u"%1%B_%b%0 "
         else:
-            base += "  "
+            base += u"  "
 
         if dict["story"].marked():
-            base += "%1%B"
+            base += u"%1%B"
         else:
             if dict["story"].wasread():
-                base += "%3"
+                base += u"%3"
             else:
-                base += "%2%B"
+                base += u"%2%B"
 
-        return (base, " ", " %1%B│%b%0")
+        return (base, u" ", u" %1%B│%b%0")
 
     def mids(self, dict):
-        return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
+        return (u"%1%B│%b%0      ", u" ", u" %1%B│%b%0")
 
     def ends(self, dict):
-        return ("%1%B│%b%0      ", " ", " %1%B│%b%0")
+        return (u"%1%B│%b%0      ", u" ", u" %1%B│%b%0")
 
     def reader_head(self, dict):
         title = self.do_regex(dict["story"]["title"], self.story_rgx)
-        return [("%1%B" + title, " ", " "),("%1┌","─","┐%C")]
+        return [(u"%1%B" + title, u" ", u" "),(u"%1┌",u"─",u"┐%C")]
 
     def reader_foot(self, dict):
-        return [("%B└", "─", "┘%C")]
+        return [(u"%B└", u"─", u"┘%C")]
 
     def reader_link(self, idx, link):
         if link[2] == "browser":
-            color = "%4"
+            color = u"%4"
         elif link[2] == "image":
-            color = "%7"
+            color = u"%7"
         else:
-            color = "%8"
+            color = u"%8"
 
-        return color +"[" + str(idx) + "] " + link[0] + "%1 - " + link[1]
+        return color + u"[" + unicode(idx) + u"] " + \
+                link[0] + u"%1 - " + link[1]
 
     def rfirsts(self, dict):
-        return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
+        return (u"%1%B│%b%0 ", u" ", u" %1%B│%b%0")
 
     def rmids(self, dict):
-        return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
+        return (u"%1%B│%b%0 ", u" ", u" %1%B│%b%0")
     
     def rends(self, dict):
-        return ("%1%B│%b%0 ", " ", " %1%B│%b%0")
+        return (u"%1%B│%b%0 ", u" ", u" %1%B│%b%0")
 
     def __window(self, row, height, window_list):
         if height != -1:
@@ -110,12 +115,19 @@ class Renderer :
         else:
             return (window_list[0], row)
 
+    def core_wrap(self, window, winrow, width, s, rep, end):
+        prefcode = locale.getpreferredencoding()
+        s = s.encode(prefcode, 'replace')
+        rep = rep.encode(prefcode, 'replace')
+        end = end.encode(prefcode, 'replace')
+        core(window, winrow, 0, width, s, rep, end)
+
     def simple_out(self, list, row, height, width, window_list):
         line = 0
         for s,rep,end in list:
             while s:
                  window, winrow = self.__window(row + line, height, window_list)
-                 s = core(window, winrow, 0, width, s, rep, end)
+                 s = self.core_wrap(window, winrow, width, s, rep, end)
                  line += 1
 
         return row + line
@@ -133,8 +145,8 @@ class Renderer :
                 # totally ignored in the middle of a line.
 
                 # Toggle on based on start of line
-                while s[:2] in ["%Q","%I"]:
-                    if s.startswith("%Q"):
+                while s[:2] in [u"%Q",u"%I"]:
+                    if s.startswith(u"%Q"):
                         self.bq_on += 1
                     else:
                         self.in_on += 1
@@ -149,8 +161,8 @@ class Renderer :
                             e[1],e[2]) for e in l]
                
                 # Toggle off based on end of line
-                while s[-2:] in ["%q","%i"]:
-                    if s.endswith("%q"):
+                while s[-2:] in [u"%q",u"%i"]:
+                    if s.endswith(u"%q"):
                         self.bq_on -= 1
                     else:
                         self.in_on -= 1
@@ -175,13 +187,13 @@ class Renderer :
                     start, rep, end = l[2]
 
                 t = s
-                s = core(window, winrow, 0, width, start + s, rep, end)
+                s = self.core_wrap(window, winrow, width, start + s, rep, end)
 
                 # Detect an infinite loop caused by start, and canto
                 # trying to be smart about wrapping =).
 
                 if s == t:
-                    s = core(window, winrow, 0, width, s, " ","")
+                    s = self.core_wrap(window, winrow, width, s, u" ",u"")
                 line += 1
 
         return row + line
@@ -236,7 +248,7 @@ class Renderer :
         s,links = canto_html.convert(s)
         s = self.do_regex(s, self.reader_post_rgx)
 
-        links = [("main link", story["link"], "browser")] + links
+        links = [(u"main link", story["link"], "browser")] + links
         links += enc_links
 
         l = s.split("\n")

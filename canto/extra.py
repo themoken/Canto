@@ -28,8 +28,8 @@ class slashdot_renderer(interface_draw.Renderer):
 # Adds a "tablist" to the default Canto config.
 
 def tabbed_status(cfg):
-    return "%8%BCanto » %b%2" + \
-            " ".join([str(x) for x in cfg.key_handlers]) + "%1"
+    return u"%8%BCanto » %b%2" + \
+            " ".join([unicode(x) for x in cfg.key_handlers]) + u"%1"
 
 # Filter for filtering out all read stories.
 #

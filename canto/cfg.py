@@ -319,15 +319,23 @@ class Cfg:
 
     def read_decode(self, filename):
         try:
-            data = codecs.open(filename, "r", "UTF-8").read()
-        except UnicodeDecodeError:
-            # If the Python built-in decoders can't figure it
-            # out, it might need some help from chardet.
-            data = codecs.open(self.path, "r").read()
-            enc = chardet.detect(data)["encoding"]
-            data = unicode(data, enc).encode("UTF-8")
-            self.log("Chardet detected encoding %s for %s" % (enc,filename))
-        return data
+            f = open(filename, "r")
+            data = f.read()
+
+            try:
+                ret = unicode(data)
+            except UnicodeDecodeError:
+                # If the Python built-in decoders can't figure it
+                # out, it might need some help from chardet.
+                enc = chardet.detect(data)["encoding"]
+                ret = unicode(data, enc)
+                self.log("Chardet detected encoding %s for %s" %\
+                        (enc,filename))
+        except :
+            self.log("Failed to open config! (%s)" % sys.exc_info())
+        finally:
+            f.close()
+        return ret
 
     def parse(self):
 
