@@ -33,8 +33,8 @@ class Reader :
 
     def __str__(self):
         if self.focus:
-            return "%B[" + self.story["title"][:10] + "]%b"
-        return "[" + self.story["title"][:10] + "]"
+            return u"%B[" + self.story["title"][:10] + u"]%b"
+        return u"[" + self.story["title"][:10] + u"]"
 
     def refresh(self):
         # It's unfortunate, but because the interface is so complex,
@@ -47,8 +47,8 @@ class Reader :
 
         if self.cfg.reader_orientation in ["top","bottom",None]:
             # First render for self.lines
-            self.lines, self.links = self.story.renderer.reader(self.cfg, self.story,\
-                        self.cfg.width, self.show_links, None)
+            self.lines, self.links = self.story.renderer.reader(self.cfg, \
+                    self.story, self.cfg.width, self.show_links, None)
 
             # This is the default, old behavior (floating window)
             if not self.cfg.reader_orientation:
@@ -64,8 +64,8 @@ class Reader :
                 else:
                     self.top, self.right = (self.cfg.gui_height, 0)
         else:
-            self.lines, self.links = self.story.renderer.reader(self.cfg, self.story, \
-                    self.cfg.reader_lines, self.show_links, None)
+            self.lines, self.links = self.story.renderer.reader(self.cfg, \
+                    self.story, self.cfg.reader_lines, self.show_links, None)
 
             self.height = self.cfg.gui_height
             self.width = self.cfg.reader_lines
@@ -115,7 +115,7 @@ class Reader :
             self.offset = 0
 
     def goto(self):
-        self.dogoto(num_input(self.cfg, "Link Number"))
+        self.dogoto(num_input(self.cfg, u"Link Number"))
 
     def dogoto(self, n):
         if n == None:

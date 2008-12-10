@@ -117,10 +117,16 @@ class Renderer :
 
     def core_wrap(self, window, winrow, width, s, rep, end):
         prefcode = locale.getpreferredencoding()
-        s = s.encode(prefcode, 'replace')
-        rep = rep.encode(prefcode, 'replace')
-        end = end.encode(prefcode, 'replace')
-        core(window, winrow, 0, width, s, rep, end)
+        ret = core(window, winrow, 0, width,
+                s.encode(prefcode, 'replace'),
+                rep.encode(prefcode, 'replace'),
+                end.encode(prefcode, 'replace'))
+        if ret:
+            ret = unicode(ret, prefcode)
+        return ret
+
+    def tlen_wrap(self, s):
+        return tlen(s.encode(locale.getpreferredencoding(), 'replace'))
 
     def simple_out(self, list, row, height, width, window_list):
         line = 0
@@ -178,7 +184,7 @@ class Renderer :
                 # If line > 1 and we've got more than could be handled
                 # with end_caps, use mid_caps
 
-                elif tlen(s) > (width - (tlen(l[2][2]))):
+                elif self.tlen_wrap(s) > (width - (self.tlen_wrap(l[2][2]))):
                     start, rep, end = l[1]
 
                 # Otherwise, use end_caps
@@ -239,7 +245,7 @@ class Renderer :
         enc_links = []
         if "enclosures" in story:
             for e in story["enclosures"]:
-                enc_links.append(("[%s]" % e["type"],
+                enc_links.append((u"[%s]" % e["type"],
                         e["href"], "browser"))
 
         d = {"story" : story, "cfg" : cfg }
@@ -264,4 +270,4 @@ class Renderer :
         return row, links
 
     def status(self, bar, height, width, str):
-        self.simple_out([(str, " ", "")], 0, height, width, [bar])
+        self.simple_out([(str, u" ", u"")], 0, height, width, [bar])

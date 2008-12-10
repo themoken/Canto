@@ -45,7 +45,7 @@ class CantoHTML(HTMLParser):
 
     def handle_data(self, text):
         if self.verbatim <= 0:
-            text = text.replace("\n", " ")
+            text = text.replace(u"\n", u" ")
 
         for handler in self.mime_handlers:
             if handler.active:
@@ -58,18 +58,18 @@ class CantoHTML(HTMLParser):
 
     def convert_charref(self, ref):
         try:
-            if ref[0] in ['x','X']:
+            if ref[0] in [u'x',u'X']:
                 c = int(ref[1:], 16)
             else:
                 c = int(ref)
         except:
-            return "[?]"
+            return u"[?]"
         return unichr(c)
 
     def convert_entityref(self, ref):
         if ref in htmlentitydefs.name2codepoint:
             return unichr(htmlentitydefs.name2codepoint[ref])
-        return "[?]"
+        return u"[?]"
 
     # This is the real workhorse of the HTML parser.
 
@@ -79,55 +79,55 @@ class CantoHTML(HTMLParser):
             if output:
                 self.handle_data(output)
 
-        if tag in ["h" + str(x) for x in xrange(1,7)]:
+        if tag in [u"h" + unicode(x) for x in xrange(1,7)]:
             if open:
-                self.result += "\n%B"
+                self.result += u"\n%B"
             else:
-                self.result += "%b\n"
-        if tag in ["blockquote"]:
+                self.result += u"%b\n"
+        if tag in [u"blockquote"]:
             if open:
-                self.result += "\n%Q"
+                self.result += u"\n%Q"
             else:
-                self.result += "%q\n"
-        elif tag in ["pre","code"]:
+                self.result += u"%q\n"
+        elif tag in [u"pre",u"code"]:
             if open:
-                if tag == "pre":
-                    self.result += "\n%Q"
+                if tag == u"pre":
+                    self.result += u"\n%Q"
                 self.verbatim += 1
             else:
-                if tag == "pre":
-                    self.result += "%q\n"
+                if tag == u"pre":
+                    self.result += u"%q\n"
                 self.verbatim -= 1
-        elif tag in ["sup"]:
+        elif tag in [u"sup"]:
             if open:
-                self.result += "^"
-        elif tag in ["p", "br", "div"]:
-            self.result += "\n"
-        elif tag in ["ul", "ol"]:
+                self.result += u"^"
+        elif tag in [u"p", u"br", u"div"]:
+            self.result += u"\n"
+        elif tag in [u"ul", u"ol"]:
             if open:
-                self.result += "\n%I"
+                self.result += u"\n%I"
                 self.list_stack.append([tag,0])
             else:
                 self.list_stack.pop()
-                self.result += "%i\n"
-        elif tag in ["li"]:
+                self.result += u"%i\n"
+        elif tag in [u"li"]:
             if open:
-                self.result += "\n"
-                if self.list_stack[-1][0] == "ul":
+                self.result += u"\n"
+                if self.list_stack[-1][0] == u"ul":
                     self.result += u"\u25CF "
                 else:
                     self.list_stack[-1][1] += 1
-                    self.result += str(self.list_stack[-1][1])+ "."
-        elif tag in ["i", "small", "em"]:
+                    self.result += unicode(self.list_stack[-1][1])+ "."
+        elif tag in [u"i", u"small", u"em"]:
             if open:
-                self.result += "%6%B"
+                self.result += u"%6%B"
             else:
-                self.result += "%b%0"
-        elif tag in ["b", "strong"]:
+                self.result += u"%b%0"
+        elif tag in [u"b", u"strong"]:
             if open:
-                self.result += "%B"
+                self.result += u"%B"
             else:
-                self.result += "%b"
+                self.result += u"%b"
 
 instance = CantoHTML()
 def ent_wrapper(match):

@@ -32,11 +32,9 @@ class LinkHandler(Handler):
                 else:
                     self.reset()
             else:
-                ll.append((self.content.encode("UTF-8"),\
-                        self.link.encode("UTF-8"),\
-                        self.handler.encode("UTF-8")))
+                ll.append((self.content, self.link, self.handler))
                 self.reset()
-                return "[" + str(len(ll)) + "]%0"
+                return u"[" + unicode(len(ll)) + u"]%0"
 
 class ImageHandler(Handler):
     def reset(self):
@@ -52,8 +50,6 @@ class ImageHandler(Handler):
                     alt = "image"
                 if src:
                     extension = src.rsplit('.',1)[-1]
-                    ll.append((alt.encode("UTF-8"),\
-                        src.encode("UTF-8"),\
-                        self.handler.encode("UTF-8")))
+                    ll.append((alt, src, self.handler))
                 self.reset()
-                return "%7["+ alt +"][" + str(len(ll)) + "]%0"
+                return u"%7["+ alt + u"][" + unicode(len(ll)) + u"]%0"

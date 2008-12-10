@@ -444,7 +444,7 @@ class Cfg:
                 attrs["type"] in ["pie","rss"])) or\
                 not ("type" in attrs)):
 
-                l.append((attrs["xmlUrl"], attrs["text"].encode("UTF-8")))
+                l.append((attrs["xmlUrl"], attrs["text"]))
 
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = start
@@ -501,4 +501,4 @@ class Cfg:
         self.handler(self.handlers["browser"], path, **kwargs)
 
 def default_status(cfg):
-    return "%8%B" + "Canto %d.%d.%d" % VERSION_TUPLE + "%b%0"
+    return u"%8%B" + u"Canto %d.%d.%d" % VERSION_TUPLE + u"%b%0"
