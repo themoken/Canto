@@ -215,7 +215,12 @@ class Renderer :
 
     def reader(self, cfg, story, width, show_links, window):
         if "content" in story:
-            s = story["content"][0]["value"]
+            for c in story["content"]:
+                if "text" in c["type"]:
+                    s = c["value"]
+                    break
+            else:
+                s = story["description"]
         else:
             s = story["description"]
 
