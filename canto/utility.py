@@ -95,9 +95,11 @@ def silentfork(path, href, text, fetch):
 
     pid = os.fork()
     if not pid :
-        if not text :
-            os.close(sys.stdout.fileno())
-        os.close(sys.stderr.fileno())
+        fd = os.open("/dev/null", os.O_RDWR)
+        os.dup2(fd, sys.stderr.fileno())
+
+        if not text:
+            os.dup2(fd, sys.stdout.fileno())
 
         if fetch:
             response = urllib2.urlopen(href)

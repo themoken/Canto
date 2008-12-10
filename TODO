@@ -9,8 +9,6 @@
         the Tag object is actually needed.
         - Wrap that in a nice config wrapper
 
-- Fix strange stdout/stderr shit (redirect to /dev/null)
-
 - Ensure that all feed-specific sort/filter-type operations can
     be done with a keybind, rather than cycling through a list
         X - Done for global/feed filters
