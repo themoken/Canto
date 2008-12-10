@@ -110,7 +110,7 @@ def silentfork(path, href, text, fetch):
             path = path.replace("%u", href)
 
         os.system(path)
-        sys.exit(-1)
+        sys.exit(0)
 
     if text:
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
