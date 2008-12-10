@@ -183,7 +183,7 @@ class UpdateThread(Thread):
                 self.log_func("Ugh. Defaulting to URL for tag. No guarantees.")
                 newfeed["feed"]["title"] = self.fd.URL
 
-            replace = lambda x: x or newfeed["feed"]["title"]
+            replace = lambda x: x or newfeed["feed"]["title"].encode("UTF-8")
             self.fd.tags = [ replace(x) for x in self.fd.tags]
 
         # Feedparser returns a very nice dict of information.
