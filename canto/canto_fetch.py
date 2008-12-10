@@ -224,9 +224,12 @@ class UpdateThread(Thread):
                 newfeed["feed"][key] = encode_and_escape(newfeed["feed"][key])
 
         for entry in newfeed["entries"]:
-            if "content" in entry:
-                for c in entry["content"]:
-                    c["value"] = encode_and_escape(c["value"])
+            for subitem in ["content","enclosures"]:
+                if subitem in entry:
+                    for e in entry[subitem]:
+                        for k in e.keys():
+                            if type(e[k]) in [unicode,str]:
+                                e[k] = encode_and_escape(e[k])
 
             for key in entry.keys():
                 if type(entry[key]) in [unicode,str]:

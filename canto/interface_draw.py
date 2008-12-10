@@ -224,6 +224,12 @@ class Renderer :
         else:
             s = story["description"]
 
+        enc_links = []
+        if "enclosures" in story:
+            for e in story["enclosures"]:
+                enc_links.append(("[%s]" % e["type"],
+                        e["href"], "browser"))
+
         d = {"story" : story, "cfg" : cfg }
 
         s = self.do_regex(s, self.reader_pre_rgx)
@@ -231,6 +237,7 @@ class Renderer :
         s = self.do_regex(s, self.reader_post_rgx)
 
         links = [("main link", story["link"], "browser")] + links
+        links += enc_links
 
         l = s.split("\n")
         if show_links:
