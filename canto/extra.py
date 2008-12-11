@@ -8,6 +8,7 @@
 #   published by the Free Software Foundation.
 
 import interface_draw
+import utility
 
 import locale
 import time
@@ -95,6 +96,7 @@ def set_tag_filter(filter):
     return lambda x : x.set_tag_filter(filter)
 
 def set_tag_sort(sort):
+    sort = utility.get_list_of_instances(sort)
     return lambda x : x.set_tag_sort(sort)
 
 # Creates a keybind for searching for a keyword or regex.

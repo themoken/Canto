@@ -467,6 +467,11 @@ class Gui :
                 self.tags[self.sel.tag_idx].filterlist[\
                 self.tags[self.sel.tag_idx].filter_idx])
 
+    def set_tag_sort(self, sort):
+        self.tags[self.sel.tag_idx].sorts = sort
+        self.cfg.log("Sort: %s" % ", ".join([unicode(s) for s in sort]))
+        return ALARM
+
     @noitem_unsafe
     def inline_search(self):
         self.do_inline_search(search(self.cfg, "Inline Search"))

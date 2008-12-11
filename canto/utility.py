@@ -15,6 +15,12 @@ import sys
 import re
 import os
 
+def get_list_of_instances(l):
+    if not hasattr(l, "__iter__"):
+        l = [l]
+    l = map(lambda x : (hasattr(x, "__class__") and x) or x(), l)
+    return l
+
 def daemonize():
     pid = os.fork()
     if not pid:
