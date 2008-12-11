@@ -88,13 +88,14 @@ class only_without(only_with):
     def __call__(self, tag, item):
         return not self.match.match(item["title"])
 
-# Set the global filter 
-
 def set_filter(filter):
     return lambda x : x.set_filter(filter)
 
 def set_tag_filter(filter):
     return lambda x : x.set_tag_filter(filter)
+
+def set_tag_sort(sort):
+    return lambda x : x.set_tag_sort(sort)
 
 # Creates a keybind for searching for a keyword or regex.
 #
@@ -143,37 +144,58 @@ def clear_xterm_title(*args):
 
 # SORTS
 
-def by_date(x, y):
-    # We wrap this, despite the fact that sorts are all
-    # wrapped in an exception logger because this is a
-    # normal, unimportant problem.
+class by_date:
+    def __str__(self):
+        return "By Date"
 
-    try:
-        a = int(time.mktime(x["updated_parsed"]))
-        b = int(time.mktime(y["updated_parsed"]))
-    except:
+    def __call__(self, x, y):
+        # We wrap this, despite the fact that sorts are all
+        # wrapped in an exception logger because this is a
+        # normal, unimportant problem.
+
+        try:
+            a = int(time.mktime(x["updated_parsed"]))
+            b = int(time.mktime(y["updated_parsed"]))
+        except:
+            return 0
+
+        return b - a
+
+class by_len:
+    def __str__(self):
+        return "By Length"
+
+    def __call___(self, x, y):
+        return len(x["title"]) - len(y["title"])
+
+class by_alpha:
+    def __str__(self):
+        return "Alphabetical"
+
+    def __call__(self, x, y):
+        for a, b in zip(x["title"],y["title"]):
+            if ord(a) != ord(b):
+                return ord(a) - ord(b)
+
+        return len(x["title"]) - len(y["title"])
+
+class by_unread:
+    def __str__(self):
+        return "By Unread"
+
+    def __call__(self, x, y):
+        if x.wasread() and not y.wasread():
+            return 1
+        if y.wasread() and not x.wasread():
+            return -1
         return 0
 
-    return b - a
+class reverse_sort:
+    def __init__(self, other_sort):
+        self.other_sort = other_sort
 
-def by_len(x, y):
-    return len(x["title"]) - len(y["title"])
+    def __str__(self):
+        return "Reversed %s" % self.other_sort
 
-def by_alpha(x, y):
-    for a, b in zip(x["title"],y["title"]):
-        if ord(a) != ord(b):
-            return ord(a) - ord(b)
-
-    return by_len(x,y)
-
-def by_unread(x, y):
-    if x.wasread() and not y.wasread():
-        return 1
-    if y.wasread() and not x.wasread():
-        return -1
-    return 0
-
-def reverse_sort(fn):
-    def rs(x, y):
-        return -1 * fn(x,y)
-    return rs
+    def __call__(self, x, y):
+        return -1 * self.other_sort(x,y)
