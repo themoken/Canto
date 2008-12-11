@@ -377,11 +377,15 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["filterlist", "filter_idx", "render", "columns",\
-                "reader_orientation", "reader_lines", "status",\
-                "tag_filterlist"]:
+        for attr in ["filter_idx", "render", "columns",\
+                "reader_orientation", "reader_lines", "status"]:
             if attr in locals:
                 setattr(self, attr, locals[attr])
+
+        for attr in ["filterlist", "tag_filterlist"]:
+            if attr in locals:
+                setattr(self, attr, \
+                        utility.get_list_of_instances(locals[attr]))
 
         # Deprecated attributes... will be eliminated > 0.6.0
 

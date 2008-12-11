@@ -15,10 +15,15 @@ import sys
 import re
 import os
 
+def get_instance(l):
+    if not l:
+        return l
+    return (hasattr(l, "__class__") and l) or l()
+
 def get_list_of_instances(l):
     if not hasattr(l, "__iter__"):
         l = [l]
-    l = map(lambda x : (hasattr(x, "__class__") and x) or x(), l)
+    l = map(get_instance, l)
     return l
 
 def daemonize():
