@@ -244,9 +244,9 @@ class Cfg:
                     kwargs["tags"],
                     kwargs["rate"],
                     kwargs["keep"],
-                    kwargs["renderer"],
-                    kwargs["filter"],
-                    kwargs["sort"],
+                    utility.get_instance(kwargs["renderer"]),
+                    utility.get_instance(kwargs["filter"]),
+                    utility.get_list_of_instances(kwargs["sort"]),
                     kwargs["username"],
                     kwargs["password"]))
             return 1
