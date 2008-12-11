@@ -8,6 +8,8 @@
 #   published by the Free Software Foundation.
 
 import interface_draw
+
+import locale
 import time
 import os
 import re
@@ -128,7 +130,9 @@ def save(x):
 
 def set_xterm_title(tag, item):
     # Don't use print!
-    os.write(1, "\033]0; %s - %s\007" % (tag.tag, item["title"]))
+    prefcode = locale.getpreferredencoding()
+    os.write(1, (u"\033]0; %s - %s\007" % \
+            (tag.tag, item["title"])).encode(prefcode))
 
 # Sets the xterm title to " "
 #
