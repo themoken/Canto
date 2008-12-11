@@ -194,10 +194,7 @@ class by_unread:
 
 class reverse_sort:
     def __init__(self, other_sort):
-        if hasattr(other_sort, "__class__"):
-            self.other_sort = other_sort
-        else:
-            self.other_sort = other_sort()
+        self.other_sort = utility.get_instance(other_sort)
 
     def __str__(self):
         return "Reversed %s" % self.other_sort
