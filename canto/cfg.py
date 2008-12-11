@@ -206,6 +206,9 @@ class Cfg:
         for attr in ["renderer", "filter"]:
             if attr in kwargs:
                 kwargs[attr] = utility.get_instance(kwargs[attr])
+        if "filter" in kwargs:
+            kwargs["filter"] = self.filter_dec(kwargs["filter"])
+
         return kwargs
 
     def addfeed(self, tag, URL, **kwargs):
