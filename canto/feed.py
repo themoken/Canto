@@ -27,7 +27,7 @@ import fcntl
 
 class Feed(list):
     def __init__(self, cfg, dirpath, URL, tags, rate, keep, \
-            renderer, filter, sort, username, password):
+            renderer, filter, username, password):
 
         # Configuration set settings
         self.tags = tags
@@ -40,7 +40,6 @@ class Feed(list):
         self.keep = keep
         self.username = username
         self.password = password
-        self.sorts = sort
 
         # Hard filter
         self.filter = filter

@@ -316,7 +316,7 @@ class Main():
 
         tag_list = []
         for f in self.cfg.feeds:
-            t = tag.Tag(self.cfg, f.sorts, self.cfg.tag_filterlist, f.tags[0])
+            t = tag.Tag(self.cfg, [], self.cfg.tag_filterlist, f.tags[0])
             if t not in tag_list:
                 tag_list.append(t)
 

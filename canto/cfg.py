@@ -203,14 +203,9 @@ class Cfg:
     # and ensures that sort is a list.
 
     def wrap_args(self, kwargs):
-        if "filterlist" in kwargs:
-            kwargs["filterlist"] = \
-                    [self.filter_dec(x) for x in kwargs["filterlist"]]
-        if "sort" in kwargs:
-            if type(kwargs["sort"]) != type([]):
-                kwargs["sort"] = [kwargs["sort"]]
-            kwargs["sort"] = [self.hook_dec(x) for x in kwargs["sort"]]
-
+        for attr in ["renderer", "filter"]:
+            if attr in kwargs:
+                kwargs[attr] = utility.get_instance(kwargs[attr])
         return kwargs
 
     def addfeed(self, tag, URL, **kwargs):
@@ -244,9 +239,8 @@ class Cfg:
                     kwargs["tags"],
                     kwargs["rate"],
                     kwargs["keep"],
-                    utility.get_instance(kwargs["renderer"]),
-                    utility.get_instance(kwargs["filter"]),
-                    utility.get_list_of_instances(kwargs["sort"]),
+                    kwargs["renderer"],
+                    kwargs["filter"],
                     kwargs["username"],
                     kwargs["password"]))
             return 1
@@ -275,7 +269,7 @@ class Cfg:
         kwargs = self.wrap_args(kwargs)
 
         feed = l[0]
-        for key in ["keep","rate","renderer","filterlist","sort"]:
+        for key in ["keep","rate","renderer","filter","username","password"]:
             if key in kwargs:
                 setattr(feed, key, kwargs[key])
 
