@@ -292,6 +292,7 @@ class Main():
         # information to our Cfg().
 
         self.cfg.stdscr = curses.initscr()
+        curses.curs_set(0)
         curses.noecho()
         curses.start_color()
         curses.halfdelay(1)
