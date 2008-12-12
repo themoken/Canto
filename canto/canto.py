@@ -298,6 +298,7 @@ class Main():
         curses.halfdelay(1)
         curses.use_default_colors()
         self.resize = 0
+        self.alarmed = 0
 
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
@@ -337,7 +338,7 @@ class Main():
         signal.signal(signal.SIGINT, self.done)
 
         signal.alarm(1)
-        self.tick = 60
+        self.ticks = 60
 
         self.cfg.log("Signals set.")
 
@@ -367,6 +368,12 @@ class Main():
                 self.resize = 0
                 self.refresh()
                 continue
+
+            # Tick when SIGALRM is received.
+
+            if self.alarmed:
+                self.alarmed = 0
+                self.tick()
 
             # Handle Ctrl pairs
             elif k == 195:
@@ -406,8 +413,8 @@ class Main():
                 if r == REFRESH_ALL:
                     self.refresh()
                 elif r == ALARM:
-                    self.tick = 1
-                    self.alarm()
+                    self.ticks = 1
+                    self.tick()
                 elif r == REDRAW_ALL:
                     for k in self.cfg.key_handlers:
                         k.draw_elements()
@@ -456,12 +463,14 @@ class Main():
     def winch(self, a=None, b=None):
         self.resize = 1
 
-    # Alarm is called every minute, a and b are unused, but
-    # required as part of a signal handler.
+    # Similarly, alarm is called every minute
 
     def alarm(self, a=None, b=None):
-        self.tick -= 1
-        if self.tick <= 0:
+        self.alarmed = 1
+
+    def tick(self):
+        self.ticks -= 1
+        if self.ticks <= 0:
             self.stories = []
             for f in self.cfg.feeds:
                 f.tick()
@@ -470,7 +479,7 @@ class Main():
             for h in self.cfg.key_handlers:
                 h.alarm(self.stories)
             self.cfg.key_handlers[self.cfg.cur_kh].refresh()
-            self.tick = 60
+            self.ticks = 60
 
         self.cfg.msg_tick -= 1
         if self.cfg.msg_tick == 0:
