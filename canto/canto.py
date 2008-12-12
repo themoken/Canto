@@ -494,7 +494,10 @@ class Main():
 
         if self.cfg.resize_hook:
             self.cfg.resize_hook(self.cfg)
+
+        # Make sure we've got a minimum for columns and reader_lines
         self.cfg.columns = max(self.cfg.columns, 1)
+        self.cfg.reader_lines = max(self.cfg.reader_lines, 3)
 
         self.cfg.gui_height = self.cfg.height - self.cfg.msg_height
         self.cfg.gui_width = self.cfg.width
