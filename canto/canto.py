@@ -318,6 +318,9 @@ class Main():
         tag_list = []
         for f in self.cfg.feeds:
             t = tag.Tag(self.cfg, [], self.cfg.tag_filterlist, f.tags[0])
+            if t in self.cfg.tags:
+                t = self.cfg.tags[self.cfg.tags.index(t)]
+
             if t not in tag_list:
                 tag_list.append(t)
 

@@ -10,6 +10,7 @@
 import interface_draw
 import utility
 import feed
+import tag
 
 import xml.parsers.expat
 import traceback
@@ -84,6 +85,9 @@ class Cfg:
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
                 ("green","black"),("pink","black"),("black","black"),("blue","black"),(0,0)]
+
+        self.feeds = []
+        self.tags = []
 
         self.default_rate = 5
         self.default_keep = 40
@@ -169,7 +173,6 @@ class Cfg:
             f.close()
             self.no_conf = 1
 
-        self.feeds = []
         self.parse()
 
         # Convert all of the C-M-blah (human readable) keys into
@@ -199,9 +202,6 @@ class Cfg:
         except:
             pass
 
-    # wrap_args wraps each filter class in the filter_dec wrapper
-    # and ensures that sort is a list.
-
     def wrap_args(self, kwargs):
         for attr in ["renderer", "filter"]:
             if attr in kwargs:
@@ -220,7 +220,7 @@ class Cfg:
         if (not URL) or URL == "":
             return -1
 
-        for key in ["keep","rate","renderer","filter", "sort"]:
+        for key in ["keep","rate","renderer","filter"]:
             if not key in kwargs:
                 kwargs[key] = getattr(self, "default_" + key)
 
@@ -339,6 +339,7 @@ class Cfg:
         locals = {"addfeed":self.addfeed,
             "add_feed": self.addfeed,
             "add": self.add,
+            "add_tag" : self.add_tag,
             "change_feed": self.change_feed,
             "default_sort" : self.set_default_sort,
             "default_filterlist" : self.set_default_filterlist,
@@ -500,6 +501,27 @@ class Cfg:
 
     def link_handler(self, path, **kwargs):
         self.handler(self.handlers["browser"], path, **kwargs)
+
+    def add_tag(self, tags, **kwargs):
+        if "sort" in kwargs:
+            kwargs["sort"] = utility.get_list_of_instances(kwargs["sort"])
+        else:
+            kwargs["sort"] = None
+
+        if "filterlist" in kwargs:
+            kwargs["filterlist"] = \
+                    utility.get_list_of_instances(kwargs["filterlist"])
+        else:
+            kwargs["filterlist"] = self.tag_filterlist
+
+        if not hasattr(tag, "__iter__"):
+            tags = [tags]
+
+        for t in tags:
+            self.tags.append(tag.Tag(\
+                    self,
+                    kwargs["sort"],
+                    kwargs["filterlist"], t))
 
 def default_status(cfg):
     return u"%8%B" + u"Canto %d.%d.%d" % VERSION_TUPLE + u"%b%0"

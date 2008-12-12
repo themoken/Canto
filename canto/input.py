@@ -98,7 +98,7 @@ def input(cfg, prompt):
 
     temp = signal.getsignal(signal.SIGALRM)
     signal.signal(signal.SIGALRM, signal.SIG_IGN)
-   
+ 
     curses.curs_set(1)
     term = InputBox(cfg.msg).edit()
     curses.curs_set(0)
