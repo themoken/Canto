@@ -14,11 +14,18 @@ This gives a fairly comprehensive view of the config. Everything that is not def
 
     if os.getenv("TERM") == "linux":
         link_handler("elinks \"%u\"", text=True)
-        image_handler("fbi \"%u\"", text=True, fetch=True)
     else:
-        link_handler("firefox \"%u\"")
+        link_handler("iceweasel \"%u\"")
+
+        # A dedicated image handler, that requires content
+        # to be fetched for it.
         image_handler("xli \"%u\"", fetch=True)
-        link_handler("evince \"%u\"", fetch=True, ext="pdf")
+
+        # A dedicated PDF handler (great for LtU)
+        link_handlers("evince \"%u\"", fetch=True, ext="pdf")
+
+        # If we're in X, update xterm title
+        # (Should work with most graphical terms)   
         select_hook = set_xterm_title
         end_hook = clear_xterm_title
 
@@ -27,36 +34,67 @@ This gives a fairly comprehensive view of the config. Everything that is not def
 
     resize_hook = my_resize_hook
 
-    filterlist=[None, show_unread()]
+    # Global filters, switch with '[' and ']'
+    filterlist=[None, show_unread]
+
+    # You can also setup keybinds to set the global filter
+    keys['a'] = set_filter(show_unread) 
+
+    # Similarly you can set tag filters and keybinds
+    # switch with '{' and '}'
+
+    tag_filterlist=[None, show_unread]
+    keys['b'] = set_tag_filter(show_unread)
+
+    # Tag sorts can also be set with a keybind
+    keys['s'] = set_tag_sort(by_alpha)
+    keys['d'] = set_tag_sort(reverse_sort(by_len))
+
+    # Keys can be single or lists of actions
+    # These keys kill the current reader, go to the next
+    # or prev unread item and start another reader
 
     reader_keys["."] = ["destroy","next_unread","reader"]
     reader_keys[","] = ["destroy","prev_unread","reader"]
 
+    # This sets the current item as read and automatically
+    # continues to the next item.
+
     keys['x'] = ["just_read","next_item"]
+
+    # Searches can be bound to keybinds as well
     keys['1'] = search(".*[Ll]inux.*", regex=True)
     keys['2'] = search("Obama")
 
-    # About as tricked out as a single feeds gets...
-    add_feed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot",
-            renderer=slashdot_renderer(),\
-            filterlist=[None, only_with("Windows"), only_without("Windows")])
-    change_feed("Slashdot", sort=by_alpha)
+    # And, of course keys can be unset.
+    keys['Q'] = None
 
-    # Password protected feed.
-    add_feed("Protected Feed", username="myuser", password="secr3t")
+    # This makes the reader show links by default, rather
+    # than the default, toggling with 'l'
+    keys[' '] = ["reader","toggle_show_links"]
 
-    add_feed("OSNews", "http://osnews.com/files/recent.xml")
-    add_feed("Damn Interesting", "http://www.damninteresting.com/?feed=rss2")
-    add_feed("Reddit", "http://reddit.com/.rss")
-    add_feed("Proggit", "http://programming.reddit.com/.rss")
-    add_feed("Lambda the Ultimate", "http://lambda-the-ultimate.org/rss.xml")
-    add_feed("WTF?", "http://syndication.thedailywtf.com/TheDailyWtf")
-    add_feed("Stuff White People Like", "http://stuffwhitepeoplelike.wordpress.com/feed/")
-    add_feed("KernelTrap", "http://kerneltrap.org/node/feed")
-    add_feed("Mithridates", "http://mithridates.blogspot.com/feeds/posts/default")
-    add_feed("Canto", "http://codezen.org/canto/feeds/latest")
-    add_feed("Planet Lisp", "http://planet.lisp.org/rss20.xml")
-    add_feed("Google News", "http://news.google.com/?output=rss", rate=30, keep=100)
+    # A whole mess of feeds with tags, and without.
+    # A 'None' tag will be replaced with the feeds title
+    # The first tag is what is show at the top of each feed by default
+
+    add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
+    add("http://osnews.com/files/recent.xml", tags=[None, "news"])
+    add("http://www.damninteresting.com/?feed=rss2")
+    add("http://reddit.com/.rss", tags=["Reddit","news"])
+    add("http://programming.reddit.com/.rss", tags=["Proggit", "news"])
+    
+    # Username / Passwords are supported for feeds protected by
+    # Basic or Digest passwords
+
+    add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
+            password="digest")
+
+    # Tags can work without configuration, or can be customized.
+    # This makes the "news" tag default to showing only unread stories
+    # and sorting by date.
+
+    add_tag("news", filterlist=[show_unread], sort=[by_date])
+
 
 ## add_feed()
 **add_feed(("name"|None), "URL", [rate=],[keep=],[renderer=],[filterlist=],[sort=],[username=],[password=])**

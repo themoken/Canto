@@ -90,9 +90,11 @@ class only_without(only_with):
         return not self.match.match(item["title"])
 
 def set_filter(filter):
+    filter = utility.get_instance(filter)
     return lambda x : x.set_filter(filter)
 
 def set_tag_filter(filter):
+    filter = utility.get_instance(filter)
     return lambda x : x.set_tag_filter(filter)
 
 def set_tag_sort(sort):
@@ -167,7 +169,7 @@ class by_len:
     def __str__(self):
         return "By Length"
 
-    def __call___(self, x, y):
+    def __call__(self, x, y):
         return len(x["title"]) - len(y["title"])
 
 class by_alpha:
