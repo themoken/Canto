@@ -506,7 +506,7 @@ class Cfg:
         if "sort" in kwargs:
             kwargs["sort"] = utility.get_list_of_instances(kwargs["sort"])
         else:
-            kwargs["sort"] = None
+            kwargs["sort"] = [None]
 
         if "filterlist" in kwargs:
             kwargs["filterlist"] = \
