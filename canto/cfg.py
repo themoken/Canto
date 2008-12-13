@@ -45,6 +45,8 @@ class Cfg:
                          "}" : "next_tag_filter",
                          "l" : "next_tag",
                          "o" : "prev_tag",
+                         "<" : "prev_tagset",
+                         ">" : "next_tagset",
                          "g" : "goto",
                          "." : "next_unread",
                          "," : "prev_unread",
@@ -480,7 +482,7 @@ class Cfg:
             return [(URL, kwargs["tag"])]
         return [(None, URL)]
 
-    # Key-binds for feed based filtering.
+    # Key-binds for global filtering.
     def next_filter(self):
         self.filter_override = None
         if self.filter_idx < len(self.filterlist) - 1:
@@ -492,6 +494,18 @@ class Cfg:
         self.filter_override = None
         if self.filter_idx > 0:
             self.filter_idx -= 1
+            return 1
+        return 0
+
+    def next_tagset(self):
+        if self.tags_idx < len(self.tags) - 1:
+            self.tags_idx += 1
+            return 1
+        return 0
+
+    def prev_tagset(self):
+        if self.tags_idx > 0:
+            self.tags_idx -= 1
             return 1
         return 0
 
@@ -532,5 +546,27 @@ class Cfg:
                     kwargs["sort"],
                     kwargs["filterlist"], t))
 
+    def get_real_tag(self, tl):
+        if not tl:
+            tl = [ f.tags[0] for f in self.feeds]
+        if not hasattr(tl, "__iter__"):
+            tl = [tl]
+
+        print tl
+
+        r = []
+        for t in tl:
+            newtag = tag.Tag(self, [], self.tag_filterlist, t)
+            if t in self.cfgtags:
+                newtag =  self.tags[self.cfgtags.index(t)]
+            r.append(newtag)
+
+        return r
+
+    def validate_tags(self):
+        # Change tags into actual tag objects
+        self.tags = [ self.get_real_tag(x) for x in self.tags ]
+
+
 def default_status(cfg):
-    return u"%8%B" + u"Canto %d.%d.%d" % VERSION_TUPLE + u"%b%0"
+    return u"%8%B" + u"Canto %d.%d.%d" % VERSION_TUPLE + u"%b%1"

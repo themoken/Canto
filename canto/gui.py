@@ -472,6 +472,25 @@ class Gui :
         self.cfg.log("Sort: %s" % ", ".join([unicode(s) for s in sort]))
         return ALARM
 
+    def change_tags(fn):
+        def dec(self, *args):
+            r,t = fn(self, *args)
+            if r:
+                self.tags = t
+                self.cfg.log("Tags: %s" % ", ".join([unicode(x) for x in t]))
+                return ALARM
+        return dec
+
+    @change_tags
+    def next_tagset(self):
+        return (self.cfg.next_tagset(),\
+                self.cfg.tags[self.cfg.tags_idx])
+
+    @change_tags
+    def prev_tagset(self):
+        return (self.cfg.prev_tagset(),\
+                self.cfg.tags[self.cfg.tags_idx])
+
     @noitem_unsafe
     def inline_search(self):
         self.do_inline_search(search(self.cfg, "Inline Search"))

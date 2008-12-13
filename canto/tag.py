@@ -28,6 +28,9 @@ class Tag(list):
     def __eq__(self, other):
         return self.tag == other.tag
 
+    def __str__(self):
+        return self.tag
+
     def search_stories(self, story):
         for i in range(len(self)) :
             if self[i]["id"] == story["id"]:

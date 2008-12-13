@@ -310,21 +310,10 @@ class Main():
 
         self.cfg.log("Curses initialized.")
     
-        def get_real_tag(s):
-            t = tag.Tag(self.cfg, [], self.cfg.tag_filterlist, s)
-            if t in self.cfg.cfgtags:
-                return self.cfg.tags[self.cfg.cfgtags.index(t)]
-            return t
-
-        if self.cfg.tags[self.cfg.tags_idx]:
-            tag_list = [get_real_tag(t) for t in \
-                    self.cfg.tags[self.cfg.tags_idx]]
-        else:
-            tag_list = [get_real_tag(f.tags[0]) for f in  self.cfg.feeds]
-
         # Instantiate the base Gui class
-        Gui(self.cfg, self.stories, tag_list, self.push_handler, \
-                self.pop_handler)
+        self.cfg.validate_tags()
+        Gui(self.cfg, self.stories, self.cfg.tags[self.cfg.tags_idx], \
+                self.push_handler, self.pop_handler)
 
         self.cfg.log("GUI initialized.")
 
