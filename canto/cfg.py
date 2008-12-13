@@ -88,6 +88,7 @@ class Cfg:
 
         self.feeds = []
         self.tags = [None]
+        self.tags_idx = 0
         self.cfgtags = []
 
         self.default_rate = 5
@@ -342,6 +343,7 @@ class Cfg:
             "add": self.add,
             "add_tag" : self.add_tag,
             "tags" : self.tags,
+            "tags_idx" : self.tags_idx,
             "change_feed": self.change_feed,
             "default_sort" : self.set_default_sort,
             "default_filterlist" : self.set_default_filterlist,
@@ -377,8 +379,8 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["filter_idx", "render", "columns",\
-                "reader_orientation", "reader_lines", "status"]:
+        for attr in ["filter_idx", "render", "columns", "tags_idx",\
+                "reader_orientation", "reader_lines", "status", "tags"]:
             if attr in locals:
                 setattr(self, attr, locals[attr])
 
@@ -418,6 +420,11 @@ class Cfg:
         if self.filter_idx >= len(self.filterlist):
             self.log("filter_idx not in range, set to 0")
             self.filter_idx = 0
+
+        # Or the tags_idx
+        if self.tags_idx >= len(self.tags):
+            self.log("tags_idx not in range, set to 0")
+            self.tags_idx = 0
 
     def source(fn):
         def source_dec(self, *args, **kwargs):

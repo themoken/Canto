@@ -316,8 +316,9 @@ class Main():
                 return self.cfg.tags[self.cfg.cfgtags.index(t)]
             return t
 
-        if self.cfg.tags[0]:
-            tag_list = [get_real_tag(t) for t in self.cfg.tags[0]]
+        if self.cfg.tags[self.cfg.tags_idx]:
+            tag_list = [get_real_tag(t) for t in \
+                    self.cfg.tags[self.cfg.tags_idx]]
         else:
             tag_list = [get_real_tag(f.tags[0]) for f in  self.cfg.feeds]
 
