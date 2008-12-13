@@ -71,7 +71,6 @@ class Feed(list):
 
         if "canto_version" not in self.ufp or\
                 self.ufp["canto_version"] != VERSION_TUPLE:
-            print self.ufp["canto_version"]
             raise KeyError
 
         if not self.base_set:
