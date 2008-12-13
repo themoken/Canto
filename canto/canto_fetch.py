@@ -5,6 +5,8 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import VERSION_TUPLE
+
 from threading import Thread
 import feedparser
 import commands
@@ -208,7 +210,7 @@ class UpdateThread(Thread):
         # when the old data is first loaded.
 
         newfeed["canto_version"] = VERSION_TUPLE
-        
+
         # For all content that we would usually use, we convert
         # it to UTF-8 and escape all %s with \. Feedparser
         # almost without exception gives us all string in Unicode

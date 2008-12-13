@@ -7,6 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import VERSION_TUPLE
 import interface_draw
 import utility
 import feed

@@ -7,6 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import VERSION_TUPLE
 import story
 import tag
 
@@ -67,6 +68,11 @@ class Feed(list):
                 f.close()
         except:
             return 0
+
+        if "canto_version" not in self.ufp or\
+                self.ufp["canto_version"] != VERSION_TUPLE:
+            print self.ufp["canto_version"]
+            raise KeyError
 
         if not self.base_set:
             self.base_set = 1

@@ -4,7 +4,7 @@ from distutils.core import setup, Extension
 from distutils.command.install_data import install_data
 import os
 
-version = ['0','5','7']
+version = ['0','5','8']
 man_date = "08 November 2008"
 
 class Canto_install_data(install_data):
@@ -15,8 +15,8 @@ class Canto_install_data(install_data):
         libdir = install_cmd.install_lib
         mandir = install_cmd.install_data + "/share/man/man1/"
 
-        for f in ["/canto/canto.py","/canto/canto_fetch.py","/canto/cfg.py"]:
-            os.system("sed -i 's/VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + f)
+        for f in ["/canto/const.py"]:
+            os.system("sed -i 's/SET_VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + f)
 
         for m in ["canto.1","canto-fetch.1"]:
             os.system("sed -i 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + m)

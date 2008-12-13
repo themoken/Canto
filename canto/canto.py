@@ -231,12 +231,12 @@ class Main():
 
         for i,f in enumerate(self.cfg.feeds) :
             if not os.path.exists(f.path):
-                self.cfg.log("\nDetected unfetched feed: %s." % f.URL)
+                self.cfg.log("Detected unfetched feed: %s." % f.URL)
                 canto_fetch.main(self.cfg, [], True, False)
 
                 #Still no go?
                 if not os.path.exists(f.path):
-                    self.cfg.log("Failed to fetch %s, removing\n" % f.URL)
+                    self.cfg.log("Failed to fetch %s, removing" % f.URL)
                     self.cfg.feeds[i] = None
                 else:
                     self.cfg.log("Fetched.\n")
@@ -248,8 +248,15 @@ class Main():
         # Force an update from disk
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
-            f.time = 1
-            f.tick()
+            try:
+                f.time = 1
+                f.tick()
+            except KeyError:
+                self.cfg.log("Detected old feed data, forcing update")
+                canto_fetch.main(self.cfg, [], True, True)
+                f.time = 1
+                f.tick()
+
             self.filter_extend(f)
 
         # Print out a feed list, bail
