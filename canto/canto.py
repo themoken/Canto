@@ -310,20 +310,16 @@ class Main():
 
         self.cfg.log("Curses initialized.")
     
-        # Tag_list is created with an empty tag for each feed. A Feed()
-        # is a child class of Tag(), however, new Tags() are created 
-        #   A) To ensure that none of the gui classes use feed attributes
-        #   B) Because feed() must remember all objects in the feed
-        #       regardless of whatever filters are applied.
+        def get_real_tag(s):
+            t = tag.Tag(self.cfg, [], self.cfg.tag_filterlist, s)
+            if t in self.cfg.cfgtags:
+                return self.cfg.tags[self.cfg.cfgtags.index(t)]
+            return t
 
-        tag_list = []
-        for f in self.cfg.feeds:
-            t = tag.Tag(self.cfg, [], self.cfg.tag_filterlist, f.tags[0])
-            if t in self.cfg.tags:
-                t = self.cfg.tags[self.cfg.tags.index(t)]
-
-            if t not in tag_list:
-                tag_list.append(t)
+        if self.cfg.tags[0]:
+            tag_list = [get_real_tag(t) for t in self.cfg.tags[0]]
+        else:
+            tag_list = [get_real_tag(f.tags[0]) for f in  self.cfg.feeds]
 
         # Instantiate the base Gui class
         Gui(self.cfg, self.stories, tag_list, self.push_handler, \

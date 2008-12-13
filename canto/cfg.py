@@ -87,7 +87,8 @@ class Cfg:
                 ("green","black"),("pink","black"),("black","black"),("blue","black"),(0,0)]
 
         self.feeds = []
-        self.tags = []
+        self.tags = [None]
+        self.cfgtags = []
 
         self.default_rate = 5
         self.default_keep = 40
@@ -340,6 +341,7 @@ class Cfg:
             "add_feed": self.addfeed,
             "add": self.add,
             "add_tag" : self.add_tag,
+            "tags" : self.tags,
             "change_feed": self.change_feed,
             "default_sort" : self.set_default_sort,
             "default_filterlist" : self.set_default_filterlist,
@@ -518,7 +520,7 @@ class Cfg:
             tags = [tags]
 
         for t in tags:
-            self.tags.append(tag.Tag(\
+            self.cfgtags.append(tag.Tag(\
                     self,
                     kwargs["sort"],
                     kwargs["filterlist"], t))
