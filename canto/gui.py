@@ -323,18 +323,14 @@ class Gui :
         # so that the user's eye isn't lost.
         self.offset = min(self.sel.row, max(0, self.max_offset))
 
-    def goto_tag(self) :
-        self.goto_tagn(num_input(self.cfg, "Absolute Tag"))
-
-    def goto_reltag(self) :
-        self.goto_reltagn(num_input(self.cfg, "Tag"))
-
     # Goto_tagn goes to an absolute #'d tag. So the third
     # tag defined in your configuration will always be '3'
 
     @noitem_unsafe
-    def goto_tagn(self, num):
-        if num == None:
+    def goto_tag(self, num = None):
+        if not num:
+            num = num_input(self.cfg, "Absolute Tag")
+        if not num:
             return
 
         if num < 0:
@@ -350,8 +346,10 @@ class Gui :
     # Goto_reltagn goes to a tag relative to what's visible.
 
     @noitem_unsafe
-    def goto_reltagn(self, num):
-        if num == None:
+    def goto_reltag(self, num = None):
+        if not num:
+            num = num_input(self.cfg, "Tag")
+        if not num:
             return
 
         def rel_search(map):
@@ -490,6 +488,10 @@ class Gui :
     def prev_tagset(self):
         return (self.cfg.prev_tagset(),\
                 self.cfg.tags[self.cfg.tags_idx])
+
+    @change_tags
+    def set_tagset(self, t):
+        return (1, self.cfg.get_real_tagl(t))
 
     @noitem_unsafe
     def inline_search(self):

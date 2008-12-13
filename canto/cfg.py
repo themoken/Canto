@@ -546,13 +546,11 @@ class Cfg:
                     kwargs["sort"],
                     kwargs["filterlist"], t))
 
-    def get_real_tag(self, tl):
+    def get_real_tagl(self, tl):
         if not tl:
-            tl = [ f.tags[0] for f in self.feeds]
+            tl = [ f.tags[0] for f in self.feeds ]
         if not hasattr(tl, "__iter__"):
             tl = [tl]
-
-        print tl
 
         r = []
         for t in tl:
@@ -565,7 +563,7 @@ class Cfg:
 
     def validate_tags(self):
         # Change tags into actual tag objects
-        self.tags = [ self.get_real_tag(x) for x in self.tags ]
+        self.tags = [ self.get_real_tagl(x) for x in self.tags ]
 
 
 def default_status(cfg):

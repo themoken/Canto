@@ -101,6 +101,9 @@ def set_tag_sort(sort):
     sort = utility.get_list_of_instances(sort)
     return lambda x : x.set_tag_sort(sort)
 
+def set_tags(tags):
+    return lambda x : x.set_tagset(tags)
+
 # Creates a keybind for searching for a keyword or regex.
 #
 # Usage : keys["1"] = search("Obama")
