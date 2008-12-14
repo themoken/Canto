@@ -10,6 +10,8 @@
     * change_feed needs to operate on URLs, not tags anymore
 
 - Website docs
+    * status needs to be documented
+    * advconfig needs to be re-formatted
 
 - Code doc review
 
