@@ -95,30 +95,90 @@ This gives a fairly comprehensive view of the config. Everything that is not def
 
     add_tag("news", filterlist=[show_unread], sort=[by_date])
 
+    # Finally, you can set the tags shown with the tags list,
+    # and rotate with '<' and '>' by default.
 
-## add_feed()
-**add_feed(("name"|None), "URL", [rate=],[keep=],[renderer=],[filterlist=],[sort=],[username=],[password=])**
+    tags = [ None, ["news"], ["Reddit", "Proggit"]]
 
-`add_feed()` is the most basic function of Canto's config. It simply adds a feed to your feed list. Note that for compatibility reasons, `addfeed()` (without the underscore) is also acceptable. If `None` is specified for the first argument, the name of the feed is determined from the feed's content.
+    # None will be interpreted as the default set of tags, i.e. one
+    # per feed.
+
+## add()
+**add_feed(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
+
+`add()` is the most basic function of Canto's config, adding a feed to your
+reader. 
 
 Example:
 
     :::python
-    add_feed("Slashdot", "http://rss.slashdot.org/slashdot/Slashdot", rate=10, keep=20)
+    add("http://rss.slashdot.org/slashdot/Slashdot", rate=10, keep=20)
 
 In this example, Slashdot gets added to your feed list. It's updated every 10 minutes (default is 5), and only 20 stories will be stored on disk. Both keyword arguments (rate and keep) are optional, so 
 
     :::python
-    add_feed("Reddit", "http://reddit.com/.rss")
+    add("http://reddit.com/.rss")
 
-Is also valid. 
+Is also valid. Feeds that use basic or digest authentication can be fetched
+using the `username` and `password` variables. An easy way to determine whether
+a feed is using either of these types of authentication is to browse to the feed
+with your browser. If the browser pops up a box asking for your username and
+password (rather than taking you to a page to login to the site), then it's
+fetchable. For an example, browse to the URL in this example:
 
-The **filterlist** and **sort** options are covered [here](/canto/advconfig) and the renderer option is covered [here](/canto/style/#per-feed-theming).
+    :::python
+    add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
+            password="digest")
+
+The last simple option for `add` are the tags. Tags are applied to every story
+inside of a feed. Tags are simply arbitrary strings that can be used to collect
+items and filter/sort (or any other operation that works on groups of items). By
+default a `None` tag corresponds to the name of the feed given in the XML, and
+if no `tags` are specified, then `tags=[None]` is assumed. If tags are set
+though, the first tag is considered the main tag, and is used as the tag name in
+log output and in the default GUI.
+
+    :::python
+    add("http://reddit.com/.rss", tags=["Reddit", "news"])
+    add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
+
+In the first `add` call, Reddit is added, but instead of using "reddit: what's
+new online" (the name of the feed given by the feed itself), just plain "Reddit"
+is used when printing messages or categorizing Reddit items. In the second `add`
+call, Slashdot is added using it's given name. Both feeds are tagged "news".
+
+In addition to any tags specified, every item has the tag "*", so it's possible
+to view every single item in a single tag, which is neat for doing things like
+sorting over every item.
+
+The state of each item functions as a tag as well, so "read", "marked" can be 
+implemented as tags.
+However, anything that can be accomplished with those tags might be better
+accomplished with filters.
+
+The `renderer` option is covered [here](/canto/style/#per-feed-theming). The
+`filter` option is used identically to the filters described [here](
+http://codezen.org/canto/advconfig/#filters).
+
+## add_tag()
+** add_tag("name", [filterlist=],[sort=])
+`add_tag` is used to specify the attributes of tags. It's not necessary to add
+every tag that you use, as tags are all generated on-the-fly, but any tag that
+you want to have special attributes must be added. This includes the tags
+defined by feeds.
+
+    :::python
+    add_tag("Reddit", filterlist=[show_unread])
+    add_tag("news", sort=[by_date])
+
 
 ## change_feed()
-**change_feed("name", [rate=],[keep=],[renderer=],[filterlist=],[sort=],[username=],[password=])**
+**change_feed(URL, [tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
 
-`change_feed` acts identically to add_feed, but (as you would imagine) changes already added feeds. This currently only works on feeds added with `source_opml()` or `add_feed()` with a name specified at config time.
+`change_feed` acts identically to `add`, but (as you would imagine) changes
+already added feeds. This is intended to add attributes to feeds added from
+other sources (like `source_urls` and `source_opml`) where these options aren't
+included in the input data.
 
 ## source_opml()
 **source_opml("path", [append=True/False])**
@@ -138,7 +198,8 @@ That append option determines whether the feeds added will be appended to your c
 `source_urls` works similarly to `source_opml`, except it generates `add_feed` statements from a newline delimited list of URLs.
 
 ## Setting defaults
-**default_rate(rate), default_keep(keep), default_sort(sort), and default_filterlist(filterlist)**
+### Feed defaults
+**default_rate(rate), default_keep(keep)**
 
 The functions set the default rate in minutes and number of stories to keep for each feed added after the call. Both of these can be called at any point, and will not change previously entered feeds.
 
@@ -153,7 +214,6 @@ Example:
 **link_handler(path, [text=],[fetch=],[ext=])**
 **image_handler(path, [text=],[fetch=],[ext=])**
 
-These are wrapper functions replacing the old `browser` commands from < 0.6.0.
 `link_handler` handles content that's contained in <a> tags, while
 `image_handler` handles <img> content. The `path` argument is the path to the
 binary, with "%u" in place of the URL. `text` should be set to `True` if Canto
@@ -340,14 +400,38 @@ The functions you can bind to are:
 <td>`]`</td>
 </tr>
 <tr>
-<td>`next_feed_filter`</td>
-<td>Apply next feed filter</td>
+<td>`next_tag_filter`</td>
+<td>Apply next tag filter (from filterlist)</td>
 <td>`}`</td>
 </tr>
 <tr>
-<td>`prev_feed_filter`</td>
+<td>`prev_tag_filter`</td>
 <td>Apply previous feed filter</td>
 <td>`{`</td>
+</tr>
+<tr>
+<td>`prev_tagset`</td>
+<td>Show previous set of tags</td>
+<td>`<`</td>
+</tr>
+<tr>
+<td>`next_tagset`</td>
+<td>Show next set of tags</td>
+<td>`>`</td>
+<tr>
+<td>`goto_reltag`</td>
+<td>Goto the `nth` visible tag (filter aware)</td>
+<td>`;`</td>
+</tr>
+<tr>
+<td>`goto_tag`</td>
+<td>Goto the `nth` tag (filter unaware)</td>
+<td>`:`</td>
+</tr>
+<tr>
+<td>`switch`</td>
+<td>Switch focus to next gui item.</td>
+<td>`TAB`</td>
 </tr>
 </table>
 
@@ -396,6 +480,11 @@ The functions you can bind to are:
 <td>`l`</td>
 </tr>
 <tr>
+<td>`switch`</td>
+<td>Change focus to next gui item</td>
+<td>`TAB`</td>
+</tr>
+<tr>
 <td>`quit`</td>
 <td>Quit</td>
 <td>`space`</td>
@@ -423,15 +512,6 @@ Set 'x' to set current item read and move to the next item.
     :::python
     keys["x"] = ["just_read","next_item"]
 
-## columns
-
-The Canto interface can be split into as many columns as you like. Canto defaults to one column, and will log a warning if you give it a negative number. Zero columns, however, will silently revert to one column, so that you can do simple math for columns. Typically you don't want to set columns once though, you more likely want to put column adjustments into a `resize_hook`.
-
-Example:
-
-    :::python
-    columns = 2
-
 ## Advanced
 
 There are a handful of other configuration options that you can use.
@@ -443,6 +523,7 @@ There are a handful of other configuration options that you can use.
 These allow you to change (radically, I might add) the way that Canto draws the screen, and (a little more safely) change the default colors used to display. These are covered in detail on the [styling](/canto/style/) page.
 
 **filterlist = [(filter|None)...]**
+**tag_filterlist = [(filter|None)...]**
 
 Filters are covered [here](/canto/advconfig/#filters)
 
@@ -462,6 +543,20 @@ Filters are covered [here](/canto/advconfig/#filters)
 
 Hooks are covered [here](/canto/advconfig/#hooks).
 
+**tag_sort = [sorts...]**
+
 **Sorting** feeds arbitrarily is covered [here](/canto/advconfig/#sorting).
 
 As are a lot of other goodies, like writing your own [arbitrary keybinds](/canto/advconfig/#advanced-keybinds).
+
+## Deprecated config options
+
+Canto 0.6.0 deprecated a number of configuration options. `browser` and
+`text_browser` are replaced with the much more flexible and robust
+`link_handler`. Canto will still interpret these options with only a warning.
+
+`add_feed` has been replaced with `add` and `add_tag`. Canto will interpret
+`add_feed` still with a warning, but will ignore *all* extra options.
+
+All of these configuration options **will** disappear from Canto in the **near
+future**, so please update your configs.
