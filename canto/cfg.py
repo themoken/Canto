@@ -8,6 +8,7 @@
 #   published by the Free Software Foundation.
 
 from const import VERSION_TUPLE
+from utility import Cycle
 import interface_draw
 import utility
 import feed
@@ -44,6 +45,8 @@ class Cfg:
                          "]" : "next_filter",
                          "{" : "prev_tag_filter",
                          "}" : "next_tag_filter",
+                         "-" : "prev_tag_sort",
+                         "=" : "next_tag_sort",
                          "l" : "next_tag",
                          "o" : "prev_tag",
                          "<" : "prev_tagset",
@@ -91,7 +94,6 @@ class Cfg:
 
         self.feeds = []
         self.tags = [None]
-        self.tags_idx = 0
         self.cfgtags = []
 
         self.default_rate = 5
@@ -139,10 +141,9 @@ class Cfg:
         self.end_hook = None
         self.update_hook = None
 
-        self.tag_filterlist=[None]
-        self.filterlist = [None]
-        self.filter_idx = 0
-        self.filter_override = None
+        self.tag_filters = [None]
+        self.tag_sorts = [[None]]
+        self.filters = [None]
 
         self.no_conf = 0
 
@@ -179,12 +180,6 @@ class Cfg:
             self.no_conf = 1
 
         self.parse()
-
-        # Convert all of the C-M-blah (human readable) keys into
-        # key tuples used in the main loop.
-
-        self.key_list = utility.conv_key_list(self.key_list)
-        self.reader_key_list = utility.conv_key_list(self.reader_key_list)
 
     def message(self, s, time=0):
         if self.msg:
@@ -225,11 +220,11 @@ class Cfg:
         if (not URL) or URL == "":
             return -1
 
-        for key in ["keep","rate","renderer","filter"]:
+        for key in ["keep","rate","renderer"]:
             if not key in kwargs:
                 kwargs[key] = getattr(self, "default_" + key)
 
-        for key in ["username","password"]:
+        for key in ["username","password", "filter"]:
             if not key in kwargs:
                 kwargs[key] = None
 
@@ -254,12 +249,6 @@ class Cfg:
             return 1
         return -1
 
-    def set_default_sort(self, list):
-        self.default_sort = list
-
-    def set_default_filterlist(self, list):
-        self.default_filterlist = list
-
     def set_default_rate(self, rate):
         self.default_rate = rate
 
@@ -269,8 +258,14 @@ class Cfg:
     def set_default_renderer(self, renderer):
         self.default_renderer = renderer
 
-    def change_feed(self, tag, **kwargs):
-        l = [f for f in self.feeds if f.tag == tag]
+    def set_default_tag_filters(self, filters):
+        self.tag_filters = utility.get_list_of_instances(filters)
+
+    def set_default_tag_sorts(self, sorts):
+        self.tag_sorts = utility.get_list_of_instances(sorts)
+
+    def change_feed(self, URL, **kwargs):
+        l = [f for f in self.feeds if f.URL == URL]
         if not len(l):
             return
 
@@ -346,13 +341,12 @@ class Cfg:
             "add": self.add,
             "add_tag" : self.add_tag,
             "tags" : self.tags,
-            "tags_idx" : self.tags_idx,
             "change_feed": self.change_feed,
-            "default_sort" : self.set_default_sort,
-            "default_filterlist" : self.set_default_filterlist,
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
             "default_renderer" : self.set_default_renderer,
+            "default_tag_filters" : self.set_default_tag_filters,
+            "default_tag_sorts" : self.set_default_tag_sorts,
             "renderer" : interface_draw.Renderer,
             "status" : self.status,
             "keys" : self.key_list,
@@ -382,12 +376,12 @@ class Cfg:
         # exec cannot modify basic type
         # locals directly, so we do it by hand.
 
-        for attr in ["filter_idx", "render", "columns", "tags_idx",\
-                "reader_orientation", "reader_lines", "status", "tags"]:
+        for attr in ["render", "columns", "reader_orientation",\
+                "reader_lines", "status", "tags"]:
             if attr in locals:
                 setattr(self, attr, locals[attr])
 
-        for attr in ["filterlist", "tag_filterlist"]:
+        for attr in ["filters", "tag_filters"]:
             if attr in locals:
                 setattr(self, attr, \
                         utility.get_list_of_instances(locals[attr]))
@@ -411,23 +405,19 @@ class Cfg:
                 setattr(self, hook, self.hook_dec(locals[hook]))
 
         # Wrap filters in exception handler
-        self.filterlist = [self.filter_dec(x) for x in self.filterlist]
-        self.tag_filterlist = [self.filter_dec(x) for x in self.filterlist]
+        self.filters = Cycle([self.filter_dec(x) for x in self.filters])
+        self.tag_filters = [self.filter_dec(x) for x in self.tag_filters]
 
         # Ensure we have at least one column
         if not self.columns:
             self.log("columns <1, set to 1")
             self.columns = 1
 
-        # And that the user didn't set filter_idx invalidly.
-        if self.filter_idx >= len(self.filterlist):
-            self.log("filter_idx not in range, set to 0")
-            self.filter_idx = 0
+        # Convert all of the C-M-blah (human readable) keys into
+        # key tuples used in the main loop.
 
-        # Or the tags_idx
-        if self.tags_idx >= len(self.tags):
-            self.log("tags_idx not in range, set to 0")
-            self.tags_idx = 0
+        self.key_list = utility.conv_key_list(self.key_list)
+        self.reader_key_list = utility.conv_key_list(self.reader_key_list)
 
     def source(fn):
         def source_dec(self, *args, **kwargs):
@@ -483,33 +473,6 @@ class Cfg:
             return [(URL, kwargs["tag"])]
         return [(None, URL)]
 
-    # Key-binds for global filtering.
-    def next_filter(self):
-        self.filter_override = None
-        if self.filter_idx < len(self.filterlist) - 1:
-            self.filter_idx += 1
-            return 1
-        return 0
-
-    def prev_filter(self):
-        self.filter_override = None
-        if self.filter_idx > 0:
-            self.filter_idx -= 1
-            return 1
-        return 0
-
-    def next_tagset(self):
-        if self.tags_idx < len(self.tags) - 1:
-            self.tags_idx += 1
-            return 1
-        return 0
-
-    def prev_tagset(self):
-        if self.tags_idx > 0:
-            self.tags_idx -= 1
-            return 1
-        return 0
-
     def handler(self, handlers, path, **kwargs):
         if not "text" in kwargs:
             kwargs["text"] = False
@@ -528,15 +491,16 @@ class Cfg:
 
     def add_tag(self, tags, **kwargs):
         if "sort" in kwargs:
-            kwargs["sort"] = utility.get_list_of_instances(kwargs["sort"])
+            kwargs["sort"] = \
+                Cycle(utility.get_list_of_instances(kwargs["sort"]))
         else:
-            kwargs["sort"] = [None]
+            kwargs["sort"] = Cycle([[None]])
 
-        if "filterlist" in kwargs:
-            kwargs["filterlist"] = \
-                    utility.get_list_of_instances(kwargs["filterlist"])
+        if "filters" in kwargs:
+            kwargs["filters"] = \
+                    Cycle(utility.get_list_of_instances(kwargs["filters"]))
         else:
-            kwargs["filterlist"] = self.tag_filterlist
+            kwargs["filters"] = Cycle(self.tag_filters)
 
         if not hasattr(tag, "__iter__"):
             tags = [tags]
@@ -545,7 +509,7 @@ class Cfg:
             self.cfgtags.append(tag.Tag(\
                     self,
                     kwargs["sort"],
-                    kwargs["filterlist"], t))
+                    kwargs["filters"], t))
 
     def get_real_tagl(self, tl):
         if not tl:
@@ -555,7 +519,8 @@ class Cfg:
 
         r = []
         for t in tl:
-            newtag = tag.Tag(self, [], self.tag_filterlist, t)
+            newtag = tag.Tag(self, Cycle(self.tag_sorts),\
+                    Cycle(self.tag_filters), t)
             if t in self.cfgtags:
                 newtag =  self.tags[self.cfgtags.index(t)]
             r.append(newtag)
@@ -564,7 +529,7 @@ class Cfg:
 
     def validate_tags(self):
         # Change tags into actual tag objects
-        self.tags = [ self.get_real_tagl(x) for x in self.tags ]
+        self.tags = Cycle([ self.get_real_tagl(x) for x in self.tags ])
 
 
 def default_status(cfg):

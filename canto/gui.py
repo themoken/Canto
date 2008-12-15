@@ -432,43 +432,55 @@ class Gui :
 
     @change_filter
     def set_filter(self, filt):
-        self.cfg.filter_override = filt
-        return (1, filt)
+        return (self.cfg.filters.override(filt), self.cfg.filters.cur())
 
     @noitem_unsafe
     @change_filter
     def set_tag_filter(self, filt):
-        self.tags[self.sel.tag_idx].filter_override = filt
-        return (1, filt)
+        return (self.tags[self.sel.tag_idx].filters.override(filt),\
+                self.tags[self.sel.tag_idx].filter.cur())
 
     @change_filter
     def next_filter(self):
-        return (self.cfg.next_filter(),\
-                self.cfg.filterlist[self.cfg.filter_idx])
+        return (self.cfg.filters.next(), self.cfg.filters.cur())
     
     @noitem_unsafe
     @change_filter
     def next_tag_filter(self):
-        return (self.tags[self.sel.tag_idx].next_filter(),\
-                self.tags[self.sel.tag_idx].filterlist[\
-                self.tags[self.sel.tag_idx].filter_idx])
+        return (self.tags[self.sel.tag_idx].filters.next(),\
+                self.tags[self.sel.tag_idx].filters.cur())
 
     @change_filter
     def prev_filter(self):
-        return (self.cfg.prev_filter(),\
-                self.cfg.filterlist[self.cfg.filter_idx])
+        return (self.cfg.filters.prev(), self.cfg.filters.cur())
 
     @noitem_unsafe
     @change_filter
     def prev_tag_filter(self):
-        return (self.tags[self.sel.tag_idx].prev_filter(),\
-                self.tags[self.sel.tag_idx].filterlist[\
-                self.tags[self.sel.tag_idx].filter_idx])
+        return (self.tags[self.sel.tag_idx].filters.prev(),\
+                self.tags[self.sel.tag_idx].filters.cur())
 
+    def change_sorts(fn):
+        def dec(self, *args):
+            r,s = fn(self, *args)
+            if r:
+                self.cfg.log("Sort: %s" % ", ".join([unicode(x) for x in s]))
+                return ALARM
+        return dec
+
+    @change_sorts
+    def next_tag_sort(self):
+        return (self.tags[self.sel.tag_idx].sorts.next(),
+                self.tags[self.sel.tag_idx].sorts.cur())
+
+    @change_sorts
+    def prev_tag_sort(self):
+        return (self.tags[self.sel.tag_idx].sorts.prev(),
+                self.tags[self.sel.tag_idx].sorts.cur())
+
+    @change_sorts
     def set_tag_sort(self, sort):
-        self.tags[self.sel.tag_idx].sorts = sort
-        self.cfg.log("Sort: %s" % ", ".join([unicode(s) for s in sort]))
-        return ALARM
+        return (1, self.tags[self.sel.tag_idx].sorts.override(sort))
 
     def change_tags(fn):
         def dec(self, *args):
@@ -481,13 +493,11 @@ class Gui :
 
     @change_tags
     def next_tagset(self):
-        return (self.cfg.next_tagset(),\
-                self.cfg.tags[self.cfg.tags_idx])
+        return (self.cfg.tags.next(), self.cfg.tags.cur())
 
     @change_tags
     def prev_tagset(self):
-        return (self.cfg.prev_tagset(),\
-                self.cfg.tags[self.cfg.tags_idx])
+        return (self.cfg.tags.prev(), self.cfg.tags.cur())
 
     @change_tags
     def set_tagset(self, t):

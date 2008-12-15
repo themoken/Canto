@@ -147,7 +147,7 @@ class Main():
             self.cfg = cfg.Cfg(conf_file, log_file, feed_dir, script_dir)
         except :
             sys.exit(-1)
- 
+
         self.cfg.log("Canto v %d.%d.%d" % VERSION_TUPLE, "w")
         self.cfg.log("Time: %s" % time.asctime())
         self.cfg.log("Config parsed successfully.")
@@ -319,7 +319,7 @@ class Main():
     
         # Instantiate the base Gui class
         self.cfg.validate_tags()
-        Gui(self.cfg, self.stories, self.cfg.tags[self.cfg.tags_idx], \
+        Gui(self.cfg, self.stories, self.cfg.tags.cur(), \
                 self.push_handler, self.pop_handler)
 
         self.cfg.log("GUI initialized.")
@@ -553,12 +553,9 @@ class Main():
     # the global filter. The Feed() objects are never changed.
 
     def filter_extend(self, t):
-        if self.cfg.filter_override:
-            filt = self.cfg.filter_override
-        elif self.cfg.filterlist[self.cfg.filter_idx]:
-            filt = self.cfg.filterlist[self.cfg.filter_idx]
+        filt = self.cfg.filters.cur()
+        if filt:
+            self.stories.extend(filter(lambda x: filt(t,x), t))
         else:
             self.stories.extend(t)
-            return
-        
-        self.stories.extend(filter(lambda x: filt(t,x), t))
+

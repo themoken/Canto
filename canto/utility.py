@@ -15,6 +15,35 @@ import sys
 import re
 import os
 
+class Cycle():
+    def __init__(self, list, idx = 0):
+        self.override = None
+        self.list = list
+        if 0 <= idx < len(self.list):
+            self.idx = idx
+        else:
+            self.idx = 0
+
+    def next(self):
+        self.override = None
+        if self.idx >= len(self.list) - 1:
+            return 0
+        self.idx += 1
+        return 1
+
+    def prev(self):
+        self.override = None
+        if self.idx <= 0:
+            return 0
+        self.idx -= 1
+        return 1
+
+    def override(self, cur):
+        self.override = cur
+
+    def cur(self):
+        return self.override or self.list[self.idx]
+
 def get_instance(l):
     if not l:
         return l
@@ -23,8 +52,14 @@ def get_instance(l):
 def get_list_of_instances(l):
     if not hasattr(l, "__iter__"):
         l = [l]
-    l = map(get_instance, l)
-    return l
+
+    r = []
+    for i in l:
+        if hasattr(i, "__iter__"):
+            r.append(get_list_of_instances(i))
+        else:
+            r.append(get_instance(i))
+    return r
 
 def daemonize():
     pid = os.fork()
