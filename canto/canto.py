@@ -9,6 +9,7 @@
 
 from const import *
 from gui import Gui
+from utility import Cycle
 
 import canto_fetch
 import utility
@@ -288,7 +289,7 @@ class Main():
             if not feed_ct:
                 feed_ct = "*"
 
-            check_tag = tag.Tag(self.cfg, [None], [None], feed_ct)
+            check_tag = tag.Tag(self.cfg, Cycle([[None]]), Cycle([None]), feed_ct)
             check_tag.extend(self.stories)
             print check_tag.unread
             sys.exit(0)
