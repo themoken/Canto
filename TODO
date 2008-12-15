@@ -7,6 +7,7 @@
 
 - Config cleanups (inconsistencies found while documenting)
     * tag_sort
+    * give in a support cycling sorts
     * change_feed needs to operate on URLs, not tags anymore
 
 - Website docs

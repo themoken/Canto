@@ -44,12 +44,12 @@ There are a number of different hooks.
 <tr>
 <td>`select_hook`</td>
 <td>Called when an item is selected.</td>
-<td>Passed the `Tag()` and `Story()` objects for the item</td>
+<td>Passed the `Tag()` and `Story()` objects for the item selected</td>
 </tr>
 <tr>
 <td>`unselect_hook`</td>
 <td>Called when an item is unselected.</td>
-<td>Passed the `Tag()` and `Story()` objects for the item</td>
+<td>Passed the `Tag()` and `Story()` objects for the item unselected</td>
 </tr>
 <tr>
 <td>`update_hook`</td>
@@ -67,7 +67,7 @@ Each hook is passed the relevant information. It may require a little [browsing 
 
 ## Filters
 
-Filters allow you to arbitrarily remove items from the list. There are two types, global and feed-based.
+Filters allow you to arbitrarily remove items from the list. There are two types, global and tag-based.
 
 A filter takes the form of a class with at least two methods. For example, `show_unread()` from canto.extra:
 
@@ -79,7 +79,7 @@ A filter takes the form of a class with at least two methods. For example, `show
         def __call__(self, tag, item):
             return not item.wasread()
 
-The class show_unread has two methods. `__str__` returns the string representation of the filter (used for the little blurbs in the upper right corner when you change feeds), and `__call__` is the actual filter. You get the tag and the item and based on that, the filter returns 1 (keep this item) or 0 (ignore this item).
+The class show_unread has two methods. `__str__` returns the string representation of the filter (used for the little blurbs in the message bar when you change feeds), and `__call__` is the actual filter. You get the tag and the item and based on that, the filter returns 1 (keep this item) or 0 (ignore this item).
 
 Of course, they need not be so simplistic. Take `only_with` from canto.extra for example:
 
@@ -112,23 +112,20 @@ Lastly, because they are classes, you can make them inherit from each other. Tak
 
 Back to two lines of real code, inheriting the rest from `only_with`.
 
-Filters are employed in the config with `filterlist` commands.
+### Types of filters
 
-For a global filter (which will be applied to all feeds), you merely add
+Here are the three types of filters:
 
-**filterlist=[Filter1, Filter2,...]**
+1. Feed filters. This is a hard filter specified on a single feed that cannot be changed at runtime. This is intended to permanently ignore stories based based on criteria that don't really apply to other feed's items. For example, with a webcomic feed, like Penny Arcade. Inside the feed, some items start with "NEWS:" and some start with "COMIC:". To filter out all news items, you could use: `add(..., filter=only_without("NEWS:"))`. News items will be totally ignored, but any other items in the same tag (a "comics" tag, for example) won't be affected.
 
-And then you can cycle through the filters with [ and ].
+2. Tag filters. This is a much more flexible use of filters. You can define a list of filters for a given tag and cycle through them ('{' and '}' by default). These are useful for toggling between subcategories in an arbitrary tag, or filtering out some stories in a given tag. Using the webcomic example above, if you wanted to just show "COMIC:" items by default, but wanted to still have access to "NEWS:" items every once in awhile, you could `add_tag("Super Comic", filterlist=[only_with("COMIC:"), None])`. Because the first filter is the default filter, initially you would only see "COMIC:" items, but using '}', you'd switch to the `None` filter and see all of the items. The default set of tag filters for all tags can be set with `tag_filterlist=[...]`.
 
-For a tag filters, you just have to move the filterlist command into the `add_tag()` declaration, like this:
+3. Global filters. These function similarly to tag filters. This is useful for filtering out by item state. For example `filterlist=[show_unread, None]` will make Canto show only unread items by default, but show all items if you cycle to the next filter ('[' and ']' cycle global filters, by default). The effect of global filters is cumulative with tag filters, so if the global filter is `show_unread` and the tag_filter is `only_with("COMIC:")`, then only unread stories that have "COMIC:" in the title will be shown for that tag.
 
-**add_tag("Thisfeed", filterlist=[Filter1,Filter2,...])**
+The definition of all three types of tag are identical, but only tag and global filters support cycling through lists. Tag and global filters can also be set directly with keybinds, like this snippet from the example config:
 
-or set the default filterlist for your tags with
-
-**tag_filterlist=[Filter1, Filter2,...]***
-
-In any case, `None` is the default filter.
+    keys['a'] = set_filter(show_unread) 
+    keys['b'] = set_tag_filter(show_unread)
 
 ## Sorting
 
@@ -152,12 +149,16 @@ The basics of Python sorting are covered in the Python wiki [here](http://wiki.p
 
 A little note on writing a good sort function: the return value should be consistent. For example, if sort(x,y) returns 1, then `sort(y,x)` better return -1. If your values are inconsistent, the sort may not work properly some (or most) of the time. Lastly, all sorts are wrapped in an exception wrapper, so it won't kill Canto, but if your sort function throws an exception you should at least return 0 to maintain the feed's order.
 
-Wherever you can use a sort, you can also use a list of sorts. Provided all of the sorts are well behaved, they will be properly sorted within. For example:
+Also note that the values inside of the stories (`story["title"]`, etc.) include all of the HTML and entities that aren't filtered. This is important because, for example, the `by_alpha` and `by_len` sorts just function on the raw number of characters in the title, not the displayed content so, "&someentity;" will sort like it's longer than "string", or "<em>Zoo opening</em>" will sort like it's alphabetically before "aardvark" (symbols come before letters). This is easily solvable but for a lot of feeds it's unnecessary.
+
+Sorts can only be used on a tag basis because sorts don't really stack like filters do. You can't really sort on a global level (unless you use the "*" tag and then apply tag sort, which is simple enough). You can, however, set all tags to have a certain sort using `set_all_sorts` (from canto/extra). As such you can only set sorts with `add_tag`, or set the default with `tag_sort=[...]`
+
+Also, each sort can be a list TODO-TODO-TODO
 
     :::python
-    change_tag("Slashdot", sort=[by_alpha, by_unread])
+    add_tag("Slashdot", sort=[by_alpha, by_unread])
 
-Will sort the Slashdot feed alphabetically and then by unread (as seen above), since both sorts are well behaved, the individual parts of the list that are read and unread will also be alphabetical in their own rites.
+Will sort the Slashdot tag 
 
 ## Advanced Keybinds
 
