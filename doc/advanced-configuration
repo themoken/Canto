@@ -6,6 +6,7 @@ If you're looking for a bit more customization, then you've come to the right pl
 
 Hooks are used in order to execute code on a particular event. These hooks are all used in your config by setting
 
+    :::python
     somehook = somefunction
 
 A basic example of a hook, as seen in the example config is as follows:
@@ -27,37 +28,37 @@ There are a number of different hooks.
 <td>Args</td>
 </tr>
 <tr>
-<td>`start_hook`</td>
+<td><code>start_hook</code></td>
 <td>Called once, at startup.</td>
 <td>Passed the current `Gui()` object</td>
 </tr>
 <tr>
-<td>`resize_hook`</td>
+<td><code>resize_hook</code></td>
 <td>Called once at startup and again every time the screen is resized.</td>
 <td>Passed the `Cfg()` object</td>
 </tr>
 <tr>
-<td>`new_hook`</td>
+<td><code>new_hook</code></td>
 <td>Called once per item, ever, regardless of state.</td>
 <td>Passed the `Tag()` and `Story()` objects for the item</td>
 </tr>
 <tr>
-<td>`select_hook`</td>
+<td><code>select_hook</code></td>
 <td>Called when an item is selected.</td>
 <td>Passed the `Tag()` and `Story()` objects for the item selected</td>
 </tr>
 <tr>
-<td>`unselect_hook`</td>
+<td><code>unselect_hook</code></td>
 <td>Called when an item is unselected.</td>
 <td>Passed the `Tag()` and `Story()` objects for the item unselected</td>
 </tr>
 <tr>
-<td>`update_hook`</td>
+<td><code>update_hook</code></td>
 <td>Called every time the `Gui()` is refreshed with new items.</td>
 <td>Passed the current `Gui()` object.</td>
 </tr>
 <tr>
-<td>`end_hook`</td>
+<td><code>end_hook</code></td>
 <td>Called once on exit.</td>
 <td>Passed the current `Gui()` object.</td>
 </tr>
@@ -67,9 +68,7 @@ Each hook is passed the relevant information. It may require a little [browsing 
 
 ## Filters
 
-Filters allow you to arbitrarily remove items from the list. There are two types, global and tag-based.
-
-A filter takes the form of a class with at least two methods. For example, `show_unread()` from canto.extra:
+Filters allow you to arbitrarily remove items from the list. A filter takes the form of a class with at least two methods. For example, `show_unread()` from canto.extra:
 
     :::python
     class show_unread():
@@ -118,14 +117,29 @@ Here are the three types of filters:
 
 1. Feed filters. This is a hard filter specified on a single feed that cannot be changed at runtime. This is intended to permanently ignore stories based based on criteria that don't really apply to other feed's items. For example, with a webcomic feed, like Penny Arcade. Inside the feed, some items start with "NEWS:" and some start with "COMIC:". To filter out all news items, you could use: `add(..., filter=only_without("NEWS:"))`. News items will be totally ignored, but any other items in the same tag (a "comics" tag, for example) won't be affected.
 
-2. Tag filters. This is a much more flexible use of filters. You can define a list of filters for a given tag and cycle through them ('{' and '}' by default). These are useful for toggling between subcategories in an arbitrary tag, or filtering out some stories in a given tag. Using the webcomic example above, if you wanted to just show "COMIC:" items by default, but wanted to still have access to "NEWS:" items every once in awhile, you could `add_tag("Super Comic", filterlist=[only_with("COMIC:"), None])`. Because the first filter is the default filter, initially you would only see "COMIC:" items, but using '}', you'd switch to the `None` filter and see all of the items. The default set of tag filters for all tags can be set with `tag_filterlist=[...]`.
+2. Tag filters. This is a much more flexible use of filters. You can define a list of filters for a given tag and cycle through them ('{' and '}' by default). These are useful for toggling between subcategories in an arbitrary tag, or filtering out some stories in a given tag. Using the webcomic example above, if you wanted to just show "COMIC:" items by default, but wanted to still have access to "NEWS:" items every once in awhile, you could `add_tag("Super Comic", filterlist=[only_with("COMIC:"), None])`. Because the first filter is the default filter, initially you would only see "COMIC:" items, but using '}', you'd switch to the `None` filter and see all of the items. The default set of tag filters for all tags can be set with `set_default_tag_filters([...])`.
 
 3. Global filters. These function similarly to tag filters. This is useful for filtering out by item state. For example `filterlist=[show_unread, None]` will make Canto show only unread items by default, but show all items if you cycle to the next filter ('[' and ']' cycle global filters, by default). The effect of global filters is cumulative with tag filters, so if the global filter is `show_unread` and the tag_filter is `only_with("COMIC:")`, then only unread stories that have "COMIC:" in the title will be shown for that tag.
 
-The definition of all three types of tag are identical, but only tag and global filters support cycling through lists. Tag and global filters can also be set directly with keybinds, like this snippet from the example config:
+The definition of all three types of tag are identical, but only tag and global filters support cycling through lists. Tag and global filters can also be set directly with keybinds.
 
+Here's a config snippet summarizing the above syntax:
+
+    :::python
+    # Hard feed filter
+    add(..., filter=only_without("NEWS:"))
+
+    # Tag filters
+    set_default_tag_filters([None, show_unread])
+    add_tag("Slashdot", filters=[None, only_without("Windows")])
+
+    # Global filters
+    filters = [None, show_unread]
+
+    # Filter keybinds
     keys['a'] = set_filter(show_unread) 
     keys['b'] = set_tag_filter(show_unread)
+
 
 ## Sorting
 
