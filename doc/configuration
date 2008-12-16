@@ -35,7 +35,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     resize_hook = my_resize_hook
 
     # Global filters, switch with '[' and ']'
-    filterlist=[None, show_unread]
+    filters=[None, show_unread]
 
     # You can also setup keybinds to set the global filter
     keys['a'] = set_filter(show_unread) 
@@ -43,7 +43,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     # Similarly you can set tag filters and keybinds
     # switch with '{' and '}'
 
-    tag_filterlist=[None, show_unread]
+    set_default_tag_filters([None, show_unread])
     keys['b'] = set_tag_filter(show_unread)
 
     # Tag sorts can also be set with a keybind
@@ -93,7 +93,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     # This makes the "news" tag default to showing only unread stories
     # and sorting by date.
 
-    add_tag("news", filterlist=[show_unread], sort=[by_date])
+    add_tag("news", filters=[show_unread], sorts=[[by_date]])
 
     # Finally, you can set the tags shown with the tags list,
     # and rotate with '<' and '>' by default.
@@ -104,7 +104,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     # per feed.
 
 ## add()
-**add_feed(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
+**add(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
 
 `add()` is the most basic function of Canto's config, adding a feed to your
 reader. 
@@ -161,7 +161,8 @@ The `renderer` option is covered [here](/canto/style/#per-feed-theming). The
 http://codezen.org/canto/advconfig/#filters).
 
 ## add_tag()
-** add_tag("name", [filterlist=],[sort=])
+** add_tag("name", [filters=],[sorts=]) **
+
 `add_tag` is used to specify the attributes of tags. It's not necessary to add
 every tag that you use, as tags are all generated on-the-fly, but any tag that
 you want to have special attributes must be added. This includes the tags
@@ -214,8 +215,8 @@ Example:
 **link_handler(path, [text=],[fetch=],[ext=])**
 **image_handler(path, [text=],[fetch=],[ext=])**
 
-`link_handler` handles content that's contained in <a> tags, while
-`image_handler` handles <img> content. The `path` argument is the path to the
+`link_handler` handles content that's contained in `<a>` tags, while
+`image_handler` handles `<img>` content. The `path` argument is the path to the
 binary, with "%u" in place of the URL. `text` should be set to `True` if Canto
 should wait for the program (like a text-browser), and `fetch` should be set to
 `True` if the content must be fetched (if your program can only open local
@@ -225,6 +226,7 @@ The `ext` argument can be used to associate a particular handler only with links
 ending with a certain string.
 
 Example:
+
     :::python
     # Your default link handlers
     link_handler("firefox \"%u\"")
@@ -435,61 +437,66 @@ The functions you can bind to are:
 </tr>
 </table>
 
-###Reader keys
-
+### Reader keys
 
 <table>
 <tr>
-<td>`scroll_down`</td>
+<td>Name</td>
+<td>Function</td>
+<td>Default Binding</td>
+</tr>
+<tr>
+<td><code>scroll_down</code></td>
 <td>Scrolls, if there's more text.</td>
-<td>`KEY_DOWN / j`</td>
+<td><code>KEY_DOWN / j</code></td>
 </tr>
 <tr>
-<td>`scroll_up`</td>
+<td><code>scroll_up</code></td>
 <td>Scroll up, if not at the top.</td>
-<td>`KEY_UP / k`</td>
+<td><code>KEY_UP / k</code></td>
 </tr>
 <tr>
-<td>`page_down`</td>
+<td><code>page_down</code></td>
 <td>Page down.</td>
-<td>`KEY_NPAGE`</td>
+<td><code>KEY_NPAGE</code></td>
 </tr>
 <tr>
-<td>`page_up`</td>
+<td><code>page_up</code></td>
 <td>Page Up.</td>
-<td>`KEY_PPAGE`</td>
+<td><code>KEY_PPAGE</code></td>
 </tr>
 <tr>
-<td>`["destroy","next_item","reader"]`</td>
+<td><code>["destroy","next_item","reader"]</code></td>
 <td>Goto the next story without closing the reader.</td>
-<td>`n`</td>
+<td><code>n</code></td>
 </tr>
 <tr>
-<td>`["destroy","prev_item","reader"]`</td>
+<td><code>["destroy","prev_item","reader"]</code></td>
 <td>Goto the previous story without closing the reader.</td>
-<td>`p`</td>
+<td><code>p</code></td>
 </tr>
 <tr>
-<td>`goto`</td>
+<td><code>goto</code></td>
 <td>Go to a specific link listed inside the item text.</td>
-<td>`g`</td>
+<td><code>g</code></td>
 </tr>
 <tr>
-<td>`toggle_show_links`</td>
+<td><code>toggle_show_links</code></td>
 <td>Show/hide the list of links at the bottom of the reader.</td>
-<td>`l`</td>
+<td><code>l</code></td>
 </tr>
 <tr>
-<td>`switch`</td>
+<td><code>switch</code></td>
 <td>Change focus to next gui item</td>
-<td>`TAB`</td>
+<td><code>TAB</code></td>
 </tr>
 <tr>
-<td>`quit`</td>
+<td><code>quit</code></td>
 <td>Quit</td>
-<td>`space`</td>
+<td><code>space</code></td>
 </tr>
 </table>
+
 Examples:
 
 Set z in the main screen to open the story's link in a browser.

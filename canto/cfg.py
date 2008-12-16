@@ -490,9 +490,9 @@ class Cfg:
         self.handler(self.handlers["browser"], path, **kwargs)
 
     def add_tag(self, tags, **kwargs):
-        if "sort" in kwargs:
-            kwargs["sort"] = \
-                Cycle(utility.get_list_of_instances(kwargs["sort"]))
+        if "sorts" in kwargs:
+            kwargs["sorts"] = \
+                Cycle(utility.get_list_of_instances(kwargs["sorts"]))
         else:
             kwargs["sort"] = Cycle([[None]])
 
@@ -508,7 +508,7 @@ class Cfg:
         for t in tags:
             self.cfgtags.append(tag.Tag(\
                     self,
-                    kwargs["sort"],
+                    kwargs["sorts"],
                     kwargs["filters"], t))
 
     def get_real_tagl(self, tl):
