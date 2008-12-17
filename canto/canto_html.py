@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #Canto - ncurses RSS reader
 #   Copyright (C) 2008 Jack Miller <jack@codezen.org>
