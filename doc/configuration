@@ -524,34 +524,11 @@ Set 'x' to set current item read and move to the next item.
 
 There are a handful of other configuration options that you can use.
 
-**renderer = RendererClass**
+Canto has many options that allow you to change (radically, I might add) the way that Canto draws the screen, and (a little more safely) change the default colors used to display. These are covered in detail on the [styling](/canto/style/) page.
 
-**colors = [(fg,bg)...]**
+**Filters** are covered [here](/canto/advconfig/#filters)
 
-These allow you to change (radically, I might add) the way that Canto draws the screen, and (a little more safely) change the default colors used to display. These are covered in detail on the [styling](/canto/style/) page.
-
-**filters = [(filter|None)...]**
-**tag_filters = [(filter|None)...]**
-
-Filters are covered [here](/canto/advconfig/#filters)
-
-**start_hook = function**
-
-**new_hook = function**
-
-**resize_hook = function**
-
-**alarm_hook = function**
-
-**select_hook = function**
-
-**unselect_hook = function**
-
-**end_hook = function**
-
-Hooks are covered [here](/canto/advconfig/#hooks).
-
-**tag_sort = [sorts...]**
+**Hooks** are covered [here](/canto/advconfig/#hooks).
 
 **Sorting** feeds arbitrarily is covered [here](/canto/advconfig/#sorting).
 
