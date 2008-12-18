@@ -2,6 +2,32 @@ If you're looking for a bit more customization, then you've come to the right pl
 
 [TOC]
 
+## Using Tags
+
+Tags are the simplest "advanced" feature of Canto. You add an arbitrary number of tags to every feed:
+
+    :::python
+    add("http://reddit.com/.rss", tags=["Reddit", "news"])
+    add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
+
+Now, in the default view, the first tag in every feed is used to categorize them. So with just these two statements, Canto displays two tags by default, Reddit, and Slashdot (because the `None` indicates that the given feed name should be used and for Slashdot, that returns "Slashdot"). This is the typical view and is functionally identical to just adding two feeds without adding any tags to them.
+
+Adding the line:
+
+    :::python
+    tags = [ None, ["news"]]
+
+You can now switch between the default view (the first tag for every defined feed), and the "news" tag. Under the "news" tag, all of the Reddit and Slashdot items will be in one group, which is less than useful. However, now you can customize the organization of those items when you're just viewing the "news" tag, by explicitly using `add_tag()`
+
+    :::python
+    add_tag("news", sorts=[[by_date]])
+
+Now when you switch to the "news" tag (defaults `<` and `>` to switch), you'll get both Slashdot and Reddit items, but they will be all sorted by date. The `sorts` and `filters` options can be set for all implicit (not added with `add_tag`) can be set with `tag_sorts` and `tag_filters` like so:
+
+    ::python
+    tag_sorts=[[None],[by_unread, by_len]]
+    tag_filters=[None, show_unread]
+
 ## Hooks
 
 Hooks are used in order to execute code on a particular event. These hooks are all used in your config by setting
@@ -115,11 +141,11 @@ Back to two lines of real code, inheriting the rest from `only_with`.
 
 Here are the three types of filters:
 
-1. Feed filters. This is a hard filter specified on a single feed that cannot be changed at runtime. This is intended to permanently ignore stories based based on criteria that don't really apply to other feed's items. For example, with a webcomic feed, like Penny Arcade. Inside the feed, some items start with "NEWS:" and some start with "COMIC:". To filter out all news items, you could use: `add(..., filter=only_without("NEWS:"))`. News items will be totally ignored, but any other items in the same tag (a "comics" tag, for example) won't be affected.
+1. **Feed filters**. This is a hard filter specified on a single feed that cannot be changed at runtime. This is intended to permanently ignore stories based based on criteria that don't really apply to other feed's items. For example, with a webcomic feed, like Penny Arcade. Inside the feed, some items start with "NEWS:" and some start with "COMIC:". To filter out all news items, you could use: `add(..., filter=only_without("NEWS:"))`. News items will be totally ignored, but any other items in the same tag (a "comics" tag, for example) won't be affected.
 
-2. Tag filters. This is a much more flexible use of filters. You can define a list of filters for a given tag and cycle through them ('{' and '}' by default). These are useful for toggling between subcategories in an arbitrary tag, or filtering out some stories in a given tag. Using the webcomic example above, if you wanted to just show "COMIC:" items by default, but wanted to still have access to "NEWS:" items every once in awhile, you could `add_tag("Super Comic", filterlist=[only_with("COMIC:"), None])`. Because the first filter is the default filter, initially you would only see "COMIC:" items, but using '}', you'd switch to the `None` filter and see all of the items. The default set of tag filters for all tags can be set with `set_default_tag_filters([...])`.
+2. **Tag filters**. This is a much more flexible use of filters. You can define a list of filters for a given tag and cycle through them ('{' and '}' by default). These are useful for toggling between subcategories in an arbitrary tag, or filtering out some stories in a given tag. Using the webcomic example above, if you wanted to just show "COMIC:" items by default, but wanted to still have access to "NEWS:" items every once in awhile, you could `add_tag("Super Comic", filters=[only_with("COMIC:"), None])`. Because the first filter is the default filter, initially you would only see "COMIC:" items, but using '}', you'd switch to the `None` filter and see all of the items. The default set of tag filters for all tags can be set with `set_default_tag_filters([...])`.
 
-3. Global filters. These function similarly to tag filters. This is useful for filtering out by item state. For example `filterlist=[show_unread, None]` will make Canto show only unread items by default, but show all items if you cycle to the next filter ('[' and ']' cycle global filters, by default). The effect of global filters is cumulative with tag filters, so if the global filter is `show_unread` and the tag_filter is `only_with("COMIC:")`, then only unread stories that have "COMIC:" in the title will be shown for that tag.
+3. **Global filters**. These function similarly to tag filters. This is useful for filtering out by item state. For example `filters=[show_unread, None]` will make Canto show only unread items by default, but show all items if you cycle to the next filter ('[' and ']' cycle global filters, by default). The effect of global filters is cumulative with tag filters, so if the global filter is `show_unread` and the tag_filter is `only_with("COMIC:")`, then only unread stories that have "COMIC:" in the title will be shown for that tag.
 
 The definition of all three types of tag are identical, but only tag and global filters support cycling through lists. Tag and global filters can also be set directly with keybinds.
 

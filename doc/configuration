@@ -198,8 +198,15 @@ That append option determines whether the feeds added will be appended to your c
 `source_urls` works similarly to `source_opml`, except it generates `add_feed` statements from a newline delimited list of URLs.
 
 ## Setting defaults
-**default_rate(rate), default_keep(keep), default_renderer(renderer),
-    default_tag_filters([filters...]), default_tag_sorts([[sorts],[sorts]])**
+**default_rate(rate)**
+
+**default_keep(keep)**
+
+**default_renderer(renderer)**
+
+**default_tag_filters([filters...])**
+
+**default_tag_sorts([[sorts],[sorts]])**
 
 The functions set the default rate in minutes and number of stories to keep for
 each feed added after the call. Both of these can be called at any point, and
@@ -214,6 +221,7 @@ Example:
 
 ## Content Handlers
 **link_handler(path, [text=],[fetch=],[ext=])**
+
 **image_handler(path, [text=],[fetch=],[ext=])**
 
 `link_handler` handles content that's contained in `<a>` tags, while
