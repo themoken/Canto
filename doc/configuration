@@ -169,9 +169,8 @@ you want to have special attributes must be added. This includes the tags
 defined by feeds.
 
     :::python
-    add_tag("Reddit", filterlist=[show_unread])
-    add_tag("news", sort=[by_date])
-
+    add_tag("Reddit", filters=[show_unread])
+    add_tag("news", sorts=[by_date])
 
 ## change_feed()
 **change_feed(URL, [tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
@@ -199,10 +198,12 @@ That append option determines whether the feeds added will be appended to your c
 `source_urls` works similarly to `source_opml`, except it generates `add_feed` statements from a newline delimited list of URLs.
 
 ## Setting defaults
-### Feed defaults
-**default_rate(rate), default_keep(keep)**
+**default_rate(rate), default_keep(keep), default_renderer(renderer),
+    default_tag_filters([filters...]), default_tag_sorts([[sorts],[sorts]])**
 
-The functions set the default rate in minutes and number of stories to keep for each feed added after the call. Both of these can be called at any point, and will not change previously entered feeds.
+The functions set the default rate in minutes and number of stories to keep for
+each feed added after the call. Both of these can be called at any point, and
+will not change previously entered feeds.
 
 Example:
 
@@ -403,7 +404,7 @@ The functions you can bind to are:
 </tr>
 <tr>
 <td>`next_tag_filter`</td>
-<td>Apply next tag filter (from filterlist)</td>
+<td>Apply next tag filter (from filters)</td>
 <td>`}`</td>
 </tr>
 <tr>
@@ -529,8 +530,8 @@ There are a handful of other configuration options that you can use.
 
 These allow you to change (radically, I might add) the way that Canto draws the screen, and (a little more safely) change the default colors used to display. These are covered in detail on the [styling](/canto/style/) page.
 
-**filterlist = [(filter|None)...]**
-**tag_filterlist = [(filter|None)...]**
+**filters = [(filter|None)...]**
+**tag_filters = [(filter|None)...]**
 
 Filters are covered [here](/canto/advconfig/#filters)
 
