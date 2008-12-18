@@ -1,15 +1,5 @@
 0.6.0 TODO (in no particular order)
 ===
-- Attempt to force strange drawing errors before release (not sure
-        if they'll come up when I'm not crashing around under the hood)
-    * Could be fixed... haven't seen it happen since the code calmed down.
-      in particular, fixing the alarm signalling.
-
-- Config cleanups (inconsistencies found while documenting)
-    * tag_sort
-    * give in a support cycling sorts
-    * change_feed needs to operate on URLs, not tags anymore
-
 - Website docs
     * status needs to be documented
     * advconfig needs to be re-formatted
