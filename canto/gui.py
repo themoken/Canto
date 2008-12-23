@@ -438,7 +438,7 @@ class Gui :
     @change_filter
     def set_tag_filter(self, filt):
         return (self.tags[self.sel.tag_idx].filters.override(filt),\
-                self.tags[self.sel.tag_idx].filter.cur())
+                self.tags[self.sel.tag_idx].filters.cur())
 
     @change_filter
     def next_filter(self):
