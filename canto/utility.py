@@ -17,7 +17,7 @@ import os
 
 class Cycle():
     def __init__(self, list, idx = 0):
-        self.override = None
+        self.over = None
         self.list = list
         if 0 <= idx < len(self.list):
             self.idx = idx
@@ -25,24 +25,25 @@ class Cycle():
             self.idx = 0
 
     def next(self):
-        self.override = None
+        self.over = None
         if self.idx >= len(self.list) - 1:
             return 0
         self.idx += 1
         return 1
 
     def prev(self):
-        self.override = None
+        self.over = None
         if self.idx <= 0:
             return 0
         self.idx -= 1
         return 1
 
     def override(self, cur):
-        self.override = cur
+        self.over = cur
+        return self.over
 
     def cur(self):
-        return self.override or self.list[self.idx]
+        return self.over or self.list[self.idx]
 
 def get_instance(l):
     if not l:

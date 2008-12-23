@@ -146,6 +146,7 @@ class Main():
 
         try :
             self.cfg = cfg.Cfg(conf_file, log_file, feed_dir, script_dir)
+            self.cfg.parse()
         except :
             sys.exit(-1)
 
@@ -380,15 +381,6 @@ class Main():
             # Just a normal key-press
             elif k != -1:
                 t = (k, 0)
-
-            # This is a while loop to facilitate KEY_PASSTHRU
-            # i.e. if an input (like the reader), doesn't recognize
-            # a keybind, it will destroy() itself, and the key
-            # is passed the next key_handler.
-
-            # This loop is the only way any of the gui classes
-            # communicate with each other. They are otherwise
-            # entirely independent.
 
             if hasattr(self.cfg.key_handlers[self.cfg.cur_kh], "keys"):
                 if t in self.cfg.key_handlers[self.cfg.cur_kh].keys:

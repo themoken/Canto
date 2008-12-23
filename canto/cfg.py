@@ -179,8 +179,6 @@ class Cfg:
             f.close()
             self.no_conf = 1
 
-        self.parse()
-
     def message(self, s, time=0):
         if self.msg:
             self.default_renderer.status(self.msg, self.msg_height,\
@@ -334,7 +332,7 @@ class Cfg:
             f.close()
         return ret
 
-    def parse(self):
+    def parse(self, data = None):
 
         locals = {"addfeed":self.addfeed,
             "add_feed": self.addfeed,
@@ -364,7 +362,9 @@ class Cfg:
         # than using execfile) because the config could be in
         # some strange encoding, and execfile would choke attempting
         # to coerce some character into ASCII.
-        data = self.read_decode(self.path)
+
+        if not data:
+            data = self.read_decode(self.path)
 
         try :
             exec(data, {}, locals)
