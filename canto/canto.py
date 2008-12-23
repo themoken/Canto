@@ -369,9 +369,9 @@ class Main():
                 self.alarmed = 0
                 self.tick()
 
-            # Handle Ctrl pairs
+            # Handle Meta pairs
             elif k == 195:
-                k2 = c.stdscr.getch()
+                k2 = self.cfg.stdscr.getch()
                 if k2 >= 64:
                     t = (k2 - 64, 1)
                 else:
