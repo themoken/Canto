@@ -174,6 +174,7 @@ class Main():
                     try :
                         self.cfg = cfg.Cfg(conf_file, log_file, feed_dir,\
                                 script_dir)
+                        self.cfg.parse()
                     except:
                         pass
             sys.exit(canto_fetch.main(self.cfg, optlist))
