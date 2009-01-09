@@ -417,8 +417,18 @@ The functions you can bind to are:
 </tr>
 <tr>
 <td>`prev_tag_filter`</td>
-<td>Apply previous feed filter</td>
+<td>Apply previous tag filter</td>
 <td>`{`</td>
+</tr>
+<tr>
+<td>`next_tag_sort`</td>
+<td>Apply next set of sorts to tag</td>
+<td>`=`</td>
+</tr>
+<tr>
+<td>`prev_tag_sort`</td>
+<td>Apply previous set of sorts to tag</td>
+<td>`-`</td>
 </tr>
 <tr>
 <td>`prev_tagset`</td>

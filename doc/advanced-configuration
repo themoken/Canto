@@ -191,14 +191,14 @@ A little note on writing a good sort function: the return value should be consis
 
 Also note that the values inside of the stories (`story["title"]`, etc.) include all of the HTML and entities that aren't filtered. This is important because, for example, the `by_alpha` and `by_len` sorts just function on the raw number of characters in the title, not the displayed content so, "&someentity;" will sort like it's longer than "string", or "<em>Zoo opening</em>" will sort like it's alphabetically before "aardvark" (symbols come before letters). This is easily solvable but for a lot of feeds it's unnecessary.
 
-Sorts can only be used on a tag basis because sorts don't really stack like filters do. You can't really sort on a global level (unless you use the "*" tag and then apply tag sort, which is simple enough). You can, however, set all tags to have a certain sort using `set_all_sorts` (from canto/extra). As such you can only set sorts with `add_tag`, or set the default with `tag_sort=[...]`
+Sorts can only be used on a tag basis because sorts don't really stack like filters do. You can't really sort on a global level (unless you use the "*" tag and then apply tag sort, which is simple enough). You can, however, set all tags to have a certain sort using `set_all_sorts` (from canto/extra). As such you can only set sorts with `add_tag`, or set the default with `tag_sorts=[...]`
 
-Also, each sort can be a list TODO-TODO-TODO
+Each sort is a list of sorting functions, used as follows:
 
     :::python
-    add_tag("Slashdot", sort=[by_alpha, by_unread])
+    add_tag("Slashdot", sorts=[[by_alpha, by_unread], [None]])
 
-Will sort the Slashdot tag 
+This will, by default, sort the Slashdot tag alphabetically, and then by unread status. Because both of those sorts are well-behaved, the read  and unread portions of the list will still be in alphabetical order. You can then use the `next_tag_sort` and `prev_stag_sort` keys (=/- by default) to switch between the two sort lists. Note that `[None]` will not sort at all, and this is the default.
 
 ## Advanced Keybinds
 
