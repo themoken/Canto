@@ -15,6 +15,13 @@ import sys
 import re
 import os
 
+# The Cycle class has proved to be useful. It's used
+# to encapsulate every cycle in canto, global filters,
+# tag filters, global and tag sorts, tags. It's
+# essentially a list with a current pointer and
+# exception proof next/prev function and the ability
+# to temporarily override a particular value.
+
 class Cycle():
     def __init__(self, list, idx = 0):
         self.over = None
@@ -45,6 +52,11 @@ class Cycle():
     def cur(self):
         return self.over or self.list[self.idx]
 
+# The get_instance() and get_list_of_instances()
+# functions are to ensure that all objects (usu.
+# in a Cfg()) are actual, instantiated objects and
+# not just references.
+
 def get_instance(l):
     if not l:
         return l
@@ -65,7 +77,9 @@ def get_list_of_instances(l):
 def daemonize():
     pid = os.fork()
     if not pid:
+        # New terminal session
         os.setsid()
+
         os.chdir("/")
         os.umask(0)
         pid = os.fork()
@@ -73,6 +87,9 @@ def daemonize():
             sys.exit(0)
     else:
         sys.exit(0)
+
+    # Close all possible terminal output
+    # file descriptors. 
 
     os.close(0)
     os.close(1)
@@ -142,6 +159,10 @@ def silentfork(path, href, text, fetch):
 
     pid = os.fork()
     if not pid :
+        # A lot of programs don't appreciate
+        # having their fds closed, so instead
+        # we dup them to /dev/null.
+
         fd = os.open("/dev/null", os.O_RDWR)
         os.dup2(fd, sys.stderr.fileno())
 
@@ -174,7 +195,11 @@ def goto(link, cfg):
                 binary, text, fetch = cfg.handlers[handler][k]
                 break
         else:
+            # [None] is the default handler.
             binary, text, fetch = cfg.handlers[handler][None]
+
+        # Escape all "s in the URL, to avoid malicious use
+        # of crafted feeds. Thanks to Andreas.
         href = href.replace("\"","%22")
 
         if text:
