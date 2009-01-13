@@ -31,7 +31,10 @@ setup(name='Canto',
         license='GPLv2',
         scripts=['bin/canto','bin/canto-fetch'],
         packages=['canto'],
-        ext_modules=[Extension('canto.widecurse', sources = ['canto/widecurse.c'], libraries = ['ncursesw'])],
+        ext_modules=[Extension('canto.widecurse',\
+                sources = ['canto/widecurse.c'], libraries = ['ncursesw'],
+                library_dirs=["/usr/local/lib", "/opt/local/lib"],
+                include_dirs=["/usr/local/include", "/opt/local/include"])],
         data_files = [("share/man/man1/", ["man/canto.1", "man/canto-fetch.1"])],
         cmdclass={'install_data': Canto_install_data}
 )
