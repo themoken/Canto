@@ -41,7 +41,7 @@ Yes. As long as your terminal and its font can support it, then Canto can output
 
 ## What does Canto require?
 
-Canto 0.5.0 requires Python 2.4 or better, ncurses 5.5 or better, [feedparser](http://feedparser.org), and [chardet](http://chardet.feedparser.org). There are packages for all four of these dependencies in most major distributions.
+Canto >=0.5.0 requires Python 2.5 or better, ncurses 5.5 or better, [feedparser](http://feedparser.org), and [chardet](http://chardet.feedparser.org). There are packages for all four of these dependencies in all major distributions. I actively test with Debian's sid (unstable) packages, which can cause trouble because feedparser doesn't make releases very often so a lot of distros have heavily patched versions (as of this writing, Debian has 12 patches against the vanilla feedparser 4.1 source).
 
 To **build** Canto: GCC or another standards compliant C compiler, ncurses header files, and python header files (for compiling the core code).
 
