@@ -522,8 +522,8 @@ class Cfg:
         for t in tl:
             newtag = tag.Tag(self, Cycle(self.tag_sorts),\
                     Cycle(self.tag_filters), t)
-            if t in self.cfgtags:
-                newtag =  self.tags[self.cfgtags.index(t)]
+            if newtag in self.cfgtags:
+                newtag = self.tags[self.cfgtags.index(newtag)]
             r.append(newtag)
 
         return r

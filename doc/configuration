@@ -22,7 +22,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
         image_handler("xli \"%u\"", fetch=True)
 
         # A dedicated PDF handler (great for LtU)
-        link_handlers("evince \"%u\"", fetch=True, ext="pdf")
+        link_handler("evince \"%u\"", fetch=True, ext="pdf")
 
         # If we're in X, update xterm title
         # (Should work with most graphical terms)   
@@ -43,7 +43,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     # Similarly you can set tag filters and keybinds
     # switch with '{' and '}'
 
-    set_default_tag_filters([None, show_unread])
+    default_tag_filters([None, show_unread])
     keys['b'] = set_tag_filter(show_unread)
 
     # Tag sorts can also be set with a keybind
