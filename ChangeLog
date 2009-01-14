@@ -1,3 +1,26 @@
+Canto 0.6.0 ChangeLog
+* Much improved reader output using HTMLParser
+* New message bar, no more floating boxes
+* Brand spanking new fine-grained locking in Canto and Canto-fetch
+* Basic multi-threading in Canto-fetch
+* New content handling (can now open images and enclosures with
+	custom handlers bases on extensions and link type)
+	- Content can now be fetched to /tmp for programs too
+* Support for Snownews/Liferea type execurl scripts
+* Reader can now take a dedicated number of lines on the top, bottom,
+	left, or right of the typical GUI
+* Username/password support for feeds using Basic or Digest auth
+* Add ; / : to jump skip through feeds by index
+* -t flag to use with -r to set a tag on the command line
+* New UTF-8 compatible InputBox for non-ASCII searching
+* Everything (sorts, filters, tags) is directly set-able with a keybind
+* Deprecate `add_feed`, `browser`, and `text_browser`
+* Terminal output is now coerced to locale.preferredencoding(),
+	fixing non-UTF locales being used. Internals now stricly Unicode
+* Much more advanced usage of tags
+* More correct and flexible drawing code
+* The beginnings of a test-suite (still incomplete).
+
 Canto 0.5.7 ChangeLog
 * Add -r flag to add URL from the command line.
 * Added save() example keybind to canto/extra.py
