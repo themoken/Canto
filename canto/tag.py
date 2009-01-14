@@ -80,7 +80,12 @@ class Tag(list):
             stub = story.Story(d , None, self.cfg.default_renderer)
             self.append(stub)
         else:
-            for s in self.sorts.cur():
+            if not hasattr(self.sorts.cur(), "__iter__"):
+                dosorts = [self.sorts.cur()]
+            else:
+                dosorts = self.sorts.cur()
+
+            for s in dosorts:
                 if s:
                     list.sort(self, s)
 

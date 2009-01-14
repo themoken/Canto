@@ -36,7 +36,7 @@ def tabbed_status(cfg):
 
 # Filter for filtering out all read stories.
 #
-# Usage : filterlist=[None, show_unread()]
+# Usage : filters=[None, show_unread()]
 #       then using [/] to cycle through.
 
 class show_unread():

@@ -210,7 +210,8 @@ class Cfg:
         return kwargs
 
     def addfeed(self, tag, URL, **kwargs):
-        print "'add_feed' is deprecated! Use 'add' instead."
+        print "'add_feed' is deprecated! Update to new 'add' syntax."
+        print "See codezen.org/canto for instructions."
         kwargs["tags"] = [tag]
         self.add(URL, **kwargs)
 
@@ -381,7 +382,7 @@ class Cfg:
             if attr in locals:
                 setattr(self, attr, locals[attr])
 
-        for attr in ["filters", "tag_filters"]:
+        for attr in ["filters"]:
             if attr in locals:
                 setattr(self, attr, \
                         utility.get_list_of_instances(locals[attr]))
