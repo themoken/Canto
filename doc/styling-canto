@@ -51,7 +51,7 @@ Canto uses the typical NCurses 8 color scheme, in which you have 8 foreground an
 </tr>
 </table>
 
->*Default is terminal specific. If your terminal supports transparency, setting background to default will take advantage of that, otherwise default is usually a white or black foreground/background.
+\*Default is terminal specific. If your terminal supports transparency, setting background to default will take advantage of that, otherwise default is usually a white or black foreground/background.
 
 <table>
 <tr>
@@ -85,9 +85,19 @@ Canto uses the typical NCurses 8 color scheme, in which you have 8 foreground an
 <td>This is used for quotes in the reader.</td>
 </tr>
 <tr>
-<td>6,7,8</td>
+<td>6</td>
 <td>(Black,Black)</td>
-<td>Unused</td>
+<td>This is used for emphasis (italic/small/em) text in the reader, used with %B to appear gray</td>
+</tr>
+<tr>
+<td>7</td>
+<td>(Blue,Black)</td>
+<td>This is used for image links in the reader</td>
+</tr>
+<tr>
+<td>8</td>
+<td>(Black,Black)</td>
+<td>This is unset/unused.</td>
 </tr>
 </table>
 
@@ -129,7 +139,7 @@ Sounds confusing, but if, for example, I subclassed the renderer and made the `f
 [Screenshot](/static/rs_1.png)
 
     class MyAwesomeRenderer(renderer) :
-        def firsts(self, story):
+        def firsts(self, dict):
             return ("| ", " ", " |")
 
     default_renderer(MyAwesomeRenderer())
@@ -141,20 +151,20 @@ That doesn't look quite right, on most of the items, the ASCII pipes are only on
 [Screenshot](/static/rs_2.png)
 
     class MyAwesomeRenderer(renderer) :
-        def firsts(self, story):
+        def firsts(self, dict):
             return ("| ", " ", " |")
 
         # Added mids and ends
-        def mids(self, story):
+        def mids(self, dict):
             return ("| ", " ", " |")
-        def ends(self, story):
+        def ends(self, dict):
             return ("| ", " ", " |")
 
     default_renderer(MyAwesomeRenderer())
 
 * * *
 
->Note that there are applied on a line by line basis, there is no mixing (i.e. using `firsts()` and `ends()` if the item is only a line long.
+Note that there are applied on a line by line basis, there is no mixing (i.e. using `firsts()` and `ends()` if the item is only a line long.
 
  Okay, that looks a little better, but the head of the feed and the foot of the feed are still Unicode. For that, we override `tag_head` and `tag_foot`.
 
@@ -169,19 +179,19 @@ That doesn't look quite right, on most of the items, the ASCII pipes are only on
             return ("| ", " ", " |")
 
         # Added tag_head and tag_foot
-        def tag_head(self, tag):
+        def tag_head(self, dict):
             # t looks like " Slashdot [10]"
-            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+            t = "   " + dict["tag"].tag + " [" + unicode(dict["tag"].unread) + "]"
             return [(t, " ", " "),("+","-","+")]
 
-        def tag_foot(self, tag):
+        def tag_foot(self, dict):
             return [("+","-","+")]
 
     default_renderer(MyAwesomeRenderer())
 
-Both tag_head and tag_foot return a list of tuples. In Python, the `+` operator concatenates strings, `str()` can coerce an integer (`tag.unread`) to a string. Each tuple in the list corresponds to a line on the screen. So, in `tag_head` we have the Feed [unread] on one line and then an ASCII box top on the second, just like 'tag_foot' returns.
+Both tag_head and tag_foot return a list of tuples. In Python, the `+` operator concatenates strings, `unicode()` can coerce an integer (`dict["tag"].unread`) to a string. Each tuple in the list corresponds to a line on the screen. So, in `tag_head` we have the Feed [unread] on one line and then an ASCII box top on the second, just like 'tag_foot' returns.
 
->Note that even if you're returning only one line, you have to make a list.
+\*Note that even if you're returning only one line, you have to make a list.
 
 * * *
 
@@ -191,9 +201,9 @@ Simple fix is to now add an if statement to 'firsts()'.
 
 [Screenshot](/static/rs_4.png)
 
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "| "
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else:
                 base += "  "
@@ -210,24 +220,24 @@ I like the Unicode, so I've put that back in. Here it is.
 [Screenshot](/static/rd_1.png)
 
     class MyAwesomeRenderer(renderer) :
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "│ "
 
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else :
                 base += "  "
             return (base," ", " │")
-        def mids(self, story):
+        def mids(self, dict):
             return ("│    ", " ", " │")
-        def ends(self, story):
+        def ends(self, dict):
             return ("│    ", " ", " │")
 
-        def tag_head(self, tag):
-            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+        def tag_head(self, dict):
+            t = "   " + dict["tag"].tag + " [" + unicode(dict["tag"].unread) + "]"
             return [("   " + t," "," "),("┌","─","┐")]
 
-        def tag_foot(self, tag):
+        def tag_foot(self, dict):
             return [("└","─","┘")]
 
     default_renderer(MyAwesomeRenderer())
@@ -240,16 +250,17 @@ The current example interface is pretty drab, so let's add some colors. Let's co
 
 [Screenshot](/static/rd_2.png)
 
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "│ "
 
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else:
+
                 base += "  "
 
             # Apply %3 to read stories and %2 to unread stories.
-            if story.wasread():
+            if dict["story"].wasread():
                 base += "%3"
             else:
                 base += "%2"
@@ -264,24 +275,24 @@ A simple solution is to add `%1` to go back to the default color pair at the end
 
 [Screenshot](/static/rd_3.png)
 
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "│ "
 
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else :
                 base += "  "
 
-            if story.wasread():
+            if dict["story"].wasread():
                 base += "%3"
             else :
                 base += "%2"
     
         #Add %1 to end of each possible line
             return (base," "," %1│")
-        def mids(self, story):
+        def mids(self, dict):
             return ("│    "," "," %1│")
-        def ends(self, story):
+        def ends(self, dict):
             return ("│    ", " ", " %1│")
 
 
@@ -289,39 +300,39 @@ That looks a little better, but there are still some drawing errors (notice the 
 
 * * *
 
-So how to get colors to persist? Using `%0` will return to the color that was enabled previous to the current color. So we add `%0` to the end of each tuple, and bracket everything we want to be white with `%1%0`. We also explicitly state that we want the headers and footers to be white as well, to prevent colors from bleeding over.
+So how to get colors to persist? Using `%0` will return to the color that was enabled previous to the current color. So we add `%0` to the end of each tuple, and bracket everything we want to be white with `%1%0`. We also explicitly state that we want the headers and footers to be white as well, to prevent colors from bleeding over. This `%0` has a limited memory, it can only remember the previous 8 colors. This can be changed with a simple #define in the source, but honestly if you need more than that, you might be doing it wrong.
 
 [Screenshot](/static/rd_4.png)
 
     class MyAwesomeRenderer(renderer) :
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "%1│ "
 
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else :
                 base += "  "
 
-            if story.wasread():
+            if dict["story"].wasread():
                 base += "%3"
             else :
                 base += "%2"
 
         # Bracket the ends with %1%0 instead
             return (base, " ", " %1│%0")
-        def mids(self, story):
+        def mids(self, dict):
             return ("%1│%0    ", " ", " %1│%0")
-        def ends(self, story):
+        def ends(self, dict):
             return ("%1│%0    ", " ", " %1│%0")
 
         # For tag_head and tag_foot, add %1 to the start to ensure the right
         # color is applied right off the bat.
 
-        def tag_head(self, tag):
-            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+        def tag_head(self, dict):
+            t = "   " + dict["tag"].tag + " [" + unicode(dict["tag"].unread) + "]"
             return [("%1   " + t," "," "),("┌","─","┐")]
 
-        def tag_foot(self, tag):
+        def tag_foot(self, dict):
             return [("%1└","─","┘")]
 
     default_renderer(MyAwesomeRenderer())
@@ -332,15 +343,15 @@ Much better. Now, to further emphasize unread feeds, let's add the bold decorati
 
 [Screenshot](/static/rd_5.png)
 
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "%1│ "
 
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else :
                 base += "  "
 
-            if story.wasread():
+            if dict["story"].wasread():
                 base += "%3"
             else :
                 base += "%2%B"  # Added %B (bold) decoration
@@ -349,64 +360,61 @@ Much better. Now, to further emphasize unread feeds, let's add the bold decorati
 
 Ah. Looks like the same problem that we had with the colors, the bold decoration is spilling over to everything else. Much like `%0` reverted to the previous color, the `%N` decoration temporarily cancels all decorations and `%n` returns to the previous decoration. Unlike other decorations which are stackable, no other decorations can be applied until `%n` is seen. `%C` clears all of the decoration state, like `%N`, but is not recoverable.
 
->Note that the `%N` and `%C` escapes are rarely actually necessary. By properly opening and closing style you can achieve the same effects most often. These two are only provided for convenience and clarity. For example, `%C`is only used in the default theme on `tag_foot` and `reader_foot`, to show that no information should be persisting to the next drawing command.
+\*Note that the `%N` and `%C` escapes are rarely actually necessary. By properly opening and closing style you can achieve the same effects most often. These two are only provided for convenience and clarity. For example, `%C`is only used in the default theme on `tag_foot` and `reader_foot`, to show that no information should be persisting to the next drawing command.
 
 So let's add the temporary `%N` decoration and the `%C` to the end.
 
 [Screenshot](/static/rd_6.png)
 
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "%1│ "
 
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else :
                 base += "  "
 
-            if story.wasread():
+            if dict["story"].wasread():
                 base += "%3"
             else :
                 base += "%2%B"
 
             # Finally bracket with %N%n (normalizing) decoration.
             return (base, " ", " %1%N│%n%0")
-        def mids(self, story):
+        def mids(self, dict):
             return ("%1%N│%n%0    ", " ", " %1%N│%n%0")
-        def ends(self, story):
+        def ends(self, dict):
             return ("%1%N│%n%0    ", " ", " %C%1│%0")
-
-
-
 
 * * *
 
 Excellent. No bleed over of colors or decorations. Much nicer looking interface. Here's a copy of the final config additions.
 
     class MyAwesomeRenderer(renderer) :
-        def firsts(self, story):
+        def firsts(self, dict):
             base = "%1│ "
 
-            if story.selected():
+            if dict["story"].selected():
                 base += "> "
             else :
                 base += "  "
 
-            if story.wasread():
+            if dict["story"].wasread():
                 base += "%3"
             else :
                 base += "%2%B"
 
             return (base, " ", " %1%N│%n%0")
-        def mids(self, story):
+        def mids(self, dict):
             return ("%1%N│%n%0    ", " ", " %1%N│%n%0")
-        def ends(self, story):
+        def ends(self, dict):
             return ("%1%N│%n%0    ", " ", " %C%1│%0")
 
-        def tag_head(self, tag):
-            t = "   " + tag.tag + " [" + str(tag.unread) + "]"
+        def tag_head(self, dict):
+            t = "   " + dict["tag"].tag + " [" + unicode(dict["tag"].unread) + "]"
             return [("%1   " + t," "," "),("┌","─","┐")]
 
-        def tag_foot(self, tag):
+        def tag_foot(self, dict):
             return [("%1└","─","┘")]
 
     default_renderer(MyAwesomeRenderer())
@@ -424,7 +432,7 @@ You can apply these by using decoration escapes, which take the form `%x`. They 
 </tr>
 <tr>
 <td>`%0`</td>
-<td>This will enable the color that was enabled before the current color</td>
+<td>This will enable the color that was enabled before the current color, up to 8 colors previous.</td>
 </tr>
 <tr>
 <td>`%1 - %8`</td>
@@ -460,7 +468,7 @@ You can apply these by using decoration escapes, which take the form `%x`. They 
 </tr>
 </table>
 
-> The `%N` decoration temporarily disables all non-color decorations (like `%C`), but when `%n` is found, it returns to the previous set of non-color decorations. Unlike all of the other non-color decorations, this *does not* stack; you cannot enable another non-color decoration after `%N` and before `%n`.
+\*The `%N` decoration temporarily disables all non-color decorations (like `%C`), but when `%n` is found, it returns to the previous set of non-color decorations. Unlike all of the other non-color decorations, this *does not* stack; you cannot enable another non-color decoration after `%N` and before `%n`.
 
 Some of the non-color decorations only work on some terminals. YMMV.
 
@@ -526,6 +534,8 @@ In the above examples, we used functions like `story.wasread()`, and variables l
 </tr>
 <tr>
 <td>`tag.read`</td>
+
+
 <td>Number of read items in the tag.</td>
 </tr>
 <tr>
@@ -533,8 +543,6 @@ In the above examples, we used functions like `story.wasread()`, and variables l
 <td>Tag in it's basic form is a list of stories.</td>
 </tr>
 </table>
-
-Note that as mentioned above, any time you get a string from a tag or story object, it is best to `.encode("UTF-8")` them, to avoid raising exceptions about trying to coerce non-ASCII characters into ASCII.
 
 ## Styling the reader
 
