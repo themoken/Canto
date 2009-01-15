@@ -522,8 +522,9 @@ class Cfg:
         for t in tl:
             newtag = tag.Tag(self, Cycle(self.tag_sorts),\
                     Cycle(self.tag_filters), t)
+
             if newtag in self.cfgtags:
-                newtag = self.tags[self.cfgtags.index(newtag)]
+                newtag = self.cfgtags[self.cfgtags.index(newtag)]
             r.append(newtag)
 
         return r
@@ -531,7 +532,6 @@ class Cfg:
     def validate_tags(self):
         # Change tags into actual tag objects
         self.tags = Cycle([ self.get_real_tagl(x) for x in self.tags ])
-
 
 def default_status(cfg):
     return u"%8%B" + u"Canto %d.%d.%d" % VERSION_TUPLE + u"%b%1"
