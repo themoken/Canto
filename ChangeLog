@@ -1,3 +1,7 @@
+Canto 0.6.1 ChangeLog
+* Fix docs/manpage
+* Fix add_tag troubles
+
 Canto 0.6.0 ChangeLog
 * Much improved reader output using HTMLParser
 * New message bar, no more floating boxes
