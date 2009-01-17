@@ -1,11 +1,5 @@
-0.6.0 TODO (in no particular order)
+TODO (in no particular order)
 ===
-- Website docs
-    * status needs to be documented
-    * advconfig needs to be re-formatted
 
-- Code doc review
-
-- Round out tests
-    * Better way to test graphical output?
-    * Doctests?
+-- Finer grain hooks (state changes)
+   - Eye towards integration w/ other readers
