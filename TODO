@@ -1,5 +1,5 @@
 TODO (in no particular order)
 ===
-
+-- 64 bit detection in runhere.sh
 -- Finer grain hooks (state changes)
    - Eye towards integration w/ other readers
