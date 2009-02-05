@@ -13,7 +13,7 @@ PYVER=`python -c "import sys; print sys.version[:3]"`
 export PYTHONPATH="$PWD/root/lib/python$PYVER/site-packages:$OLDPPATH"
 export MANPATH="$PWD/root/share/man:$OLDMPATH"
 
-#bin/canto-fetch -b
+bin/canto-fetch -b
 bin/canto
 
 export PYTHONPATH=$OLDPPATH

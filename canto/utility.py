@@ -159,8 +159,6 @@ def silentfork(path, href, text, fetch):
 
     pid = os.fork()
     if not pid :
-        os.setpgid(os.getpid(), os.getpid())
-
         # A lot of programs don't appreciate
         # having their fds closed, so instead
         # we dup them to /dev/null.
@@ -169,6 +167,7 @@ def silentfork(path, href, text, fetch):
         os.dup2(fd, sys.stderr.fileno())
 
         if not text:
+            os.setpgid(os.getpid(), os.getpid())
             os.dup2(fd, sys.stdout.fileno())
 
         if fetch:
