@@ -108,14 +108,9 @@ class UpdateThread(Thread):
             self.prevtime = os.stat(self.fpath).st_mtime
             f = open(self.fpath, "r")
             fcntl.flock(f.fileno(), fcntl.LOCK_SH)
-
-            try:
-                curfeed = cPickle.load(f)
-            except:
-                self.log_func("cPickle load exception on %s" % self.fpath)
-            finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                f.close()
+            curfeed = cPickle.load(f)
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            f.close()
 
         return curfeed
 

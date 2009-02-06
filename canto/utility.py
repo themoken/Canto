@@ -185,6 +185,7 @@ def silentfork(path, href, text, fetch):
 
     if text:
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
+        signal.signal(signal.SIGWINCH, signal.SIG_IGN)
 
     return pid
 

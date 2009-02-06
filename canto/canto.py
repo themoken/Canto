@@ -474,6 +474,7 @@ class Main():
         if self.cfg.wait_for_pid == pid:
             self.cfg.wait_for_pid = 0
             signal.signal(signal.SIGALRM, self.alarm)
+            signal.signal(signal.SIGWINCH, self.winch)
             self.resize = 1
 
     # The reason KEY_RESIZE is used is that it's unsafe to 
