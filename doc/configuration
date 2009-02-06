@@ -1,4 +1,4 @@
-This is where we'll go into the magic of `~/.canto/conf`. This file is actually parsed and driven by the Python interpreter itself, so it's immensely powerful. It has the entirety of the Python language behind it, and allows for an incredible amount of flexibility.
+is is where we'll go into the magic of `~/.canto/conf`. This file is actually parsed and driven by the Python interpreter itself, so it's immensely powerful. It has the entirety of the Python language behind it, and allows for an incredible amount of flexibility.
 
 If you've already gone through the basics, then you might be looking for [Advanced Configuration](/canto/advconfig/). That's were all the neat hooks and filters are covered.
 
@@ -160,6 +160,17 @@ The `renderer` option is covered [here](/canto/style/#per-feed-theming). The
 `filter` option is used identically to the filters described [here](
 http://codezen.org/canto/advconfig/#filters).
 
+### Scripts
+
+As of 0.6.0, Canto includes the ability to run scripts similarly to Snownews' `execurl` functionality. To use this functionality, place the scripts in your script directory (default: `~/.canto/scripts/`) and add a feed with "script:" as the prefix.
+
+For example, if I wanted to run a script to make an RSS feed out of Slashdot polls called [slashdotpolls](http://codezen.org/static/slashdotpolls), I would place that file in `~/.canto/scripts/` and add the following line to my configuration:
+
+    :::python
+    add("script:slashdotpolls -external")
+
+Where `-external` is an argument to the script. **Be Aware: the script must have execute permissions, or canto-fetch will not execute it.** You can add these permissions with `chmod +x <scriptfile>`.
+
 ## add_tag()
 ** add_tag("name", [filters=],[sorts=]) **
 
@@ -248,6 +259,32 @@ Example:
 
     # text-browser
     link_handler("elinks \"%u\"", text=True)
+
+## Reader positioning
+
+**reader_orientation=["top"|"bottom"|"left"|"right"|None]**
+
+**reader_lines = number**
+
+If you don't like the reader floating over your list of items, then you can dedicate a certain amount of space to it. Set `reader_orientation` to "top", "bottom", "left", or "right" of the list. `None` is the default behavior, floating over the list.
+
+`reader_lines` can increase the dedicated space, the minimum is `3` lines because any smaller and the default theme ceases to behave well, but it's practically unreadable anyway, so no worries.
+
+Simple Example:
+
+    :::python
+    reader_orientation = "top"
+    reader_lines = 10
+
+Now, you'll have 10 lines of dedicated space for the reader at the top of the screen, and your list of items underneath. A more flexible way to do this is to use a `resize_hook` to dedicate a certain percentage of the screen to the reader
+
+    :::python
+    def resize_hook (cfg):
+        cfg.reader_orientation = "left"
+        cfg.reader_lines = cfg.width / 2
+        cfg.columns = (cfg.width / 2) / 50
+
+This will set half of the screen to the left as dedicated space for the reader, and try to divide the rest into columns of width 50. `resize_hook` is covered with the rest of the [hooks](http://codezen.org/canto/advconfig/#hooks).
 
 ## keys
 
@@ -417,18 +454,8 @@ The functions you can bind to are:
 </tr>
 <tr>
 <td>`prev_tag_filter`</td>
-<td>Apply previous tag filter</td>
+<td>Apply previous feed filter</td>
 <td>`{`</td>
-</tr>
-<tr>
-<td>`next_tag_sort`</td>
-<td>Apply next set of sorts to tag</td>
-<td>`=`</td>
-</tr>
-<tr>
-<td>`prev_tag_sort`</td>
-<td>Apply previous set of sorts to tag</td>
-<td>`-`</td>
 </tr>
 <tr>
 <td>`prev_tagset`</td>

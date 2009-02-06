@@ -1,4 +1,4 @@
-This covers how to customize the Canto interface.
+is covers how to customize the Canto interface.
 
 [TOC]
 
@@ -109,6 +109,7 @@ Example:
 
 [Screenshot](/static/s_1.png) (Not so great looking.)
 
+    :::python
     colors[0] = ("red","black")
 
 This will change the default color from white/black to red/black.
@@ -117,6 +118,7 @@ You can also use Python to set a lot of colors at once, useful for changing the 
 
 [Screenshot](/static/s_2.png)(Also an ugly example.)
 
+    :::python
     for i, (fg,bg) in enumerate(colors):
           colors[i] = (fg, "blue")
 
@@ -138,6 +140,7 @@ Sounds confusing, but if, for example, I subclassed the renderer and made the `f
 
 [Screenshot](/static/rs_1.png)
 
+    :::python
     class MyAwesomeRenderer(renderer) :
         def firsts(self, dict):
             return ("| ", " ", " |")
@@ -150,6 +153,7 @@ That doesn't look quite right, on most of the items, the ASCII pipes are only on
 
 [Screenshot](/static/rs_2.png)
 
+    :::python
     class MyAwesomeRenderer(renderer) :
         def firsts(self, dict):
             return ("| ", " ", " |")
@@ -170,6 +174,7 @@ Note that there are applied on a line by line basis, there is no mixing (i.e. us
 
 [Screenshot](/static/rs_3.png)
 
+    :::python
     class MyAwesomeRenderer(renderer) :
         def firsts(self, story):
             return ("| ", " ", " |")
@@ -201,6 +206,7 @@ Simple fix is to now add an if statement to 'firsts()'.
 
 [Screenshot](/static/rs_4.png)
 
+    :::python
         def firsts(self, dict):
             base = "| "
             if dict["story"].selected():
@@ -219,6 +225,7 @@ I like the Unicode, so I've put that back in. Here it is.
 
 [Screenshot](/static/rd_1.png)
 
+    :::python
     class MyAwesomeRenderer(renderer) :
         def firsts(self, dict):
             base = "│ "
@@ -250,6 +257,7 @@ The current example interface is pretty drab, so let's add some colors. Let's co
 
 [Screenshot](/static/rd_2.png)
 
+    :::python
         def firsts(self, dict):
             base = "│ "
 
@@ -275,6 +283,7 @@ A simple solution is to add `%1` to go back to the default color pair at the end
 
 [Screenshot](/static/rd_3.png)
 
+    :::python
         def firsts(self, dict):
             base = "│ "
 
@@ -304,6 +313,7 @@ So how to get colors to persist? Using `%0` will return to the color that was en
 
 [Screenshot](/static/rd_4.png)
 
+    :::python
     class MyAwesomeRenderer(renderer) :
         def firsts(self, dict):
             base = "%1│ "
@@ -343,6 +353,7 @@ Much better. Now, to further emphasize unread feeds, let's add the bold decorati
 
 [Screenshot](/static/rd_5.png)
 
+    :::python
         def firsts(self, dict):
             base = "%1│ "
 
@@ -366,6 +377,7 @@ So let's add the temporary `%N` decoration and the `%C` to the end.
 
 [Screenshot](/static/rd_6.png)
 
+    :::python
         def firsts(self, dict):
             base = "%1│ "
 
@@ -390,6 +402,7 @@ So let's add the temporary `%N` decoration and the `%C` to the end.
 
 Excellent. No bleed over of colors or decorations. Much nicer looking interface. Here's a copy of the final config additions.
 
+    :::python
     class MyAwesomeRenderer(renderer) :
         def firsts(self, dict):
             base = "%1│ "
