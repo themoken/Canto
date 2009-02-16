@@ -2,9 +2,12 @@
 from __future__ import with_statement # This isn't required in Python 2.6
 from distutils.core import setup, Extension
 from distutils.command.install_data import install_data
+import commands
 
-version = ['0','6','13']
-man_date = "12 May 2009"
+version = ['0','7','0']
+man_date = "21 February 2009"
+git_commit = commands.getoutput("git show --pretty=oneline\
+        --abbrev-commit").split()[0]
 
 class Canto_install_data(install_data):
     def run(self):
@@ -17,7 +20,8 @@ class Canto_install_data(install_data):
         for source in ["/canto/const.py"]:
             with open(libdir + source, "r+") as f:
                 d = f.read().replace("SET_VERSION_TUPLE","(" +\
-                        ",".join(version) + ")")
+					",".join(version) + ")")
+                d = d.replace("SET_GIT_SHA", "\"" + git_commit + "\"")
                 f.truncate(0)
                 f.seek(0)
                 f.write(d)

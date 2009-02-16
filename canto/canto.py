@@ -146,7 +146,7 @@ class Main():
                     print_fetch_usage()
                 sys.exit(0)
             elif opt in ["-v","--version"] :
-                print "Canto v %d.%d.%d" % VERSION_TUPLE
+                print "Canto v %s (%s)" % ("%d.%d.%d" % VERSION_TUPLE, GIT_SHA)
                 sys.exit(0)
 
         # Instantiate Cfg() using paths in args.
@@ -157,7 +157,8 @@ class Main():
         except :
             sys.exit(-1)
 
-        self.cfg.log("Canto v %d.%d.%d" % VERSION_TUPLE, "w")
+        self.cfg.log("Canto v %s (%s)" % \
+                ("%d.%d.%d" % VERSION_TUPLE, GIT_SHA), "w")
         self.cfg.log("Time: %s" % time.asctime())
         self.cfg.log("Config parsed successfully.")
 

@@ -1,4 +1,5 @@
 TODO (in no particular order)
 ===
+-- Fix different process names for runhere.sh started canto-fetches
 -- Finer grain hooks (state changes)
    - Eye towards integration w/ other readers
