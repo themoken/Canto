@@ -1,7 +1,7 @@
 #!/bin/bash
 
-killall -9 canto-fetch
-killall -9 canto
+pkill -INT -f "^python.*canto-fetch"
+killall -INT canto
 
 OLDPPATH=$PYTHONPATH
 OLDMPATH=$MANPATH
@@ -23,5 +23,6 @@ export MANPATH="$PWD/root/share/man:$OLDMPATH"
 bin/canto-fetch -b
 bin/canto
 
+pkill -INT -f "^python.*canto-fetch"
 export PYTHONPATH=$OLDPPATH
 export MANPATH=$OLDMPATH
