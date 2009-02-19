@@ -17,19 +17,11 @@
 # automatically.
 
 class Story():
-    def __init__(self, ufp, feed, renderer):
-        self.tag_idx = 0
-        self.idx = 0
-        self.last = 0
-
-        self.row = 0
-        self.lines = 0
-        
+    def __init__(self, ufp):
+        self.updated = 0
         self.ufp = ufp
-        self.feed = feed
         self.sel = 0
-        self.renderer = renderer
-
+    
     def __eq__(self, other):
         if self["id"] != other["id"]:
             return 0
@@ -44,43 +36,18 @@ class Story():
     def __contains__(self, key):
         return key in self.ufp
 
-    def tagwrap(self, tag, i):
-        if i == 0:
-            return tag in self.ufp["canto_state"]
-        elif i == 1 and not tag in self.ufp["canto_state"]:
+    def was(self, tag):
+        return tag in self.ufp["canto_state"]
+
+    def set(self, tag):
+        if not tag in self.ufp["canto_state"]:
             self.ufp["canto_state"].append(tag)
-        elif i == -1 and tag in self.ufp["canto_state"]:
+            self.updated = 1
+    
+    def unset(self,tag):
+        if tag in self.ufp["canto_state"]:
             self.ufp["canto_state"].remove(tag)
-
-        if self.feed:
-            self.feed.has_changed()
-
-    def wasread(self):
-        return self.tagwrap("read", 0)
-
-    def read(self):
-        self.tagwrap("read", 1)
-
-    def unread(self):
-        self.tagwrap("read", -1)
-
-    def marked(self):
-        return self.tagwrap("marked", 0)
-
-    def mark(self):
-        self.tagwrap("marked", 1)
-
-    def unmark(self):
-        self.tagwrap("marked", -1)
-
-    def isnew(self):
-        return self.tagwrap("new", 0)
-
-    def new(self):
-        self.tagwrap("new", 1)
-
-    def old(self):
-        self.tagwrap("new", -1)
+            self.updated = 1
 
     def selected(self):
         return self.sel
@@ -90,11 +57,6 @@ class Story():
 
     def unselect(self):
         self.sel = 0
-
-    def print_item(self, cfg, tag, row, i):
-        return self.renderer.story(cfg, tag, self, row, \
-                i.cfg.gui_height, i.cfg.gui_width / i.cfg.columns, \
-                i.window_list)
 
     def get_text(self):
         if "content" in self:

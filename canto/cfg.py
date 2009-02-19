@@ -219,7 +219,12 @@ class Cfg:
         if (not URL) or URL == "":
             return -1
 
-        for key in ["keep","rate","renderer"]:
+        if "renderer" in kwargs:
+            self.cfg.log("Renderer is no longer accepted as an argument to\
+                    add(), now you must add a tag (addtag()) to use a custom\
+                    renderer")
+
+        for key in ["keep","rate"]:
             if not key in kwargs:
                 kwargs[key] = getattr(self, "default_" + key)
 
@@ -252,7 +257,6 @@ class Cfg:
                     kwargs["tags"],
                     kwargs["rate"],
                     kwargs["keep"],
-                    kwargs["renderer"],
                     kwargs["filter"],
                     kwargs["username"],
                     kwargs["password"]))
@@ -527,6 +531,7 @@ class Cfg:
         for t in tags:
             self.cfgtags.append(tag.Tag(\
                     self,
+                    self.default_renderer,
                     kwargs["sorts"],
                     kwargs["filters"],
                     unicode(t, "UTF-8", "ignore")))
@@ -541,8 +546,8 @@ class Cfg:
         for t in tl:
             if t and type(t) != unicode:
                 t = unicode(t, "UTF-8", "ignore")
-            newtag = tag.Tag(self, Cycle(self.tag_sorts),\
-                    Cycle(self.tag_filters), t)
+            newtag = tag.Tag(self, self.default_renderer,
+                    Cycle(self.tag_sorts), Cycle(self.tag_filters), t)
 
             if newtag in self.cfgtags:
                 newtag = self.cfgtags[self.cfgtags.index(newtag)]

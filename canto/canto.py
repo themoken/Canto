@@ -518,7 +518,7 @@ class Main():
 
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
-            while feed.changed:
+            while feed.changed():
                 feed.todisk()
 
         self.cfg.log("Flushed to disk.")

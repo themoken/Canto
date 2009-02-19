@@ -28,7 +28,7 @@ import fcntl
 
 class Feed(list):
     def __init__(self, cfg, dirpath, URL, tags, rate, keep, \
-            renderer, filter, username, password):
+            filter, username, password):
 
         # Configuration set settings
         self.tags = tags
@@ -40,7 +40,6 @@ class Feed(list):
             self.base_explicit = 1
 
         self.URL = URL
-        self.renderer = renderer
         self.rate = rate
         self.time = 1
         self.keep = keep
@@ -56,8 +55,7 @@ class Feed(list):
         # Other necessities
         self.path = dirpath
         self.cfg = cfg
-        self.changed = 0
-        self.ufp = None
+        self.ufp = []
    
     def update(self):
         lockflags = fcntl.LOCK_SH
@@ -121,17 +119,18 @@ class Feed(list):
                 if tag not in entry["canto_state"]:
                     entry["canto_state"].append(tag)
 
-            s = story.Story(entry, self, self.renderer)
+            s = story.Story(entry)
             s.sel = selected
             newlist.append(s)
 
         del self[:]
         list.extend(self, filter(self.filter, newlist))
 
-    def has_changed(self):
-        self.changed = 1
-
     def todisk(self):
+        changed = self.changed()
+        if not changed :
+            return
+
         f = open(self.path, "r+")
         try:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -139,22 +138,23 @@ class Feed(list):
             f.truncate()
             cPickle.dump(self.ufp, f)
             f.flush()
+            for x in changed:
+                x.updated = 0
         except:
             return 0
         finally:
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
             f.close()
-
-        self.changed = 0
         return 1
 
-    def tick(self):
-        if self.changed:
-            self.todisk()
+    def changed(self):
+        return [ x for x in self if x.updated ]
 
+    def tick(self):
         self.time -= 1
         if self.time <= 0:
             if not self.update() or len(self) == 0 :
                 self.time = 1
             else:
                 self.time = self.rate
+        self.todisk()

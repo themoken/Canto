@@ -103,6 +103,11 @@ class Gui :
         self.__map_items()
         self.draw_elements()
 
+    def print_item(self, tag, story, row):
+        return tag.renderer.story(self.cfg, tag, story, row,\
+                self.cfg.gui_height, self.cfg.gui_width / self.cfg.columns,\
+                self.window_list)
+
     def __map_items(self):
 
         # This for loop populates self.map with all stories that
@@ -120,7 +125,7 @@ class Gui :
         for i, feed in enumerate(self.tags):
             for item in feed:
                 if not feed.collapsed or item.idx == 0:
-                    item.lines = item.print_item(self.cfg, feed, 0, self)
+                    item.lines = self.print_item(feed, item, 0)
                     if item.lines:
                         # item.tag_idx is the story's only reference
                         # to its current Tag()
@@ -151,7 +156,7 @@ class Gui :
                     # If row is offscreen down
                     if item.row > self.lines + self.offset:
                         break
-                    item.print_item(self.cfg, self.tags[item.tag_idx], row, self)
+                    self.print_item(self.tags[item.tag_idx], item, row)
                 row += item.lines
         else:
             row = -1
@@ -421,7 +426,8 @@ class Gui :
     @noitem_unsafe
     def reader(self) :
         self.tags[self.sel.tag_idx].set_read(self.sel.idx)
-        reader.Reader(self.cfg, self.sel, self.register, self.deregister) 
+        reader.Reader(self.cfg, self.tags[self.sel.tag_idx], self.sel,\
+                self.register, self.deregister) 
         return REDRAW_ALL
 
     def change_filter(fn):
@@ -519,9 +525,9 @@ class Gui :
             for t in self.tags:
                 for story in t:
                     if s.match(story["title"]):
-                        story.mark()
+                        story.set("marked")
                     else:
-                        story.unmark()
+                        story.unset("marked")
 
             self.prev_mark()
             self.next_mark()
@@ -529,16 +535,16 @@ class Gui :
 
     @noitem_unsafe
     def toggle_mark(self):
-        if self.sel.marked() :
-            self.sel.unmark()
+        if self.sel.was("marked"):
+            self.sel.unset("marked")
         else:
-            self.sel.mark()
+            self.sel.set("marked")
 
     @noitem_unsafe
     def all_unmarked(self):
         for item in self.map:
-            if item.marked():
-                item.unmark()
+            if item.was("marked"):
+                item.unset("marked")
 
     @noitem_unsafe
     def toggle_collapse_tag(self):

@@ -47,7 +47,7 @@ class show_unread():
         return "Show unread"
 
     def __call__(self, tag, item):
-        return not item.wasread()
+        return not item.was("read")
 
 # Filter for filtering out all unread stories.
 #
@@ -59,7 +59,7 @@ class show_marked():
         return "Show marked"
 
     def __call__(self, tag, item):
-        return item.marked()
+        return item.was("marked")
 
 # A filter to take a keyword or regex and filter
 # all stories that don't contain/match it.
@@ -262,9 +262,9 @@ class by_unread:
         return "By Unread"
 
     def __call__(self, x, y):
-        if x.wasread() and not y.wasread():
+        if x.was("read") and not y.was("read"):
             return 1
-        if y.wasread() and not x.wasread():
+        if y.was("read") and not x.was("read"):
             return -1
         return 0
 

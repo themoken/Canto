@@ -11,9 +11,13 @@ from utility import Cycle
 import story
 
 class Tag(list):
-    def __init__(self, cfg, sorts = [[None]], filters = [None], c = "*"):
+    def __init__(self, cfg, renderer, sorts = [[None]], \
+            filters = [None], c = "*"):
+
         list.__init__(self)
+
         self.cfg = cfg
+        self.renderer = renderer
         self.tag = c
         self.collapsed = 0
         self.start = 0
@@ -38,25 +42,25 @@ class Tag(list):
 
     def all_read(self):
         for s in self :
-            s.read()
+            s.set("read")
         self.unread = 0
         self.read = len(self)
 
     def all_unread(self):
         for s in self :
-            s.unread()
+            s.unset("read")
         self.read = 0
         self.unread = len(self)
 
     def set_read(self, idx):
-        if not self[idx].wasread():
-            self[idx].read()
+        if not self[idx].was("read"):
+            self[idx].set("read")
             self.unread -= 1
             self.read += 1
 
     def set_unread(self, idx):
-        if self[idx].wasread():
-            self[idx].unread()
+        if self[idx].was("read"):
+            self[idx].unset("read")
             self.unread += 1
             self.read -= 1
 
@@ -104,7 +108,7 @@ class Tag(list):
             if lt:
                 self[-1].last = 1
 
-            self.read = len(filter(lambda x : x.wasread(), self))
+            self.read = len(filter(lambda x : x.was("read"), self))
             self.unread = len(self) - self.read
 
     def clear(self):

@@ -14,7 +14,8 @@ import utility
 import curses
 
 class Reader :
-    def __init__(self, cfg, story, register, deregister):
+    def __init__(self, cfg, tag, story, register, deregister):
+
         self.story = story
         self.cfg = cfg
         self.keys = cfg.reader_key_list
@@ -25,6 +26,7 @@ class Reader :
         self.width = 0
         self.height = 0
         self.show_links = 0
+        self.tag = tag
 
         register(self)
         self.register = register
@@ -47,7 +49,7 @@ class Reader :
 
         if self.cfg.reader_orientation in ["top","bottom",None]:
             # First render for self.lines
-            self.lines, self.links = self.story.renderer.reader(self.cfg, \
+            self.lines, self.links = self.tag.renderer.reader(self.cfg, \
                     self.story, self.cfg.width, self.show_links, None)
 
             # This is the default, old behavior (floating window)
@@ -64,7 +66,7 @@ class Reader :
                 else:
                     self.top, self.right = (self.cfg.gui_height, 0)
         else:
-            self.lines, self.links = self.story.renderer.reader(self.cfg, \
+            self.lines, self.links = self.tag.renderer.reader(self.cfg, \
                     self.story, self.cfg.reader_lines, self.show_links, None)
 
             self.height = self.cfg.gui_height
@@ -77,7 +79,7 @@ class Reader :
                 
         self.window = curses.newpad(self.lines, self.width)
         self.window.bkgdset(curses.color_pair(1))
-        self.lines, self.links = self.story.renderer.reader(self.cfg, self.story, \
+        self.lines, self.links = self.tag.renderer.reader(self.cfg, self.story, \
                 self.width, self.show_links, self.window)
 
         self.draw_elements()

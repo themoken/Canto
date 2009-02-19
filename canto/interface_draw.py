@@ -63,10 +63,10 @@ class Renderer :
         else:
             base += u"  "
 
-        if dict["story"].marked():
+        if dict["story"].was("marked"):
             base += u"%1%B"
         else:
-            if dict["story"].wasread():
+            if dict["story"].was("read"):
                 base += u"%3"
             else:
                 base += u"%2%B"
