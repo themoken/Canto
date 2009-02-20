@@ -229,6 +229,14 @@ class Cfg:
 
         if not "tags" in kwargs:
             kwargs["tags"] = [None]
+        else:
+            tgs = []
+            for tag in kwargs["tags"]:
+                if tag:
+                    tgs.append(unicode(tag, "UTF-8", "ignore"))
+                else:
+                    tgs.append(None)
+            kwargs["tags"] = tgs
 
         kwargs = self.wrap_args(kwargs)
 
@@ -368,7 +376,7 @@ class Cfg:
             data = self.read_decode(self.path)
 
         try :
-            exec(data, {}, locals)
+            exec(data.encode("UTF-8"), {}, locals)
         except :
             print "Invalid line in config."
             traceback.print_exc()
@@ -425,16 +433,16 @@ class Cfg:
             append = False
             if "append" in kwargs:
                 append = kwargs["append"]
-                file = open(self.path, "a")
+                file = codecs.open(self.path, "a", "UTF-8")
 
             l = fn(self, *args, **kwargs)
 
             for f in l:
                 if self.add(f[0], tags=[f[1]]) and append:
                     if f[1]:
-                        file.write("""add("%s", tags=["%s"])\n""" % f) 
+                        file.write(u"""add("%s", tags=["%s"])\n""" % f)
                     else:
-                        file.write("""add("%s")\n""" % f[0])
+                        file.write(u"""add("%s")\n""" % f[0])
 
             if append:
                 file.close()
@@ -449,21 +457,19 @@ class Cfg:
                 attrs["type"] in ["pie","rss"])) or\
                 not ("type" in attrs)):
 
-                l.append((attrs["xmlUrl"], attrs["text"]))
+                if "xmlUrl" in attrs and "text" in attrs:
+                    l.append((attrs["xmlUrl"], attrs["text"]))
 
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = start
         d = self.read_decode(filename)
-        p.Parse(d, 1)
+        p.Parse(d.encode("UTF-8"), 1)
         return l
 
     @source
     def source_urls(self, filename, **kwargs):
         l = []
-        f = open(filename, "r")
-        d = f.read().split('\n')[:-1]
-        f.close()
-
+        d = self.read_decode(filename).split('\n')[:-1]
         for feed in d:
             l.append((feed, None))
         return l
@@ -510,7 +516,8 @@ class Cfg:
             self.cfgtags.append(tag.Tag(\
                     self,
                     kwargs["sorts"],
-                    kwargs["filters"], t))
+                    kwargs["filters"],
+                    unicode(t, "UTF-8", "ignore")))
 
     def get_real_tagl(self, tl):
         if not tl:
@@ -520,6 +527,8 @@ class Cfg:
 
         r = []
         for t in tl:
+            if t and type(t) != unicode:
+                t = unicode(t, "UTF-8", "ignore")
             newtag = tag.Tag(self, Cycle(self.tag_sorts),\
                     Cycle(self.tag_filters), t)
 
