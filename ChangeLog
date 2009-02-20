@@ -1,3 +1,8 @@
+Canto 0.6.3 ChangeLog
+* Fix Unicode Tags (damn you, `exec`)
+* Fix imports with unknown encoding
+* Fix locking issue causing items to reappear as unread
+
 Canto 0.6.2 ChangeLog
 * Browser improvements
 * runhere.sh detects 64-bit now
