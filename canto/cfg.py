@@ -324,7 +324,9 @@ class Cfg:
                     self.log("%s" % traceback.format_exc())
         return fdec(c, self.log)
 
-    def read_decode(self, filename):
+    def read_decode(self, filename, top_encode=0):
+        enc = "utf-8"
+
         try:
             f = open(filename, "r")
             data = f.read()
@@ -342,6 +344,10 @@ class Cfg:
             self.log("Failed to open config! (%s)" % sys.exc_info())
         finally:
             f.close()
+
+        if top_encode and not ret.startswith("# -*- coding:"):
+            ret = "# -*- coding: " + enc + " -*-\n" + ret
+
         return ret
 
     def parse(self, data = None):
@@ -376,7 +382,7 @@ class Cfg:
         # to coerce some character into ASCII.
 
         if not data:
-            data = self.read_decode(self.path)
+            data = self.read_decode(self.path, 1)
 
         try :
             exec(data.encode("UTF-8"), {}, locals)
