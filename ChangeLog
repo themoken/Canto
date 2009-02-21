@@ -1,3 +1,7 @@
+Canto 0.6.4 ChangeLog
+* Re-fix Unicode Tags (incomplete fix last time)
+* Detect / add encode declaration to conf (defaults to utf-8)
+
 Canto 0.6.3 ChangeLog
 * Fix Unicode Tags (damn you, `exec`)
 * Fix imports with unknown encoding
