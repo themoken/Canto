@@ -233,7 +233,10 @@ class Cfg:
             tgs = []
             for tag in kwargs["tags"]:
                 if tag:
-                    tgs.append(unicode(tag, "UTF-8", "ignore"))
+                    if type(tag) != unicode:
+                        tgs.append(unicode(tag, "UTF-8", "ignore"))
+                    else:
+                        tgs.append(tag)
                 else:
                     tgs.append(None)
             kwargs["tags"] = tgs
