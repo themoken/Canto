@@ -85,7 +85,7 @@ class Renderer :
         return [(u"%B└", u"─", u"┘%C")]
 
     def reader_link(self, idx, link):
-        if link[2] == "browser":
+        if link[2] == "link":
             color = u"%4"
         elif link[2] == "image":
             color = u"%7"
@@ -246,7 +246,7 @@ class Renderer :
         if "enclosures" in story:
             for e in story["enclosures"]:
                 enc_links.append((u"[%s]" % e["type"],
-                        e["href"], "browser"))
+                        e["href"], "link"))
 
         d = {"story" : story, "cfg" : cfg }
 
@@ -254,7 +254,7 @@ class Renderer :
         s,links = canto_html.convert(s)
         s = self.do_regex(s, self.reader_post_rgx)
 
-        links = [(u"main link", story["link"], "browser")] + links
+        links = [(u"main link", story["link"], "link")] + links
         links += enc_links
 
         l = s.split("\n")

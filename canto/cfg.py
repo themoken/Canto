@@ -23,7 +23,7 @@ import os
 class Cfg:
     def __init__(self, conf, log_file, feed_dir, script_dir):
         self.handlers = {
-            "browser" : { None : ("firefox \"%u\"", 0, 0) },
+            "link" : {},
             "image" : {}
         }
 
@@ -411,10 +411,10 @@ class Cfg:
                 print "Use of %s is deprecated! Use link_handler() instead." %\
                     attr
                 if attr == "browser":
-                    self.handlers["browser"][None] = (locals[attr], 0, 0)
+                    self.handlers["link"][None] = (locals[attr], 0, 0)
                 elif attr == "text_browser":
-                    self.handlers["browser"][None] =\
-                            (self.handlers["browser"][None][0], 1, 0)
+                    self.handlers["link"][None] =\
+                            (self.handlers["link"][None][0], 1, 0)
 
         # Wrap hooks in the exception handler
         for hook in ["resize_hook","new_hook","select_hook","update_hook",\
@@ -503,7 +503,7 @@ class Cfg:
         self.handler(self.handlers["image"], path, **kwargs)
 
     def link_handler(self, path, **kwargs):
-        self.handler(self.handlers["browser"], path, **kwargs)
+        self.handler(self.handlers["link"], path, **kwargs)
 
     def add_tag(self, tags, **kwargs):
         if "sorts" in kwargs:

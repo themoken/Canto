@@ -207,7 +207,7 @@ class TestCantoHTML(TestCase):
         # Test LinkHandler
         text, links =  convert(u"""<a href="test">Blahblah</a>""")
 
-        self.failUnless(links == [(u"%4Blahblah",u"test",u"browser")])
+        self.failUnless(links == [(u"%4Blahblah",u"test",u"link")])
         
         # Test ImageHandler
         text,links = convert(u"""<img src="myimage.jpg" />

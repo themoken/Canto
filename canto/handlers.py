@@ -19,7 +19,7 @@ class LinkHandler(Handler):
         self.active = 0
         self.link = ""
         self.content = ""
-        self.handler = "browser"
+        self.handler = "link"
 
     def match(self, tag, attrs, open, ll):
         if tag == "a":

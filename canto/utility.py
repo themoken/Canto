@@ -197,8 +197,12 @@ def goto(link, cfg):
                 binary, text, fetch = cfg.handlers[handler][k]
                 break
         else:
-            # [None] is the default handler.
-            binary, text, fetch = cfg.handlers[handler][None]
+            if None in cfg.handlers[handler]:
+                binary, text, fetch = cfg.handlers[handler][None]
+            else:
+                cfg.log("No default %s handler defined!" % handler)
+                return
+
 
         # Escape all "s in the URL, to avoid malicious use
         # of crafted feeds. Thanks to Andreas.

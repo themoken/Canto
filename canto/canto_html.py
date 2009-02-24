@@ -15,11 +15,6 @@ from HTMLParser import HTMLParser
 import htmlentitydefs
 import re
 
-handlers = {
-        "browser" : { "default" : ("firefox \"%u\"", 0, 0) },
-        "image" : {}
-}
-
 class CantoHTML(HTMLParser):
 
     # Reset is used, instead of __init__ so a single
