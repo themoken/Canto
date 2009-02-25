@@ -44,7 +44,7 @@ class Story():
     def __contains__(self, key):
         return key in self.ufp
 
-    def __tagwrap(self, tag, i):
+    def tagwrap(self, tag, i):
         if i == 0:
             return tag in self.ufp["canto_state"]
         elif i == 1 and not tag in self.ufp["canto_state"]:
@@ -56,31 +56,31 @@ class Story():
             self.feed.has_changed()
 
     def wasread(self):
-        return self.__tagwrap("read", 0)
+        return self.tagwrap("read", 0)
 
     def read(self):
-        self.__tagwrap("read", 1)
+        self.tagwrap("read", 1)
 
     def unread(self):
-        self.__tagwrap("read", -1)
+        self.tagwrap("read", -1)
 
     def marked(self):
-        return self.__tagwrap("marked", 0)
+        return self.tagwrap("marked", 0)
 
     def mark(self):
-        self.__tagwrap("marked", 1)
+        self.tagwrap("marked", 1)
 
     def unmark(self):
-        self.__tagwrap("marked", -1)
+        self.tagwrap("marked", -1)
 
     def isnew(self):
-        return self.__tagwrap("new", 0)
+        return self.tagwrap("new", 0)
 
     def new(self):
-        self.__tagwrap("new", 1)
+        self.tagwrap("new", 1)
 
     def old(self):
-        self.__tagwrap("new", -1)
+        self.tagwrap("new", -1)
 
     def selected(self):
         return self.sel

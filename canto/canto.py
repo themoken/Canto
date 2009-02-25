@@ -292,6 +292,17 @@ class Main():
                 f.time = 1
                 f.tick()
 
+        base_tags = {}
+        for f in [x for x in self.cfg.feeds if x.base_set]:
+            if f.tags[0] in base_tags:
+                otag = f.tags[0]
+                base_tags[otag] += 1
+                f.tags[0] += " (%d)" % base_tags[otag]
+                for s in f:
+                    s.tagwrap(otag, -1)
+                    s.tagwrap(f.tags[0], 1)
+            else:
+                base_tags[f.tags[0]] = 1
             self.filter_extend(f)
 
         # Print out a feed list, bail
