@@ -339,11 +339,24 @@ class Main():
         # information to our Cfg().
 
         self.cfg.stdscr = curses.initscr()
-        curses.curs_set(0)
-        curses.noecho()
-        curses.start_color()
-        curses.halfdelay(1)
-        curses.use_default_colors()
+
+	# curs_set can return ERR, we shouldn't care
+	try:
+	        curses.curs_set(0)
+	except:
+		pass
+
+	# if any of these mess up though, the rest of the
+	# the operation is suspect, so die.
+	try:
+		curses.noecho()
+		curses.start_color()
+		curses.halfdelay(1)
+		curses.use_default_colors()
+	except:
+		self.cfg.log("Unable to init curses, bailing")
+		self.done()
+		
         self.resize = 0
         self.alarmed = 0
 
