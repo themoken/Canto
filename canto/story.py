@@ -31,7 +31,7 @@ class Story():
         self.renderer = renderer
 
     def __eq__(self, other):
-        if self.ufp["id"] != other.ufp["id"]:
+        if self["id"] != other["id"]:
             return 0
         return 1
 
