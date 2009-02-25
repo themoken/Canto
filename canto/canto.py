@@ -294,9 +294,11 @@ class Main():
 
         base_tags = {}
         for f in [x for x in self.cfg.feeds if x.base_set]:
+            otag = f.tags[0]
             if f.tags[0] in base_tags:
-                otag = f.tags[0]
                 base_tags[otag] += 1
+                while f.tags[0] + (" (%d)" % base_tags[otag]) in base_tags:
+                    base_tags[otag] += 1
                 f.tags[0] += " (%d)" % base_tags[otag]
                 for s in f:
                     s.tagwrap(otag, -1)
