@@ -1,3 +1,9 @@
+Canto 0.6.5 ChangeLog
+* Fix multiple identical main tag weirdness
+* Fix curses crash with TERM misset
+* Fix unset default handlers
+* Fix lock crash
+
 Canto 0.6.4 ChangeLog
 * Re-fix Unicode Tags (incomplete fix last time)
 * Detect / add encode declaration to conf (defaults to utf-8)
