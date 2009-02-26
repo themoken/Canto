@@ -184,13 +184,13 @@ class Main():
                 while 1:
                     canto_fetch.main(self.cfg, optlist)
                     time.sleep(60)
+                    oldcfg = self.cfg
                     try :
                         self.cfg = cfg.Cfg(conf_file, log_file, feed_dir,\
                                 script_dir)
                         self.cfg.parse()
                     except:
-                        # Pass and the old config will be used.
-                        pass
+                        self.cfg = oldcfg
             sys.exit(canto_fetch.main(self.cfg, optlist))
 
         # From this point forward, we are definitely canto,
