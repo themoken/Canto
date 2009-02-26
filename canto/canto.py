@@ -66,7 +66,8 @@ class Main():
     def __init__(self):
         # Let locale figure itself out
         locale.setlocale(locale.LC_ALL, "")
-        
+        enc = locale.getpreferredencoding()
+
         # Figure out which binary we are, canto or canto-fetch
         # and determine which arguments we'll accept.
 
@@ -105,7 +106,7 @@ class Main():
 
         for opt, arg in optlist:
             if opt in ["-D", "--dir"]:
-                conf_dir = arg
+                conf_dir = unicode(arg, enc, "ignore")
                 break
         else:
             conf_dir = os.getenv("HOME") + "/.canto/"
@@ -126,15 +127,15 @@ class Main():
 
         for opt, arg in optlist :
             if opt in ["-C", "--conf"] :
-                conf_file = arg
+                conf_file = unicode(arg, enc, "ignore")
             elif opt in ["-L","--log"] :
-                log_file = arg
+                log_file = unicode(arg, enc, "ignore")
             elif opt in ["-F","--fdir"] :
-                feed_dir = arg
+                feed_dir = unicode(arg, enc, "ignore")
                 if feed_dir[-1] != '/' :
                     feed_dir += '/'
             elif opt in ["-S","--sdir"] :
-                script_dir = arg
+                script_dir = unicode(arg, enc, "ignore")
                 if script_dir[-1] != '/' :
                     script_dir += '/'
             elif opt in ["-h","--help"] :
@@ -207,7 +208,7 @@ class Main():
                 flags |= UPDATE_FIRST
             elif opt in ["-n","--checknew"] :
                 flags |= CHECK_NEW
-                feed_ct = arg
+                feed_ct = unicode(arg, enc, "ignore")
             elif opt in ["-a","--checkall"] :
                 flags |= CHECK_NEW
             elif opt in ["-l","--list"] :
@@ -216,12 +217,12 @@ class Main():
                 flags |= OUT_OPML
             elif opt in ["-i","--import"] :
                 flags |= IN_OPML
-                opml_file = arg
+                opml_file = unicode(arg, enc, "ignore")
             elif opt in ["-r","--url"] :
                 flags |= IN_URL
-                url = arg
+                url = unicode(arg, enc, "ignore")
             elif opt in ["-t","--tag"] :
-                newtag = arg
+                newtag = unicode(arg, enc, "ignore")
 
         if flags & IN_OPML:
             self.cfg.source_opml(opml_file, append=True)
@@ -310,7 +311,7 @@ class Main():
         # Print out a feed list, bail
         if flags & FEED_LIST:
             for f in self.cfg.feeds:
-                print f.tags[0]
+                print f.tags[0].encode(enc, "ignore")
             sys.exit(0)
 
         # This could probably be done better, or more officially
@@ -328,7 +329,7 @@ class Main():
                     t = "rss"
 
                 print """\t<outline text="%s" xmlUrl="%s" type="%s" />""" %\
-                        (feed.tags[0], feed.URL, t)
+                        (feed.tags[0].encode(enc, "ignore"), feed.URL, t)
 
             print """</body>"""
             print """</opml>"""
