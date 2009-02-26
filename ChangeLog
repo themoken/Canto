@@ -3,6 +3,8 @@ Canto 0.6.5 ChangeLog
 * Fix curses crash with TERM misset
 * Fix unset default handlers
 * Fix lock crash
+* Fix small update problem
+* Allow 256 color definitions
 
 Canto 0.6.4 ChangeLog
 * Re-fix Unicode Tags (incomplete fix last time)
