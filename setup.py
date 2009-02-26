@@ -16,11 +16,11 @@ class Canto_install_data(install_data):
         mandir = install_cmd.install_data + "/share/man/man1/"
 
         for f in ["/canto/const.py"]:
-            os.system("sed -i 's/SET_VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + f)
+            os.system("sed -i -e 's/SET_VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + f)
 
         for m in ["canto.1","canto-fetch.1"]:
-            os.system("sed -i 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + m)
-            os.system("sed -i 's/MAN_DATE/" + man_date + "/g' " + mandir + m)
+            os.system("sed -i -e 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + m)
+            os.system("sed -i -e 's/MAN_DATE/" + man_date + "/g' " + mandir + m)
 
 setup(name='Canto',
         version=".".join(version),
