@@ -69,8 +69,10 @@ class Feed(list):
         except:
             return 0
 
+        # If this data pre-dates 0.6.0 (the last disk format update)
+        # toss a key error.
         if "canto_version" not in self.ufp or\
-                self.ufp["canto_version"] != VERSION_TUPLE:
+                self.ufp["canto_version"][1] < 6:
             raise KeyError
 
         if not self.base_set:

@@ -108,7 +108,7 @@ def convcolor(c):
             "cyan" : 6}
 
     if type(c) == int:
-        if 0 <= c <= 7:
+        if 0 <= c <= curses.COLORS:
             return c
         else:
             return 0
