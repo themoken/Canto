@@ -1,3 +1,8 @@
+Canto 0.6.6 ChangeLog
+* Make setup.py sed scripts BSD compatible
+* Even basic print statements now obey locale.preferredencoding()
+* All input command-line input is unicode'd() (-n fix)
+
 Canto 0.6.5 ChangeLog
 * Fix multiple identical main tag weirdness
 * Fix curses crash with TERM misset
