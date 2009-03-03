@@ -132,7 +132,7 @@ class Reader :
     
     def action(self, a):
         if hasattr(a, "__call__"):
-            r = a()
+            r = a(self)
         else:
             r = 0
             f = getattr(self,a,None)
