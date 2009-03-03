@@ -46,8 +46,10 @@ class Cycle():
         return 1
 
     def override(self, cur):
-        self.over = cur
-        return self.over
+        if self.over != cur:
+            self.over = cur
+            return 1
+        return 0
 
     def cur(self):
         return self.over or self.list[self.idx]
