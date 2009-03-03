@@ -1,3 +1,7 @@
+Canto 0.6.7 ChangeLog
+* Make filter syntax uniform (add filters now work with canto/extra filters)
+* Fix add_tag() without sorts= set (typo)
+
 Canto 0.6.6 ChangeLog
 * Make setup.py sed scripts BSD compatible
 * Even basic print statements now obey locale.preferredencoding()
