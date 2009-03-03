@@ -43,7 +43,10 @@ class Feed(list):
         self.password = password
 
         # Hard filter
-        self.filter = filter
+        if filter:
+            self.filter = lambda x: filter(self, x)
+        else:
+            self.filter = None
 
         # Other necessities
         self.path = dirpath
