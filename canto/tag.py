@@ -70,6 +70,7 @@ class Tag(list):
         else:
             list.extend(self, matched_tag)
 
+        empty = 0
         if filt and not len(self):
             d = { "title" : "No unfiltered items.",
                   "description" : "You've filtered out everything!",
@@ -79,6 +80,7 @@ class Tag(list):
 
             stub = story.Story(d , None, self.cfg.default_renderer)
             self.append(stub)
+            empty = 1
         else:
             if not hasattr(self.sorts.cur(), "__iter__"):
                 dosorts = [self.sorts.cur()]
@@ -89,15 +91,21 @@ class Tag(list):
                 if s:
                     list.sort(self, s)
 
-        lt = len(self)
-        for i in range(lt):
-            self[i].idx = i
-            self[i].last = 0
-        if lt:
-            self[-1].last = 1
+        if empty:
+            self.read = 0
+            self.unread = 0
+            self[0].idx = 0
+            self[0].last = 1
+        else:
+            lt = len(self)
+            for i in range(lt):
+                self[i].idx = i
+                self[i].last = 0
+            if lt:
+                self[-1].last = 1
 
-        self.read = len(filter(lambda x : x.wasread(), self))
-        self.unread = len(self) - self.read
+            self.read = len(filter(lambda x : x.wasread(), self))
+            self.unread = len(self) - self.read
 
     def clear(self):
         del self[:]
