@@ -510,7 +510,7 @@ class Cfg:
             kwargs["sorts"] = \
                 Cycle(utility.get_list_of_instances(kwargs["sorts"]))
         else:
-            kwargs["sort"] = Cycle([[None]])
+            kwargs["sorts"] = Cycle([[None]])
 
         if "filters" in kwargs:
             kwargs["filters"] = \
