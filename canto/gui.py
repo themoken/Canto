@@ -480,7 +480,8 @@ class Gui :
 
     @change_sorts
     def set_tag_sort(self, sort):
-        return (1, self.tags[self.sel.tag_idx].sorts.override(sort))
+        return (self.tags[self.sel.tag_idx].sorts.override(sort),\
+                self.tags[self.sel.tag_idx].sorts.cur())
 
     def change_tags(fn):
         def dec(self, *args):
