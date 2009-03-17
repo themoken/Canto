@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-
+from __future__ import with_statement # This isn't required in Python 2.6
 from distutils.core import setup, Extension
 from distutils.command.install_data import install_data
-import os
 
 version = ['0','6','7']
 man_date = "03 March 2009"
@@ -15,12 +14,19 @@ class Canto_install_data(install_data):
         libdir = install_cmd.install_lib
         mandir = install_cmd.install_data + "/share/man/man1/"
 
-        for f in ["/canto/const.py"]:
-            os.system("sed -i -e 's/SET_VERSION_TUPLE/\(" + ",".join(version) + "\)/g' " + libdir + f)
+        for source in ["/canto/const.py"]:
+            with open(libdir + source, "r+") as f:
+				d = f.read().replace("SET_VERSION_TUPLE","(" +\
+						",".join(version) + ")")
+				f.truncate(0)
+				f.write(d)
 
-        for m in ["canto.1","canto-fetch.1"]:
-            os.system("sed -i -e 's/MAN_VERSION/" + ".".join(version) + "/g' " + mandir + m)
-            os.system("sed -i -e 's/MAN_DATE/" + man_date + "/g' " + mandir + m)
+        for manpage in ["canto.1","canto-fetch.1"]:
+            with open(mandir + manpage, "r+") as f:
+				d = f.read().replace("MAN_VERSION", ".".join(version))
+				d = d.replace("MAN_DATE", man_date)
+				f.truncate(0)
+				f.write(d)
 
 setup(name='Canto',
         version=".".join(version),
