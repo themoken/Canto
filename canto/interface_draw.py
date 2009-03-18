@@ -16,6 +16,8 @@ import re
 
 class Renderer :
     def __init__(self):
+        self.prefcode = locale.getpreferredencoding()
+
         self.story_rgx = [
             # Eliminate extraneous HTML
             (re.compile(u"<.*?>"), u""),
@@ -116,17 +118,16 @@ class Renderer :
             return (window_list[0], row)
 
     def core_wrap(self, window, winrow, width, s, rep, end):
-        prefcode = locale.getpreferredencoding()
         ret = core(window, winrow, 0, width,
-                s.encode(prefcode, 'replace'),
-                rep.encode(prefcode, 'replace'),
-                end.encode(prefcode, 'replace'))
+                s.encode(self.prefcode, 'replace'),
+                rep.encode(self.prefcode, 'replace'),
+                end.encode(self.prefcode, 'replace'))
         if ret:
-            ret = unicode(ret, prefcode)
+            ret = unicode(ret, self.prefcode)
         return ret
 
     def tlen_wrap(self, s):
-        return tlen(s.encode(locale.getpreferredencoding(), 'replace'))
+        return tlen(s.encode(self.prefcode, 'replace'))
 
     def simple_out(self, list, row, height, width, window_list):
         line = 0
