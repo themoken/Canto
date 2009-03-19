@@ -1,3 +1,10 @@
+Canto 0.6.8 ChangeLog
+* Fix set_tag_sort(None)
+* Fix miscount of items when all filtered
+* Reader keybinds now passed reader object (like Gui keybinds)
+* Cache overused locale query (crazy speedup on that)
+* Convert setup.py to pure python (no more sed scripts)
+
 Canto 0.6.7 ChangeLog
 * Make filter syntax uniform (add filters now work with canto/extra filters)
 * Fix add_tag() without sorts= set (typo)
