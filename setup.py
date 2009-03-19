@@ -16,17 +16,19 @@ class Canto_install_data(install_data):
 
         for source in ["/canto/const.py"]:
             with open(libdir + source, "r+") as f:
-				d = f.read().replace("SET_VERSION_TUPLE","(" +\
-						",".join(version) + ")")
-				f.truncate(0)
-				f.write(d)
+                d = f.read().replace("SET_VERSION_TUPLE","(" +\
+                        ",".join(version) + ")")
+                f.truncate(0)
+                f.seek(0)
+                f.write(d)
 
         for manpage in ["canto.1","canto-fetch.1"]:
             with open(mandir + manpage, "r+") as f:
-				d = f.read().replace("MAN_VERSION", ".".join(version))
-				d = d.replace("MAN_DATE", man_date)
-				f.truncate(0)
-				f.write(d)
+                d = f.read().replace("MAN_VERSION", ".".join(version))
+                d = d.replace("MAN_DATE", man_date)
+                f.truncate(0)
+                f.seek(0)
+                f.write(d)
 
 setup(name='Canto',
         version=".".join(version),
