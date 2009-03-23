@@ -13,6 +13,7 @@ import commands
 import urlparse
 import urllib2
 import cPickle
+import socket
 import signal
 import shutil
 import fcntl
@@ -21,6 +22,8 @@ import sys
 import os
 
 def main(cfg, optlist, verbose=False, force=False):
+
+    socket.setdefaulttimeout(30)
 
     threads = []
 
