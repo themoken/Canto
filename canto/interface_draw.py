@@ -14,6 +14,21 @@ import canto_html
 import locale
 import re
 
+def draw_hooks(func):
+    def new_func(self, *args):
+        pre = getattr(self, "pre_" + func.func_name, [])
+        post = getattr(self, "post_" + func.func_name, [])
+        r = None
+
+        for f in pre:
+            r = f(*args)
+        r = func(self, *args)
+        for f in post:
+            r = f(*args)
+        return r
+
+    return new_func
+
 class Renderer :
     def __init__(self):
         self.prefcode = locale.getpreferredencoding()
@@ -30,6 +45,11 @@ class Renderer :
 
         self.reader_post_rgx = [
             (re.compile(u"[\\\"](.*?)[\\\"]"), u"%5\"\\1\"%0"),
+            ]
+
+        self.pre_reader = [
+            self.reader_flatten_content,
+            self.reader_add_enc_links,
             ]
 
         self.bq = u"%B%1│%0%b "
@@ -232,34 +252,42 @@ class Renderer :
     
         return row
 
-    def reader(self, cfg, story, width, show_links, window):
-        s = story.get_text()
+    def reader_flatten_content(self, dict):
+            s = dict["story"]["description"]
+        dict["content"] = dict["story"].get_text()
 
-        enc_links = []
-        if "enclosures" in story:
-            for e in story["enclosures"]:
-                enc_links.append((u"[%s]" % e["type"],
+    def reader_add_enc_links(self, dict):
+        dict["enc_links"] = []
+        if "enclosures" in dict["story"]:
+            for e in dict["story"]["enclosures"]:
+                dict["enc_links"].append((u"[%s]" % e["type"],
                         e["href"], "link"))
 
-        d = {"story" : story, "cfg" : cfg }
+    @draw_hooks
+    def reader(self, dict):
 
-        s = self.do_regex(s, self.reader_pre_rgx)
+        d = {"story" : dict["story"], "cfg" : dict["cfg"] }
+
+        s = self.do_regex(dict["content"], self.reader_pre_rgx)
         s,links = canto_html.convert(s)
         s = self.do_regex(s, self.reader_post_rgx)
 
-        links = [(u"main link", story["link"], "link")] + links
-        links += enc_links
+        links = [(u"main link", dict["story"]["link"], "link")] + links
+        links += dict["enc_links"]
 
         l = s.split("\n")
-        if show_links:
+        if dict["show_links"]:
             l.append(" ")
             for idx,link in enumerate(links):
                 l.append(self.reader_link(idx, link))
 
-        row = self.simple_out(self.reader_head(d), 0, -1, width, [window])
+        row = self.simple_out(self.reader_head(d), 0, -1,\
+                dict["cfg"].width, [dict["window"]])
         row = self.out([[x, (self.rfirsts(d), self.rmids(d),
-            self.rends(d))] for x in l], row, -1, width, [window])
-        row = self.simple_out(self.reader_foot(d), row, -1, width, [window])
+            self.rends(d))] for x in l], row, -1,\
+                dict["cfg"].width, [dict["window"]])
+        row = self.simple_out(self.reader_foot(d), row, -1,\
+                dict["cfg"].width, [dict["window"]])
         return row, links
 
     def status(self, bar, height, width, str):

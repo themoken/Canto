@@ -47,10 +47,14 @@ class Reader :
         # A way to get this right off the bat would be nice, but I doubt
         # it would enhance the performance more than one iota.
 
+        d = { "story" : self.story,
+              "cfg" : self.cfg,
+              "show_links" : self.show_links,
+              "window" : None }
+
         if self.cfg.reader_orientation in ["top","bottom",None]:
             # First render for self.lines
-            self.lines, self.links = self.tag.renderer.reader(self.cfg, \
-                    self.story, self.cfg.width, self.show_links, None)
+            self.lines, self.links = self.tag.renderer.reader(d)
 
             # This is the default, old behavior (floating window)
             if not self.cfg.reader_orientation:
@@ -66,8 +70,7 @@ class Reader :
                 else:
                     self.top, self.right = (self.cfg.gui_height, 0)
         else:
-            self.lines, self.links = self.tag.renderer.reader(self.cfg, \
-                    self.story, self.cfg.reader_lines, self.show_links, None)
+            self.lines, self.links = self.tag.renderer.reader(d)
 
             self.height = self.cfg.gui_height
             self.width = self.cfg.reader_lines
@@ -79,9 +82,9 @@ class Reader :
                 
         self.window = curses.newpad(self.lines, self.width)
         self.window.bkgdset(curses.color_pair(1))
-        self.lines, self.links = self.tag.renderer.reader(self.cfg, self.story, \
-                self.width, self.show_links, self.window)
+        d["window"] = self.window
 
+        self.lines, self.links = self.tag.renderer.reader(d)
         self.draw_elements()
 
     def draw_elements(self):
