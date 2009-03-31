@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from input import num_input
+from input import input
 from const import *
 import utility
 
@@ -120,7 +120,45 @@ class Reader :
             self.offset = 0
 
     def goto(self):
-        self.dogoto(num_input(self.cfg, u"Link Number"))
+        term = input(self.cfg, "Goto")
+        if not term:
+            return
+        
+        links = []
+        terms = term.split(',')
+
+        for t in terms:
+            try:
+                links.append(int(t))
+            except:
+                if t.count('-') == 1:
+                    d = t.index('-')
+                    a = t[:d]
+                    b = t[(d+1):]
+                    try:
+                        a = int(a)
+                        b = int(b)
+                    except:
+                        self.cfg.log("Unable to interpret range!")
+                        return
+                    for l in xrange(a,b + 1):
+                        links.append(l)
+                else:
+                    self.cfg.log("Unable to interpret link!")
+                    return
+
+        out = "Going to link"
+        if len(links) != 1:
+            out += "s "
+            for n in links[:-1]:
+                out += "%d, " % n
+            out += "and %d" % links[-1]
+        else:
+            out += " %d" % links[0]
+        self.cfg.log(out)
+
+        for l in links:
+            self.dogoto(l)
 
     def dogoto(self, n):
         if n == None:
