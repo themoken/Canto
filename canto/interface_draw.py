@@ -44,6 +44,10 @@ class Renderer :
                 canto_html.char_wrapper)
             ]
 
+        self.pre_story = [
+            self.story_strip_entities
+            ]
+
         self.pre_reader = [
             self.reader_convert_html,
             self.reader_highlight_quotes,
@@ -222,10 +226,15 @@ class Renderer :
             s = rgx.sub(rep,s)
         return s
 
-    def story(self, dict):
-        title = self.do_regex(dict["story"]["title"], self.story_rgx)
-        title = title.lstrip().rstrip()
+    def story_base(self, dict):
+        dict["content"] = dict["story"]["title"]
 
+    def story_strip_entities(self, dict):
+        dict["content"] = self.do_regex(dict["content"], self.story_rgx)
+        dict["content"] = dict["content"].lstrip().rstrip()
+
+    @draw_hooks
+    def story(self, dict):
         d = {"tag": dict["tag"], "story" : dict["story"],\
                 "cfg" : dict["tag"].cfg }
 
@@ -236,7 +245,7 @@ class Renderer :
                 dict["tag"].cfg.width, dict["window_list"])
 
         if not dict["tag"].collapsed:
-            row = self.out([[title, (self.firsts(d), self.mids(d), \
+            row = self.out([[dict["content"], (self.firsts(d), self.mids(d), \
                     self.ends(d))]],
                     row, dict["tag"].cfg.height,\
                     dict["tag"].cfg.width, dict["window_list"])
