@@ -41,16 +41,16 @@ class Renderer :
                 canto_html.char_wrapper)
             ]
 
-        self.reader_pre_rgx = []
-
-        self.reader_post_rgx = [
-            (re.compile(u"[\\\"](.*?)[\\\"]"), u"%5\"\\1\"%0"),
-            ]
-
         self.pre_reader = [
             self.reader_flatten_content,
+            self.reader_convert_html,
+            self.reader_highlight_quotes,
+            self.reader_add_main_link,
             self.reader_add_enc_links,
+            self.reader_render_links,
             ]
+
+        self.highlight_quote_rgx = re.compile(u"[\\\"](.*?)[\\\"]")
 
         self.bq = u"%B%1│%0%b "
         self.bq_on = 0
@@ -105,17 +105,6 @@ class Renderer :
 
     def reader_foot(self, dict):
         return [(u"%B└", u"─", u"┘%C")]
-
-    def reader_link(self, idx, link):
-        if link[2] == "link":
-            color = u"%4"
-        elif link[2] == "image":
-            color = u"%7"
-        else:
-            color = u"%8"
-
-        return color + u"[" + unicode(idx) + u"] " + \
-                link[0] + u"%1 - " + link[1]
 
     def rfirsts(self, dict):
         return (u"%1%B│%b%0 ", u" ", u" %1%B│%b%0")
@@ -256,31 +245,44 @@ class Renderer :
             s = dict["story"]["description"]
         dict["content"] = dict["story"].get_text()
 
+    def reader_convert_html(self, dict):
+        dict["content"], dict["links"] = canto_html.convert(dict["content"])
+
+    def reader_add_main_link(self, dict):
+        dict["links"] = [(u"main link", dict["story"]["link"], "link")]\
+                + dict["links"]
+
     def reader_add_enc_links(self, dict):
-        dict["enc_links"] = []
         if "enclosures" in dict["story"]:
             for e in dict["story"]["enclosures"]:
-                dict["enc_links"].append((u"[%s]" % e["type"],
+                dict["links"].append((u"[%s]" % e["type"],
                         e["href"], "link"))
+
+    def reader_render_links(self, dict):
+        if not dict["show_links"]:
+            return
+
+        dict["content"] += "\n"
+        for idx, link in enumerate(dict["links"]):
+            if link[2] == "link":
+                color = u"%4"
+            elif link[2] == "image":
+                color = u"%7"
+            else:
+                color = u"%8"
+
+            dict["content"] += color + u"[" + unicode(idx) + u"] " + \
+                    link[0] + u"%1 - " + link[1]
+
+    def reader_highlight_quotes(self, dict):
+        dict["content"] = self.highlight_quote_rgx.sub(dict["content"],\
+                u"%5\"\\1\"%0")
 
     @draw_hooks
     def reader(self, dict):
-
         d = {"story" : dict["story"], "cfg" : dict["cfg"] }
 
-        s = self.do_regex(dict["content"], self.reader_pre_rgx)
-        s,links = canto_html.convert(s)
-        s = self.do_regex(s, self.reader_post_rgx)
-
-        links = [(u"main link", dict["story"]["link"], "link")] + links
-        links += dict["enc_links"]
-
-        l = s.split("\n")
-        if dict["show_links"]:
-            l.append(" ")
-            for idx,link in enumerate(links):
-                l.append(self.reader_link(idx, link))
-
+        l = dict["content"].split("\n")
         row = self.simple_out(self.reader_head(d), 0, -1,\
                 dict["cfg"].width, [dict["window"]])
         row = self.out([[x, (self.rfirsts(d), self.rmids(d),
@@ -288,7 +290,7 @@ class Renderer :
                 dict["cfg"].width, [dict["window"]])
         row = self.simple_out(self.reader_foot(d), row, -1,\
                 dict["cfg"].width, [dict["window"]])
-        return row, links
+        return row, dict["links"]
 
     def status(self, bar, height, width, str):
         self.simple_out([(str, u" ", u"")], 0, height, width, [bar])
