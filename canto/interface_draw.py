@@ -222,24 +222,29 @@ class Renderer :
             s = rgx.sub(rep,s)
         return s
 
-    def story(self, cfg, tag, story, row, height, width, window_list):
-        title = self.do_regex(story["title"], self.story_rgx)
+    def story(self, dict):
+        title = self.do_regex(dict["story"]["title"], self.story_rgx)
         title = title.lstrip().rstrip()
 
-        d = {"tag": tag, "story" : story, "cfg" : cfg }
+        d = {"tag": dict["tag"], "story" : dict["story"],\
+                "cfg" : dict["tag"].cfg }
 
-        if story.idx == 0:
+        row = dict["row"]
+        if dict["story"].idx == 0:
             row = self.simple_out(self.tag_head(d),\
-                row, height, width, window_list)
+                row, dict["tag"].cfg.height, \
+                dict["tag"].cfg.width, dict["window_list"])
 
-        if not tag.collapsed:
+        if not dict["tag"].collapsed:
             row = self.out([[title, (self.firsts(d), self.mids(d), \
                     self.ends(d))]],
-                    row, height, width, window_list)
+                    row, dict["tag"].cfg.height,\
+                    dict["tag"].cfg.width, dict["window_list"])
             
-            if story.last:
+            if dict["story"].last:
                 row = self.simple_out(self.tag_foot(d),\
-                    row, height, width, window_list)
+                    row, dict["tag"].cfg.height, \
+                    dict["tag"].cfg.width, dict["window_list"])
     
         return row
 

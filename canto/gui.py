@@ -104,9 +104,9 @@ class Gui :
         self.draw_elements()
 
     def print_item(self, tag, story, row):
-        return tag.renderer.story(self.cfg, tag, story, row,\
-                self.cfg.gui_height, self.cfg.gui_width / self.cfg.columns,\
-                self.window_list)
+        d = { "story" : story, "tag" : tag, "row" : row,\
+                "window_list" : self.window_list }
+        return tag.renderer.story(d)
 
     def __map_items(self):
 
