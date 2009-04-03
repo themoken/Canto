@@ -16,10 +16,13 @@ import re
 
 def draw_hooks(func):
     def new_func(self, *args):
+        base = getattr(self, func.func_name + "_base", None)
         pre = getattr(self, "pre_" + func.func_name, [])
         post = getattr(self, "post_" + func.func_name, [])
         r = None
 
+        if base:
+            r = base(*args)
         for f in pre:
             r = f(*args)
         r = func(self, *args)
@@ -42,7 +45,6 @@ class Renderer :
             ]
 
         self.pre_reader = [
-            self.reader_flatten_content,
             self.reader_convert_html,
             self.reader_highlight_quotes,
             self.reader_add_main_link,
@@ -219,7 +221,7 @@ class Renderer :
         for rgx,rep in rlist:
             s = rgx.sub(rep,s)
         return s
-    
+
     def story(self, cfg, tag, story, row, height, width, window_list):
         title = self.do_regex(story["title"], self.story_rgx)
         title = title.lstrip().rstrip()
@@ -241,8 +243,7 @@ class Renderer :
     
         return row
 
-    def reader_flatten_content(self, dict):
-            s = dict["story"]["description"]
+    def reader_base(self, dict):
         dict["content"] = dict["story"].get_text()
 
     def reader_convert_html(self, dict):
