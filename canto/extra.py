@@ -51,16 +51,15 @@ add_hook_post_story = __add_hook_meta("post_story")
 
 # Adds Slashdot department information to reader
 #
-# Usage : add("Slashdot",\
-#        "http://rss.slashdot.org/slashdot/Slashdot", \
-#        renderer=slashdot_renderer()
+# Usage :
+#   r = get_default_renderer()
+#   add_hook_pre_reader(r, add_slash_dept, before="reader_convert_html")
+#
 
-class slashdot_renderer(interface_draw.Renderer):
-    def reader_head(self, dict):
-        title = self.do_regex(dict["story"]["title"], self.story_rgx)
-        return [(u"%1%B" + title, u" ", u" "),\
-                (u"%bfrom the " + dict["story"]["slash_department"] +\
-                u" department%B", u" ", u" "),(u"┌",u"─",u"┐%C")]
+def add_slash_dept(dict):
+	if "slash_department" in dict["story"]:
+		dict["content"] = "%1from the " + dict["story"]["slash_department"]\
+			+ " department%0<br /><br />" + dict["content"]
 
 # Adds a "tablist" to the default Canto config.
 
