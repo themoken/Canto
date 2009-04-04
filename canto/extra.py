@@ -18,6 +18,37 @@ import time
 import os
 import re
 
+def __add_hook_meta(list):
+    def add_hook(r, func, **kwargs):
+        l = getattr(r, list, None)
+        def get_index(s):
+            if type(kwargs[s] == str):
+                f = getattr(r, kwargs[s], None)
+            else:
+                f = kwargs[s]
+            if f in l:
+                return l.index(f)
+            else:
+                print "Cannot insert %s %s %s, it isn't in the list!" %\
+                        (func.func_name, s, f.func_name)
+                return -2
+
+        if "after" in kwargs:
+            idx = get_index("after") + 1
+        elif "before" in kwargs:
+            idx = get_index("before")
+        else:
+            idx = len(l)
+
+        if idx > -1:
+            l.insert(idx, func)
+    return add_hook
+
+add_hook_pre_reader = __add_hook_meta("pre_reader")
+add_hook_post_reader = __add_hook_meta("post_reader")
+add_hook_pre_story = __add_hook_meta("pre_story")
+add_hook_post_story = __add_hook_meta("post_story")
+
 # Adds Slashdot department information to reader
 #
 # Usage : add("Slashdot",\
