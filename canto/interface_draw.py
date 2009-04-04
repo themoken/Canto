@@ -242,18 +242,18 @@ class Renderer :
         if dict["story"].idx == 0:
             row = self.simple_out(self.tag_head(d),\
                 row, dict["tag"].cfg.height, \
-                dict["tag"].cfg.width, dict["window_list"])
+                dict["width"], dict["window_list"])
 
         if not dict["tag"].collapsed:
             row = self.out([[dict["content"], (self.firsts(d), self.mids(d), \
                     self.ends(d))]],
                     row, dict["tag"].cfg.height,\
-                    dict["tag"].cfg.width, dict["window_list"])
+                    dict["width"], dict["window_list"])
             
             if dict["story"].last:
                 row = self.simple_out(self.tag_foot(d),\
                     row, dict["tag"].cfg.height, \
-                    dict["tag"].cfg.width, dict["window_list"])
+                    dict["width"], dict["window_list"])
     
         return row
 
@@ -299,12 +299,12 @@ class Renderer :
 
         l = dict["content"].split("\n")
         row = self.simple_out(self.reader_head(d), 0, -1,\
-                dict["cfg"].width, [dict["window"]])
+                dict["width"], [dict["window"]])
         row = self.out([[x, (self.rfirsts(d), self.rmids(d),
             self.rends(d))] for x in l], row, -1,\
-                dict["cfg"].width, [dict["window"]])
+                dict["width"], [dict["window"]])
         row = self.simple_out(self.reader_foot(d), row, -1,\
-                dict["cfg"].width, [dict["window"]])
+                dict["width"], [dict["window"]])
         return row, dict["links"]
 
     def status(self, bar, height, width, str):

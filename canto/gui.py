@@ -105,6 +105,7 @@ class Gui :
 
     def print_item(self, tag, story, row):
         d = { "story" : story, "tag" : tag, "row" : row,\
+                "width" : self.cfg.width / self.cfg.columns,
                 "window_list" : self.window_list }
         return tag.renderer.story(d)
 

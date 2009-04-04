@@ -54,35 +54,40 @@ class Reader :
 
         if self.cfg.reader_orientation in ["top","bottom",None]:
             # First render for self.lines
+            d["width"] = self.cfg.gui_width
+            d["height"] = 0
             self.lines, self.links = self.tag.renderer.reader(d)
 
             # This is the default, old behavior (floating window)
             if not self.cfg.reader_orientation:
-                self.height, self.width = min(self.lines, self.cfg.gui_height),\
-                        self.cfg.width
+                d["width"] = self.cfg.gui_width
+                d["height"] = min(self.lines, self.cfg.gui_height)
                 self.top, self.right = (0,0)
             # Rendering the reader into a pre-existing space
             else:
-                self.height = self.cfg.reader_lines
-                self.width = self.cfg.width
+                d["height"] = self.cfg.reader_lines
+                d["width"] = self.cfg.gui_width
                 if self.cfg.reader_orientation == "top":
                     self.top, self.right = (0,0)
                 else:
                     self.top, self.right = (self.cfg.gui_height, 0)
         else:
-            self.lines, self.links = self.tag.renderer.reader(d)
+            d["width"] = self.cfg.reader_lines
+            d["height"] = 0
 
-            self.height = self.cfg.gui_height
-            self.width = self.cfg.reader_lines
+            self.lines, self.links = self.tag.renderer.reader(d)
 
             if self.cfg.reader_orientation == "left":
                 self.top, self.right = (0, 0)
             else:
                 self.top, self.right = (0, self.cfg.gui_width)
                 
-        self.window = curses.newpad(self.lines, self.width)
+        self.window = curses.newpad(self.lines, d["width"])
         self.window.bkgdset(curses.color_pair(1))
+
         d["window"] = self.window
+        self.width = d["width"]
+        self.height = d["height"]
 
         self.lines, self.links = self.tag.renderer.reader(d)
         self.draw_elements()
