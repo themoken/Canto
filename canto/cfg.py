@@ -272,6 +272,9 @@ class Cfg:
     def set_default_renderer(self, renderer):
         self.default_renderer = renderer
 
+    def get_default_renderer(self):
+        return self.default_renderer
+
     def set_default_tag_filters(self, filters):
         self.tag_filters = utility.get_list_of_instances(filters)
 
@@ -365,6 +368,7 @@ class Cfg:
             "default_rate" : self.set_default_rate,
             "default_keep" : self.set_default_keep,
             "default_renderer" : self.set_default_renderer,
+            "get_default_renderer" : self.get_default_renderer,
             "default_tag_filters" : self.set_default_tag_filters,
             "default_tag_sorts" : self.set_default_tag_sorts,
             "renderer" : interface_draw.Renderer,
