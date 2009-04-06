@@ -57,7 +57,7 @@ And finally, I just really dig text-interfaces. [XMonad](http://xmonad.org) and 
 
 ## Why Python?
 
-The previous iteration of this project was in C (NRSS, which I still support and will maintain if anyone gives me bugs). Now C is great. I love C. I do my daily work in C and I enjoy it.
+The previous iteration of this project was in C (NRSS, which is deprecated in favor of Canto now). Now C is great. I love C. I do my daily work in C and I enjoy it.
 
 But when it comes to *having fun* while coding, Python is the way to go. I know you take a speed hit, but that's why the core drawing logic is in C (surprise!). And there's one thing that I've learned while bugfixing NRSS, and that's that it's no fun.
 
@@ -71,14 +71,13 @@ Canto is [GPLv2](http://www.gnu.org/licenses/old-licenses/gpl-2.0.html) software
 
 ## What platform does Canto run on?
 
-*Theoretically*, Canto should run under any Unix-like OS with Python and a compatible ncurses library. Everything is in Python, and the core drawing code is known to have compiled on Linux and the three major BSD's (although that doesn't necessarily mean it runs).
+*Theoretically*, Canto should run under any Unix-like OS with Python and a compatible ncurses library. Everything is in Python, and the core drawing code is known to have compiled on Linux and at some point in time, on the three major BSD operating systems. There have been problems with BSD support, however, particularly with OpenBSD.
 
-Testing of Canto, however, hasn't been done extensively on any system other than Linux x86/amd64, because that's what I (and 99% of the desktop users) have at home.
+Testing of Canto, however, hasn't been done extensively on any system other than Linux x86/amd64, because that's what I (and 99% of the desktop users) have at home. 
+
+Since 0.5.7 there's been an official Debian package which is built on every architecture Debian supports, this includes alpha, amd64, armel, hppa, i386, ia64, m68k, mips, mipsel, powerpc, s390, and sparc. This doesn't necessarily mean that Canto *runs* on all of these, but it at least builds which is a good sign.
 
 ## Where should I request features /  report bugs?
 
-You can send me mail (jack at codezen dot org). If you do that, make sure you mention canto in the subject, or my filters might get you.
+Read the [contact](/canto/contact) page. In short you should either get into the IRC channel, write a message on the Mailing List or submit a bug report to the [bug tracker](http://code.google.com/p/canto-reader/issues/list).
 
-Preferably, you can join IRC (irc.freenode.net #canto) and bring up the bug there. That way, we can get more information together and fix your bug faster. If you aren't able to get a hold of me in IRC (asleep, at work, etc.) and don't want to idle in the channel, email is your best bet.
-
-Bugs will be fixed (provided they're actually bugs) as soon as possible. If your bug crashes Canto, a copy of the console output and ~/.canto/log would be helpful. If your bug includes a particular feed that's acting strange, include the URL and/or a copy of the XML. If  Feature requests will be accepted if I think they're cool enough and not easily achievable through configuration. Patches should be `git-diff` or `diff -ru` output.

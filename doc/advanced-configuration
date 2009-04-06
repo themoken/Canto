@@ -1,4 +1,4 @@
-f you're looking for a bit more customization, then you've come to the right place.
+If you're looking for a bit more customization, then you've come to the right place.
 
 [TOC]
 
@@ -90,7 +90,7 @@ There are a number of different hooks.
 </tr>
 </table>
 
-Each hook is passed the relevant information. It may require a little [browsing of the code](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=summary") to make use of them, but the ability is there. The canto.extra module already has some example hooks for setting/unsetting the xterm title. If you need help using a hook, come by #canto in irc.freenode.net.
+Each hook is passed the relevant information. It may require a little [browsing of the code](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git) to make use of them, but the ability is there. The canto.extra module already has some example hooks for setting/unsetting the xterm title. If you need help using a hook, come by #canto in irc.freenode.net.
 
 ## Filters
 
@@ -141,7 +141,17 @@ Back to two lines of real code, inheriting the rest from `only_with`.
 
 Here are the three types of filters:
 
-1. **Feed filters**. This is a hard filter specified on a single feed that cannot be changed at runtime. This is intended to permanently ignore stories based based on criteria that don't really apply to other feed's items. For example, with a webcomic feed, like Penny Arcade. Inside the feed, some items start with "NEWS:" and some start with "COMIC:". To filter out all news items, you could use: `add(..., filter=only_without("NEWS:"))`. News items will be totally ignored, but any other items in the same tag (a "comics" tag, for example) won't be affected.
+1. **Feed filters**. This is a hard filter specified on a single feed that cannot be changed at runtime. This is intended to permanently ignore stories based based on criteria that don't really apply to other feed's items. For example, with a webcomic feed, like Penny Arcade. Inside the feed, some items start with "NEWS:" and some start with "COMIC:". To filter out all news items, you could use: `add(..., filter=only_without("NEWS:"))`. News items will be totally ignored, but any other items in the same tag (a "comics" tag, for example) won't be affected. **WARNING**: In <= 0.6.6 `canto/extra` filters don't work. This will be rectified in 0.6.7. In the meantime, you can define feed filters like this:
+
+        :::python
+        def feed_only_without(s):
+            return lambda x: s not in x["title"]
+
+        def feed_only_with(s):
+            return lambda x: s in x["title"]
+
+        add("URL", filter=feed_only_without("NEWS:"))
+
 
 2. **Tag filters**. This is a much more flexible use of filters. You can define a list of filters for a given tag and cycle through them ('{' and '}' by default). These are useful for toggling between subcategories in an arbitrary tag, or filtering out some stories in a given tag. Using the webcomic example above, if you wanted to just show "COMIC:" items by default, but wanted to still have access to "NEWS:" items every once in awhile, you could `add_tag("Super Comic", filters=[only_with("COMIC:"), None])`. Because the first filter is the default filter, initially you would only see "COMIC:" items, but using '}', you'd switch to the `None` filter and see all of the items. The default set of tag filters for all tags can be set with `set_default_tag_filters([...])`.
 
@@ -236,3 +246,4 @@ Other nice keybind defined in `canto/extra.py`:
     keys['s'] = set_tag_filter(show_unread) # Set the tag_filter with a keybind
     keys['d'] = set_tag_sort(by_alpha) # Set tag sort with a keybind
     keys['b'] = set_tags(["Reddit", "Proggit"]) # Set current tags
+

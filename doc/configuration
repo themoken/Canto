@@ -1,4 +1,4 @@
-is is where we'll go into the magic of `~/.canto/conf`. This file is actually parsed and driven by the Python interpreter itself, so it's immensely powerful. It has the entirety of the Python language behind it, and allows for an incredible amount of flexibility.
+This is where we'll go into the magic of `~/.canto/conf`. This file is actually parsed and driven by the Python interpreter itself, so it's immensely powerful. It has the entirety of the Python language behind it, and allows for an incredible amount of flexibility.
 
 If you've already gone through the basics, then you might be looking for [Advanced Configuration](/canto/advconfig/). That's were all the neat hooks and filters are covered.
 
@@ -170,6 +170,20 @@ For example, if I wanted to run a script to make an RSS feed out of Slashdot pol
     add("script:slashdotpolls -external")
 
 Where `-external` is an argument to the script. **Be Aware: the script must have execute permissions, or canto-fetch will not execute it.** You can add these permissions with `chmod +x <scriptfile>`.
+
+### Integration ###
+
+Feeds can automatically be appended to your config from the command line, using `canto -r <URL> [-t maintag]`, like so:
+
+    canto -r "http://reddit.com/.rss" -t "Reddit"
+
+Using this functionality from other applications is simple. For example, to allow Firefox to add feeds to your canto config directly, you can "open" it with this simple script
+
+    :::sh
+    #!/bin/sh
+    canto --url ${1/feed:/http:}
+
+Make sure this script is executable by `chmod +x <script>` before you try it. Thanks to Ypsy for the script.
 
 ## add_tag()
 ** add_tag("name", [filters=],[sorts=]) **
@@ -590,3 +604,4 @@ Canto 0.6.0 deprecated a number of configuration options. `browser` and
 
 All of these configuration options **will** disappear from Canto in the **near
 future**, so please update your configs.
+
