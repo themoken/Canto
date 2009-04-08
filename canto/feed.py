@@ -99,13 +99,13 @@ class Feed(list):
             # written one.
 
             selected = 0
-            changed = 0
 
             if entry in self:
                 i = self.index(entry)
-                if entry["canto_state"] != self[i]["canto_state"]:
+                if self.changed and entry["canto_state"] !=\
+                        self[i]["canto_state"]:
                     entry["canto_state"] = self[i]["canto_state"]
-                    changed = 1
+                    self.has_changed()
                 selected = self[i].sel
 
             # If tags were added in the configuration, c-f won't
@@ -118,7 +118,6 @@ class Feed(list):
 
             s = story.Story(entry, self, self.renderer)
             s.sel = selected
-            s.changed = changed
             newlist.append(s)
 
         del self[:]
