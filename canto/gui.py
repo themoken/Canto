@@ -200,7 +200,8 @@ class Gui :
                             self.sel)
             oldsel = self.sel
             r = fn(self, *args)
-            oldsel.unselect()
+            if oldsel:
+                oldsel.unselect()
             if self.sel_idx >= 0:
                 self.sel = self.map[self.sel_idx]
                 self.sel.select()
