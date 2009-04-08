@@ -91,15 +91,22 @@ class Feed(list):
         return 1
 
     def extend(self, entries):
+        newlist = []
         for entry in entries:
             # If out todisk() lock failed, then it's possible
             # we have unwritten changes, so we need to move over
             # the canto_state, rather than just using the already
             # written one.
 
-            if self.changed and entry in self:
+            selected = 0
+            changed = 0
+
+            if entry in self:
                 i = self.index(entry)
-                entry["canto_state"] = self[i]["canto_state"]
+                if entry["canto_state"] != self[i]["canto_state"]:
+                    entry["canto_state"] = self[i]["canto_state"]
+                    changed = 1
+                selected = self[i].sel
 
             # If tags were added in the configuration, c-f won't
             # notice (doesn't care about tags), so we check and
@@ -109,10 +116,13 @@ class Feed(list):
                 if tag not in entry["canto_state"]:
                     entry["canto_state"].append(tag)
 
+            s = story.Story(entry, self, self.renderer)
+            s.sel = selected
+            s.changed = changed
+            newlist.append(s)
+
         del self[:]
-        list.extend(self, filter(self.filter,\
-                [story.Story(entry, self, self.renderer) \
-                for entry in entries]))
+        list.extend(self, filter(self.filter, newlist))
 
     def has_changed(self):
         self.changed = 1

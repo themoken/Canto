@@ -198,8 +198,9 @@ class Gui :
                 if self.cfg.unselect_hook:
                     self.cfg.unselect_hook(self.tags[self.sel.tag_idx],
                             self.sel)
-                self.sel.unselect()
+            oldsel = self.sel
             r = fn(self, *args)
+            oldsel.unselect()
             if self.sel_idx >= 0:
                 self.sel = self.map[self.sel_idx]
                 self.sel.select()
