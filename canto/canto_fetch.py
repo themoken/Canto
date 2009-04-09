@@ -186,7 +186,8 @@ class UpdateThread(Thread):
         # I don't know why feedparser doesn't actually throw this
         # since all URLErrors are basically unrecoverable.
 
-        if type(newfeed["bozo_exception"]) == urllib2.URLError:
+        if "bozo_exception" in newfeed and\
+                type(newfeed["bozo_exception"]) == urllib2.URLError:
             self.log_func("Feedparser exception getting %s : %s, bailing." % \
                     (self.fd.tags[0], newfeed["bozo_exception"].reason))
             return
