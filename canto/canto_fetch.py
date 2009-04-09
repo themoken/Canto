@@ -183,6 +183,14 @@ class UpdateThread(Thread):
                     (self.fd.tags[0], sys.exc_info()[1]))
             return
 
+        # I don't know why feedparser doesn't actually throw this
+        # since all URLErrors are basically unrecoverable.
+
+        if type(newfeed["bozo_exception"]) == urllib2.URLError:
+            self.log_func("Feedparser exception getting %s : %s, bailing." % \
+                    (self.fd.tags[0], newfeed["bozo_exception"].reason))
+            return
+
         if not self.fd.base_set:
             if "feed" not in newfeed or "title" not in newfeed["feed"]:
                 self.log_func("Ugh. Defaulting to URL for tag. No guarantees.")
