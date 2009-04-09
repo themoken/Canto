@@ -1,0 +1,25 @@
+[TOC]
+
+## IRC
+
+A number of users and myself hang out in `#canto` on `irc.freenode.net`. My handle is `@TheMoken`. This is my preferred way of tackling bugs because it's real time, and you can answer my debugging questions. If you're looking for a fix as fast as possible, come here. This goes especially for crashing bugs.
+
+If you're new to IRC, [xchat](http://www.xchat.org) is a good beginner IRC client. I use [irssi](http://www.irssi.org). I also suggest using [pastebin.ca](http://pastebin.ca) as a pastebin because it supports non-ASCII characters.
+
+## Mailing Lists
+
+Canto has two official mailing lists.
+
+* [canto-reader](http://codezen.org/cgi-bin/mailman/listinfo/canto-reader) is a mailing list for general discussion, asking questions, requesting features. If you're not a fan of IRC then this is the place for you. This is where you should submit **patches** as well.
+
+* [canto-reader-announce](http://codezen.org/cgi-bin/mailman/listinfo/canto-reader-announce) is the typical ANNOUNCE: list, read-only and essentially designed for maintainers or folks that aren't running a distro that packages Canto. This content is not mirrored on the canto-reader list.
+
+Both of these lists are mirrored on Google groups.
+
+## Bug Tracker
+
+Canto uses Google Code for its [bug tracker](http://code.google.com/p/canto-reader/issues/list). Generally, you should submit bugs through IRC or the mailing lists first, but you can also create a bug/feature request here. This requires a Google ID. 
+
+## E-Mail
+
+Before Canto had the mailing lists, I encouraged people to mail me directly with any problems. Now, I'd prefer you to use the mailing lists. If you really have something to say just to me that won't help anyone else (i.e. praise/flames) then my email is **jack [at] codezen [dot] org**
