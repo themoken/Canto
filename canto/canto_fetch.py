@@ -156,24 +156,30 @@ class UpdateThread(Thread):
                 script = self.spath + "/" + self.fd.URL[7:]
                 out = commands.getoutput(script)
                 newfeed = feedparser.parse(out)
-            elif self.fd.username or self.fd.password:
-                mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-                domain = urlparse.urlparse(self.fd.URL)[1]
-                mgr.add_password(None, domain,\
-                        self.fd.username, self.fd.password)
-
-                # First, we try Basic Authentication
-                auth = urllib2.HTTPBasicAuthHandler(mgr)
-                opener = urllib2.build_opener(auth)
-                try:
-                    newfeed = feedparser.parse(opener.open(self.fd.URL))
-                except:
-                    # And, failing that, try Digest Authentication
-                    auth = urllib2.HTTPDigestAuthHandler(mgr)
-                    opener = urllib2.build_opener(auth)
-                    newfeed = feedparser.parse(opener.open(self.fd.URL))
             else:
-                newfeed = feedparser.parse(feedparser.urllib2.urlopen(self.fd.URL))
+                request = urllib2.Request(self.fd.URL)
+                request.add_header('User-Agent', "Canto/%d.%d.%d +\
+                    http://codezen.org/canto" % VERSION_TUPLE)
+
+                if self.fd.username or self.fd.password:
+                    mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                    domain = urlparse.urlparse(self.fd.URL)[1]
+                    mgr.add_password(None, domain,\
+                            self.fd.username, self.fd.password)
+
+                    # First, we try Basic Authentication
+                    auth = urllib2.HTTPBasicAuthHandler(mgr)
+                    opener = urllib2.build_opener(auth)
+                    try:
+                        newfeed = feedparser.parse(opener.open(request))
+                    except:
+                        # And, failing that, try Digest Authentication
+                        auth = urllib2.HTTPDigestAuthHandler(mgr)
+                        opener = urllib2.build_opener(auth)
+                        newfeed = feedparser.parse(opener.open(request))
+                else:
+                    newfeed = feedparser.parse(\
+                            feedparser.urllib2.urlopen(request))
         except:
             # Generally an exception is a connection refusal, but in any
             # case we either won't get data or can't trust the data, so
