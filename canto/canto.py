@@ -480,6 +480,11 @@ class Main():
                     self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
 
     def done(self, a=None, b=None):
+        # Unset signals.
+        for s in [signal.SIGALRM, signal.SIGWINCH,
+                signal.SIGCHLD, signal.SIGINT]:
+            signal.signal(s, signal.SIG_IGN)
+
         # Kill the message log
         self.cfg.msg = None
 
