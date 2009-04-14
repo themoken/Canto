@@ -108,9 +108,10 @@ class UpdateThread(Thread):
     def get_curfeed(self):
         curfeed = self.emptyfeed
         if os.path.exists(self.fpath) and os.path.isfile(self.fpath):
-            self.prevtime = os.stat(self.fpath).st_mtime
             f = open(self.fpath, "r")
             fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+
+            self.prevtime = os.stat(self.fpath).st_mtime
 
             try:
                 curfeed = cPickle.load(f)
@@ -193,11 +194,17 @@ class UpdateThread(Thread):
         # I don't know why feedparser doesn't actually throw this
         # since all URLErrors are basically unrecoverable.
 
-        if "bozo_exception" in newfeed and\
-                type(newfeed["bozo_exception"]) == urllib2.URLError:
-            self.log_func("Feedparser exception getting %s : %s, bailing." % \
+        if "bozo_exception" in newfeed:
+            if type(newfeed["bozo_exception"]) == urllib2.URLError:
+                self.log_func(\
+                    "Feedparser exception getting %s : %s, bailing." %\
                     (self.fd.tags[0], newfeed["bozo_exception"].reason))
-            return
+                return
+            if not len(newfeed["entries"]):
+                self.log_func(\
+                    "Feedparser exception, no content in %s : %s, bailing." %\
+                    (self.fd.tags[0], newfeed["bozo_exception"].reason))
+                return
 
         if not self.fd.base_set:
             if "feed" not in newfeed or "title" not in newfeed["feed"]:
@@ -287,7 +294,7 @@ class UpdateThread(Thread):
                 # Apply default state to genuinely new items.
                 if not "canto_state" in entry:
                     entry["canto_state"] = self.fd.tags + \
-                            [u"unread", u"*", u"new"]
+                            [u"*", u"new"]
 
             # Tailor the list to the correct number of items.
             if len(newfeed["entries"]) < self.fd.keep:
@@ -322,9 +329,9 @@ class UpdateThread(Thread):
             f.truncate()
             try:
                 cPickle.dump(newfeed, f)
+                f.flush()
             except:
                 self.log_func("cPickle dump exception on %s" % self.fpath)
-                raise
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()

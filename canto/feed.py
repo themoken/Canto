@@ -130,8 +130,10 @@ class Feed(list):
         f = open(self.path, "r+")
         try:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            f.seek(0, 0)
             f.truncate()
             cPickle.dump(self.ufp, f)
+            f.flush()
         except:
             return 0
         finally:
