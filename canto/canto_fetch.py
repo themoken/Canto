@@ -158,8 +158,9 @@ class UpdateThread(Thread):
                 newfeed = feedparser.parse(out)
             else:
                 request = urllib2.Request(self.fd.URL)
-                request.add_header('User-Agent', "Canto/%d.%d.%d +\
-                    http://codezen.org/canto" % VERSION_TUPLE)
+                request.add_header('User-Agent',\
+                    "Canto/%d.%d.%d + http://codezen.org/canto" %\
+                    VERSION_TUPLE)
 
                 if self.fd.username or self.fd.password:
                     mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
