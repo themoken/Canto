@@ -1,3 +1,12 @@
+Canto 0.6.9 ChangeLog
+* Fix setup.py generating null bytes in const.py
+* Add 30 second timeout to canto-fetch
+* Make selection data persist for hooks / filters
+* Unset signals before exit (avoid shell garbage)
+* Set User-Agent to Canto/x.y.z (fixes some 403'd feeds)
+* Fix multiple c-f subtle corruption bug
+* Sync docs now that site runs out of git.
+
 Canto 0.6.8 ChangeLog
 * Fix set_tag_sort(None)
 * Fix miscount of items when all filtered
