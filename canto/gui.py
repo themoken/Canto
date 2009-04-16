@@ -123,7 +123,7 @@ class Gui :
 
         # Set max_offset, this is how we know not to recenter the
         # screen when it would leave unused space at the end.
-        self.max_offset = self.map[-1]["row"] + self.map[-1]["lines"] - self.lines
+        self.max_offset = row - self.lines
 
     def draw_elements(self):
         # Print all stories in self.map
