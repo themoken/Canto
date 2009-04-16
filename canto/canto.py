@@ -402,18 +402,17 @@ class Main():
         self.ticks = 60
 
         self.cfg.log("Signals set.")
-
-        # Initial draw of the screen
-        self.refresh()
-
-        # Main program loop, terminated when all handlers have
-        # deregistered / exited.
-
-        self.cfg.log("Beginning main loop.")
-
         self.estring = None
 
         try:
+            # Initial draw of the screen
+            self.refresh()
+
+            # Main program loop, terminated when all handlers have
+            # deregistered / exited.
+
+            self.cfg.log("Beginning main loop.")
+
             while 1:
                 if not len(self.cfg.key_handlers):
                     break
