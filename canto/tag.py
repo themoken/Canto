@@ -52,15 +52,15 @@ class Tag(list):
         self.read = 0
         self.unread = len(self)
 
-    def set_read(self, idx):
-        if not self[idx].was("read"):
-            self[idx].set("read")
+    def set_read(self, item):
+        if not item.was("read"):
+            item.set("read")
             self.unread -= 1
             self.read += 1
 
-    def set_unread(self, idx):
-        if self[idx].was("read"):
-            self[idx].unset("read")
+    def set_unread(self, item):
+        if item.was("read"):
+            item.unset("read")
             self.unread += 1
             self.read -= 1
 

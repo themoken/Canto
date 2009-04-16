@@ -55,24 +55,8 @@ class Gui :
 
         register(self)
 
-        # Populate the Tag() objects provided with
-        # stories from the list given.
-
         self.tags = tags
-        for t in self.tags:
-            t.extend(list)
-        self.__do_new_hook()
-
-        # Select the first visible feed.
-
-        for t in self.tags :
-            if len(t):
-                self.sel = t[0]
-                self.sel_idx = 0
-                t[0].select()
-                break
-        else:
-            self.cfg.log("No Items.")
+        self.alarm(list)
 
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
@@ -123,25 +107,23 @@ class Gui :
 
         self.map = []
         row = 0
-        for i, feed in enumerate(self.tags):
-            for item in feed:
-                if not feed.collapsed or item.idx == 0:
-                    item.lines = self.print_item(feed, item, 0)
-                    if item.lines:
-                        # item.tag_idx is the story's only reference
-                        # to its current Tag()
-                        item.tag_idx = i
-                        item.row = row
-                        row += item.lines
-                        self.map.append(item)
-        
+        for i, tag in enumerate(self.tags):
+            for item in tag:
+                if not tag.collapsed or item.idx == 0:
+                    lines = self.print_item(tag, item, 0)
+                    if lines:
+                        self.map.append(
+                            {"tag" : tag,
+                             "row" : row,
+                             "item" : item,
+                             "lines" : lines})
+                        row += lines
+
         self.items = len(self.map)
 
         # Set max_offset, this is how we know not to recenter the
         # screen when it would leave unused space at the end.
-        if self.items:
-            self.max_offset = self.map[-1].row + \
-                    self.map[-1].lines - self.lines
+        self.max_offset = self.map[-1]["row"] + self.map[-1]["lines"] - self.lines
 
     def draw_elements(self):
         # Print all stories in self.map
@@ -153,12 +135,12 @@ class Gui :
             row = -1 * self.offset
             for item in self.map:
                 # If row is not offscreen up
-                if item.row + item.lines > self.offset:
+                if item["row"] + item["lines"] > self.offset:
                     # If row is offscreen down
-                    if item.row > self.lines + self.offset:
+                    if item["row"] > self.lines + self.offset:
                         break
-                    self.print_item(self.tags[item.tag_idx], item, row)
-                row += item.lines
+                    self.print_item(item["tag"], item["item"], row)
+                row += item["lines"]
         else:
             row = -1
         
@@ -173,13 +155,13 @@ class Gui :
 
     def __check_scroll(self) :
         # If our current item is offscreen up, ret 1
-        if self.sel.row < self.offset :
-            self.offset = self.sel.row
+        if self.sel["row"] < self.offset :
+            self.offset = self.sel["row"]
             return 1
 
         # If our current item is offscreen down, ret 1
-        if self.sel.row + self.sel.lines > self.lines + self.offset :
-            self.offset = self.sel.row + self.sel.lines - self.lines
+        if self.sel["row"] + self.sel["lines"] > self.lines + self.offset :
+            self.offset = self.sel["row"] + self.sel["lines"] - self.lines
             return 1
         return 0
 
@@ -202,17 +184,16 @@ class Gui :
         def dec(self, *args):
             if self.sel_idx >= 0:
                 if self.cfg.unselect_hook:
-                    self.cfg.unselect_hook(self.tags[self.sel.tag_idx],
-                            self.sel)
+                    self.cfg.unselect_hook(self.sel["tag"], self.sel["item"])
             oldsel = self.sel
             r = fn(self, *args)
             if oldsel:
-                oldsel.unselect()
+                oldsel["item"].unselect()
             if self.sel_idx >= 0:
                 self.sel = self.map[self.sel_idx]
-                self.sel.select()
+                self.sel["item"].select()
                 if self.cfg.select_hook:
-                    self.cfg.select_hook(self.tags[self.sel.tag_idx], self.sel)
+                    self.cfg.select_hook(self.sel["tag"], self.sel["item"])
             return r
         return dec
 
@@ -243,10 +224,11 @@ class Gui :
                 # tag_idx is the same, so we don't jump from one
                 # tag to another inadvertently.
 
-                if self.sel in self.map and \
-                        self.map[self.map.index(self.sel)].tag_idx == \
-                        self.sel.tag_idx:
-                    self.sel_idx = self.map.index(self.sel)
+                for i, item in enumerate(self.map):
+                    if self.sel["item"] == item["item"] and\
+                            self.sel["tag"] == item["tag"]:
+                        self.sel_idx = i
+                        break
                 else:
                     self.__select_topoftag()
             else:
@@ -290,15 +272,16 @@ class Gui :
 
     @noitem_unsafe
     @change_selected
-    def __select_topoftag(self, f=-1):
-        if f < 0:
-            f = self.sel.tag_idx
-        for feed in self.tags[f:]:
-            for item in feed:
-                if item in self.map:
-                    self.sel = item
-                    self.sel_idx = self.map.index(self.sel)
-                    return
+    def __select_topoftag(self, t=-1):
+        if t < 0:
+            t = self.tags.index(self.sel["tag"])
+        for tag in self.tags[t:]:
+            for item in tag:
+                for i in xrange(len(self.map)):
+                    if self.map[i]["item"] == item:
+                        self.sel = self.map[i]
+                        self.sel_idx = i
+                        return
 
     @change_selected
     def next_item(self):
@@ -382,7 +365,7 @@ class Gui :
     def next_filtered(self, f) :
         cursor = self.sel_idx + 1
         while not cursor >= self.items:
-            if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
+            if f(self.map[cursor]["tag"],self.map[cursor]["item"]):
                 self.sel_idx = cursor
                 break
             cursor += 1
@@ -392,7 +375,7 @@ class Gui :
     def prev_filtered(self, f) :
         cursor = self.sel_idx - 1
         while not cursor < 0:
-            if f(self.tags[self.map[cursor].tag_idx],self.map[cursor]):
+            if f(self.map[cursor]["tag"],self.map[cursor]["item"]):
                 self.sel_idx = cursor
                 break
             cursor -= 1
@@ -410,24 +393,24 @@ class Gui :
         self.prev_filtered(extra.show_unread())
 
     def just_read(self):
-        self.tags[self.sel.tag_idx].set_read(self.sel.idx)
+        self.sel["tag"].set_read(self.sel["item"])
 
     def just_unread(self):
-        self.tags[self.sel.tag_idx].set_unread(self.sel.idx)
+        self.sel["tag"].set_unread(self.sel["item"])
 
     @noitem_unsafe
     def goto(self) :        
-        self.tags[self.sel.tag_idx].set_read(self.sel.idx)
+        self.sel["tag"].set_read(self.sel["item"])
         self.draw_elements()
-        utility.goto(("", self.sel["link"], "link"), self.cfg)
+        utility.goto(("", self.sel["item"]["link"], "link"), self.cfg)
 
     def help(self):
         self.cfg.wait_for_pid = utility.silentfork("man canto", "", 1, 0)
 
     @noitem_unsafe
     def reader(self) :
-        self.tags[self.sel.tag_idx].set_read(self.sel.idx)
-        reader.Reader(self.cfg, self.tags[self.sel.tag_idx], self.sel,\
+        self.sel["tag"].set_read(self.sel["item"])
+        reader.Reader(self.cfg, self.sel["tag"], self.sel["item"],\
                 self.register, self.deregister) 
         return REDRAW_ALL
 
@@ -446,8 +429,8 @@ class Gui :
     @noitem_unsafe
     @change_filter
     def set_tag_filter(self, filt):
-        return (self.tags[self.sel.tag_idx].filters.override(filt),\
-                self.tags[self.sel.tag_idx].filters.cur())
+        return (self.sel["tag"].filters.override(filt),\
+                self.sel["tag"].filters.cur())
 
     @change_filter
     def next_filter(self):
@@ -456,8 +439,8 @@ class Gui :
     @noitem_unsafe
     @change_filter
     def next_tag_filter(self):
-        return (self.tags[self.sel.tag_idx].filters.next(),\
-                self.tags[self.sel.tag_idx].filters.cur())
+        return (self.sel["tag"].filters.next(),\
+                self.sel["tag"].filters.cur())
 
     @change_filter
     def prev_filter(self):
@@ -466,8 +449,8 @@ class Gui :
     @noitem_unsafe
     @change_filter
     def prev_tag_filter(self):
-        return (self.tags[self.sel.tag_idx].filters.prev(),\
-                self.tags[self.sel.tag_idx].filters.cur())
+        return (self.sel["tag"].filters.prev(),\
+                self.sel["tag"].filters.cur())
 
     def change_sorts(fn):
         def dec(self, *args):
@@ -480,20 +463,20 @@ class Gui :
     @noitem_unsafe
     @change_sorts
     def next_tag_sort(self):
-        return (self.tags[self.sel.tag_idx].sorts.next(),
-                self.tags[self.sel.tag_idx].sorts.cur())
+        return (self.sel["tag"].sorts.next(),
+                self.sel["tag"].sorts.cur())
 
     @noitem_unsafe
     @change_sorts
     def prev_tag_sort(self):
-        return (self.tags[self.sel.tag_idx].sorts.prev(),
-                self.tags[self.sel.tag_idx].sorts.cur())
+        return (self.sel["tag"].sorts.prev(),
+                self.sel["tag"].sorts.cur())
 
     @noitem_unsafe
     @change_sorts
     def set_tag_sort(self, sort):
-        return (self.tags[self.sel.tag_idx].sorts.override(sort),\
-                self.tags[self.sel.tag_idx].sorts.cur())
+        return (self.sel["tag"].sorts.override(sort),\
+                self.sel["tag"].sorts.cur())
 
     def change_tags(fn):
         def dec(self, *args):
@@ -549,8 +532,8 @@ class Gui :
 
     @noitem_unsafe
     def toggle_collapse_tag(self):
-        self.tags[self.sel.tag_idx].collapsed =\
-                not self.tags[self.sel.tag_idx].collapsed
+        self.sel["tag"].collapsed =\
+                not self.sel["tag"].collapsed
         self.sel.unselect()
         self.__map_items()
         self.__select_topoftag()
@@ -577,7 +560,7 @@ class Gui :
     
     @noitem_unsafe
     def tag_read(self):
-        self.tags[self.sel.tag_idx].all_read()
+        self.sel["tag"].all_read()
 
     def all_read(self):
         for t in self.tags:
@@ -585,7 +568,7 @@ class Gui :
 
     @noitem_unsafe
     def tag_unread(self):
-        self.tags[self.sel.tag_idx].all_unread()
+        self.sel["tag"].all_unread()
 
     def all_unread(self):
         for t in self.tags :
