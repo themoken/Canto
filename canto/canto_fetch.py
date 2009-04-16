@@ -203,7 +203,7 @@ class UpdateThread(Thread):
             if not len(newfeed["entries"]):
                 self.log_func(\
                     "Feedparser exception, no content in %s : %s, bailing." %\
-                    (self.fd.tags[0], newfeed["bozo_exception"].reason))
+                    (self.fd.tags[0], newfeed["bozo_exception"]))
                 return
 
         if not self.fd.base_set:
