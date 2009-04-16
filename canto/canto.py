@@ -16,6 +16,7 @@ import utility
 import cfg
 import tag
 
+import traceback
 import signal
 import locale
 import curses
@@ -410,74 +411,81 @@ class Main():
 
         self.cfg.log("Beginning main loop.")
 
-        while 1:
-            if not len(self.cfg.key_handlers):
-                self.done()
+        self.estring = None
 
-            t = None
+        try:
+            while 1:
+                if not len(self.cfg.key_handlers):
+                    break
 
-            if self.cfg.wait_for_pid:
-                signal.pause()
+                t = None
 
-            k = self.cfg.stdscr.getch()
+                if self.cfg.wait_for_pid:
+                    signal.pause()
 
-            # KEY_RESIZE is the only key not propagated, to
-            # keep users from rebinding it and crashing.
+                k = self.cfg.stdscr.getch()
 
-            if k == curses.KEY_RESIZE or self.resize:
-                self.resize = 0
-                self.refresh()
-                continue
+                # KEY_RESIZE is the only key not propagated, to
+                # keep users from rebinding it and crashing.
 
-            # Tick when SIGALRM is received.
+                if k == curses.KEY_RESIZE or self.resize:
+                    self.resize = 0
+                    self.refresh()
+                    continue
 
-            if self.alarmed:
-                self.alarmed = 0
-                self.tick()
+                # Tick when SIGALRM is received.
 
-            # Handle Meta pairs
-            elif k == 195:
-                k2 = self.cfg.stdscr.getch()
-                if k2 >= 64:
-                    t = (k2 - 64, 1)
-                else:
+                if self.alarmed:
+                    self.alarmed = 0
+                    self.tick()
+
+                # Handle Meta pairs
+                elif k == 195:
+                    k2 = self.cfg.stdscr.getch()
+                    if k2 >= 64:
+                        t = (k2 - 64, 1)
+                    else:
+                        t = (k, 0)
+
+                # Just a normal key-press
+                elif k != -1:
                     t = (k, 0)
 
-            # Just a normal key-press
-            elif k != -1:
-                t = (k, 0)
-
-            if hasattr(self.cfg.key_handlers[self.cfg.cur_kh], "keys"):
-                if t in self.cfg.key_handlers[self.cfg.cur_kh].keys:
-                    actl = self.cfg.key_handlers[self.cfg.cur_kh].keys[t]
+                if hasattr(self.cfg.key_handlers[self.cfg.cur_kh], "keys"):
+                    if t in self.cfg.key_handlers[self.cfg.cur_kh].keys:
+                        actl = self.cfg.key_handlers[self.cfg.cur_kh].keys[t]
+                    else:
+                        actl = []
+                elif t:
+                    actl = [t]
                 else:
                     actl = []
-            elif t:
-                actl = [t]
-            else:
-                actl = []
 
-            for a in actl:
-                if not len(self.cfg.key_handlers):
-                    self.done()
-                r = self.cfg.key_handlers[self.cfg.cur_kh].action(a)
-                if r == REFRESH_ALL:
-                    self.refresh()
-                elif r == ALARM:
-                    self.ticks = 1
-                    self.tick()
-                elif r == REDRAW_ALL:
-                    for k in self.cfg.key_handlers:
-                        k.draw_elements()
-                elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2:
-                    oldcur = self.cfg.key_handlers[self.cfg.cur_kh]
-                    if self.cfg.cur_kh == len(self.cfg.key_handlers) - 1:
-                        self.cfg.cur_kh = 0
-                    else:
-                        self.cfg.cur_kh += 1
-                    self.update_focus()
-                    oldcur.draw_elements()
-                    self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
+                for a in actl:
+                    if not len(self.cfg.key_handlers):
+                        self.done()
+                    r = self.cfg.key_handlers[self.cfg.cur_kh].action(a)
+                    if r == REFRESH_ALL:
+                        self.refresh()
+                    elif r == ALARM:
+                        self.ticks = 1
+                        self.tick()
+                    elif r == REDRAW_ALL:
+                        for k in self.cfg.key_handlers:
+                            k.draw_elements()
+                    elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2:
+                        oldcur = self.cfg.key_handlers[self.cfg.cur_kh]
+                        if self.cfg.cur_kh == len(self.cfg.key_handlers) - 1:
+                            self.cfg.cur_kh = 0
+                        else:
+                            self.cfg.cur_kh += 1
+                        self.update_focus()
+                        oldcur.draw_elements()
+                        self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
+        except:
+            self.estring = traceback.format_exc()
+
+        self.done()
 
     def done(self, a=None, b=None):
         # Unset signals.
@@ -492,6 +500,14 @@ class Main():
         curses.endwin()
 
         self.cfg.log("Curses done.")
+
+        if self.estring:
+            self.cfg.log("\nEXCEPTION:")
+            self.cfg.log(self.estring)
+            print "Canto exited on an exception.\n"
+            print self.estring
+            print "Please report this bug. Send your logfile " +\
+                "(%s) to jack@codezen.org" % self.cfg.log_file
 
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
