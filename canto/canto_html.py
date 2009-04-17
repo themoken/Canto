@@ -103,11 +103,18 @@ class CantoHTML(HTMLParser):
                 self.result += u"\n%I"
                 self.list_stack.append([tag,0])
             else:
-                self.list_stack.pop()
+                # Grumble grumble. Bad HTML.
+                if len(self.list_stack):
+                    self.list_stack.pop()
                 self.result += u"%i\n"
         elif tag in [u"li"]:
             if open:
                 self.result += u"\n"
+
+                # List item with no start tag, default to ul
+                if not len(self.list_stack):
+                    self.list_stack.append(["ul",0])
+
                 if self.list_stack[-1][0] == u"ul":
                     self.result += u"\u25CF "
                 else:
@@ -134,7 +141,15 @@ def char_wrapper(match):
         match.groups()[0])
 
 def convert(s):
-    instance.feed(s)
+    # We have this try except because under no circumstances
+    # should the HTML parser crash the application. Better
+    # handling is done per case in the handler itself so that
+    # bad HTML doesn't necessarily lead to garbage output.
+
+    try:
+        instance.feed(s)
+    except:
+        pass
     r = instance.result
     l = instance.links
     instance.reset()
