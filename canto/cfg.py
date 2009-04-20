@@ -466,8 +466,11 @@ class Cfg:
                 attrs["type"] in ["pie","rss"])) or\
                 not ("type" in attrs)):
 
-                if "xmlUrl" in attrs and "text" in attrs:
-                    l.append((attrs["xmlUrl"], attrs["text"]))
+                if "xmlUrl" in attrs:
+                    if "text" in attrs:
+                        l.append((attrs["xmlUrl"], attrs["text"]))
+                    else:
+                        l.append((attrs["xmlUrl"], None))
 
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = start
