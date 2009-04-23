@@ -294,25 +294,26 @@ class Gui :
             self.sel_idx -= 1
 
     @noitem_unsafe
-    def prev_tag(self) :
-        curtag = self.sel.tag_idx
+    def prev_tag(self):
+        curtag = self.sel["tag"]
         while not self.sel_idx == 0 :
-            if curtag != self.sel.tag_idx and self.sel.idx == 0:
+            if curtag != self.sel["tag"] and \
+                    self.sel["item"] == self.sel["tag"][0]:
                 break
             self.prev_item()
 
     @noitem_unsafe
-    def next_tag(self) :
-        curtag = self.sel.tag_idx
+    def next_tag(self):
+        curtag = self.sel["tag"]
         while not self.sel_idx == self.items - 1:
-            if curtag != self.sel.tag_idx:
+            if curtag != self.sel["tag"]:
                 break
             self.next_item()
 
         # Next_tag should try to keep the top of the tag at
         # the top of the screen (as prev_tag does inherently)
         # so that the user's eye isn't lost.
-        self.offset = min(self.sel.row, max(0, self.max_offset))
+        self.offset = min(self.sel["row"], max(0, self.max_offset))
 
     # Goto_tagn goes to an absolute #'d tag. So the third
     # tag defined in your configuration will always be '3'
@@ -321,18 +322,20 @@ class Gui :
     def goto_tag(self, num = None):
         if not num:
             num = num_input(self.cfg, "Absolute Tag")
-        if not num:
+        if num == None:
             return
 
         if num < 0:
             num = len(self.tags) + num
         num = min(len(self.tags) - 1, num)
-
-        while num > self.sel.tag_idx:
-            self.next_tag()
-    
-        while num < self.sel.tag_idx:
-            self.prev_tag()
+ 
+        idx = self.tags.index(self.sel["tag"])
+        while num != idx:
+            if num > idx:
+                self.next_tag()
+            elif num < idx:
+                self.prev_tag()
+            idx = self.tags.index(self.sel["tag"])
 
     # Goto_reltagn goes to a tag relative to what's visible.
 
@@ -345,10 +348,10 @@ class Gui :
 
         def rel_search(map):
             idx = -1
-            cur = -1
+            cur = None
             for item in map:
-                if item.tag_idx != cur:
-                    cur = item.tag_idx
+                if item["tag"] != cur:
+                    cur = self.tags.index(item["tag"])
                     idx += 1
                     if idx == num:
                         break
@@ -356,9 +359,9 @@ class Gui :
 
         if num < 0:
             num = -1 * num - 1
-            self.goto_tagn(rel_search(reversed(self.map)))
+            self.goto_tag(rel_search(reversed(self.map)))
         else:
-            self.goto_tagn(rel_search(self.map))
+            self.goto_tag(rel_search(self.map))
 
     @noitem_unsafe
     @change_selected
@@ -519,22 +522,22 @@ class Gui :
 
     @noitem_unsafe
     def toggle_mark(self):
-        if self.sel.was("marked"):
-            self.sel.unset("marked")
+        if self.sel["item"].was("marked"):
+            self.sel["item"].unset("marked")
         else:
-            self.sel.set("marked")
+            self.sel["item"].set("marked")
 
     @noitem_unsafe
     def all_unmarked(self):
         for item in self.map:
-            if item.was("marked"):
-                item.unset("marked")
+            if item["item"].was("marked"):
+                item["item"].unset("marked")
 
     @noitem_unsafe
     def toggle_collapse_tag(self):
         self.sel["tag"].collapsed =\
                 not self.sel["tag"].collapsed
-        self.sel.unselect()
+        self.sel["item"].unselect()
         self.__map_items()
         self.__select_topoftag()
 
