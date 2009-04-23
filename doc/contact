@@ -1,12 +1,19 @@
 [TOC]
 
-## IRC
+##  IRC
+
+<div class="section">
 
 A number of users and myself hang out in `#canto` on `irc.freenode.net`. My handle is `@TheMoken`. This is my preferred way of tackling bugs because it's real time, and you can answer my debugging questions. If you're looking for a fix as fast as possible, come here. This goes especially for crashing bugs.
 
 If you're new to IRC, [xchat](http://www.xchat.org) is a good beginner IRC client. I use [irssi](http://www.irssi.org). I also suggest using [pastebin.ca](http://pastebin.ca) as a pastebin because it supports non-ASCII characters.
 
-## Mailing Lists
+
+</div>
+
+##  Mailing Lists
+
+<div class="section">
 
 Canto has two official mailing lists.
 
@@ -16,10 +23,20 @@ Canto has two official mailing lists.
 
 Both of these lists are mirrored on Google groups.
 
-## Bug Tracker
+
+</div>
+
+##  Bug Tracker
+
+<div class="section">
 
 Canto uses Google Code for its [bug tracker](http://code.google.com/p/canto-reader/issues/list). Generally, you should submit bugs through IRC or the mailing lists first, but you can also create a bug/feature request here. This requires a Google ID. 
 
-## E-Mail
+
+</div>
+
+##  E-Mail
+
+<div class="section">
 
 Before Canto had the mailing lists, I encouraged people to mail me directly with any problems. Now, I'd prefer you to use the mailing lists. If you really have something to say just to me that won't help anyone else (i.e. praise/flames) then my email is **jack [at] codezen [dot] org**
