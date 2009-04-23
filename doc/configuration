@@ -4,7 +4,9 @@ If you've already gone through the basics, then you might be looking for [Advanc
 
 [TOC]
 
-## Example Config ##
+##  Example Config ##
+
+<div class="section">
 
 This gives a fairly comprehensive view of the config. Everything that is not defined in it, is defined in **canto.extra**, which you can browse [here](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=blob;f=canto/extra.py;hb=master)
 
@@ -103,7 +105,12 @@ This gives a fairly comprehensive view of the config. Everything that is not def
     # None will be interpreted as the default set of tags, i.e. one
     # per feed.
 
-## add()
+
+</div>
+
+##  add()
+
+<div class="section">
 **add(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
 
 `add()` is the most basic function of Canto's config, adding a feed to your
@@ -185,7 +192,12 @@ Using this functionality from other applications is simple. For example, to allo
 
 Make sure this script is executable by `chmod +x <script>` before you try it. Thanks to Ypsy for the script.
 
-## add_tag()
+
+</div>
+
+##  add_tag()
+
+<div class="section">
 ** add_tag("name", [filters=],[sorts=]) **
 
 `add_tag` is used to specify the attributes of tags. It's not necessary to add
@@ -197,7 +209,12 @@ defined by feeds.
     add_tag("Reddit", filters=[show_unread])
     add_tag("news", sorts=[by_date])
 
-## change_feed()
+
+</div>
+
+##  change_feed()
+
+<div class="section">
 **change_feed(URL, [tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
 
 `change_feed` acts identically to `add`, but (as you would imagine) changes
@@ -205,7 +222,12 @@ already added feeds. This is intended to add attributes to feeds added from
 other sources (like `source_urls` and `source_opml`) where these options aren't
 included in the input data.
 
-## source_opml()
+
+</div>
+
+##  source_opml()
+
+<div class="section">
 **source_opml("path", [append=True/False])**
 
 `source_opml` allows you to add feeds from an opml file at run time, rather than permanently. If you're interested in permanently adding or exporting your feeds with OPML, use `canto -i` and `canto -o` to import and export, respectively.
@@ -217,12 +239,22 @@ Example:
 
 That append option determines whether the feeds added will be appended to your config file. If true, they will be added in the same manner as `canto -i`. Note that this will be appended every time the config is executed, so only use it if you're sure you want to add the `add_feed` statements to your config.
 
-## source_urls()
+
+</div>
+
+##  source_urls()
+
+<div class="section">
 **source_urls("path", [append=True/False])**
 
 `source_urls` works similarly to `source_opml`, except it generates `add_feed` statements from a newline delimited list of URLs.
 
-## Setting defaults
+
+</div>
+
+##  Setting defaults
+
+<div class="section">
 **default_rate(rate)**
 
 **default_keep(keep)**
@@ -244,7 +276,12 @@ Example:
     default_rate(5)
     default_keep(40)
 
-## Content Handlers
+
+</div>
+
+##  Content Handlers
+
+<div class="section">
 **link_handler(path, [text=],[fetch=],[ext=])**
 
 **image_handler(path, [text=],[fetch=],[ext=])**
@@ -274,7 +311,12 @@ Example:
     # text-browser
     link_handler("elinks \"%u\"", text=True)
 
-## Reader positioning
+
+</div>
+
+##  Reader positioning
+
+<div class="section">
 
 **reader_orientation=["top"|"bottom"|"left"|"right"|None]**
 
@@ -300,7 +342,12 @@ Now, you'll have 10 lines of dedicated space for the reader at the top of the sc
 
 This will set half of the screen to the left as dedicated space for the reader, and try to divide the rest into columns of width 50. `resize_hook` is covered with the rest of the [hooks](http://codezen.org/canto/advconfig/#hooks).
 
-## keys
+
+</div>
+
+##  keys
+
+<div class="section">
 
 **keys["somekey"] = str, list of strings, function, list of functions**
 
@@ -579,7 +626,12 @@ Set 'x' to set current item read and move to the next item.
     :::python
     keys["x"] = ["just_read","next_item"]
 
-## Advanced
+
+</div>
+
+##  Advanced
+
+<div class="section">
 
 There are a handful of other configuration options that you can use.
 
@@ -593,7 +645,12 @@ Canto has many options that allow you to change (radically, I might add) the way
 
 As are a lot of other goodies, like writing your own [arbitrary keybinds](/canto/advconfig/#advanced-keybinds).
 
-## Deprecated config options
+
+</div>
+
+##  Deprecated config options
+
+<div class="section">
 
 Canto 0.6.0 deprecated a number of configuration options. `browser` and
 `text_browser` are replaced with the much more flexible and robust
