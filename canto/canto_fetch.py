@@ -198,12 +198,12 @@ class UpdateThread(Thread):
             if type(newfeed["bozo_exception"]) == urllib2.URLError:
                 self.log_func(\
                     "Feedparser exception getting %s : %s, bailing." %\
-                    (self.fd.tags[0], newfeed["bozo_exception"].reason))
+                    (self.fd.URL, newfeed["bozo_exception"].reason))
                 return
             if not len(newfeed["entries"]):
                 self.log_func(\
                     "Feedparser exception, no content in %s : %s, bailing." %\
-                    (self.fd.tags[0], newfeed["bozo_exception"]))
+                    (self.fd.URL, newfeed["bozo_exception"]))
                 return
 
         if not self.fd.base_set:
