@@ -108,7 +108,7 @@ class Feed(list):
                 if self.changed and entry["canto_state"] !=\
                         self[i]["canto_state"]:
                     entry["canto_state"] = self[i]["canto_state"]
-                    self.has_changed()
+                    entry.updated = 1
                 selected = self[i].sel
 
             # If tags were added in the configuration, c-f won't

@@ -305,8 +305,8 @@ class Main():
                     base_tags[otag] += 1
                 f.tags[0] += " (%d)" % base_tags[otag]
                 for s in f:
-                    s.tagwrap(otag, -1)
-                    s.tagwrap(f.tags[0], 1)
+                    s.unset(otag)
+                    s.set(f.tags[0])
             else:
                 base_tags[f.tags[0]] = 1
 
