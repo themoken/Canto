@@ -461,39 +461,39 @@ You can apply these by using decoration escapes, which take the form `%x`. They 
 <td>Effect</td>
 </tr>
 <tr>
-<td>`%0`</td>
+<td>%0</td>
 <td>This will enable the color that was enabled before the current color, up to 8 colors previous.</td>
 </tr>
 <tr>
-<td>`%1 - %8`</td>
+<td>%1 - %8</td>
 <td>Enable color pair 1-8</td>
 </tr>
 <tr>
-<td>`%B %b`</td>
+<td>%B %b</td>
 <td>Enable/disable bold.</td>
 </tr>
 <tr>
-<td>`%U %u`</td>
+<td>%U %u</td>
 <td>Enable/disable underline.</td>
 </tr>
 <tr>
-<td>`%S %s`</td>
+<td>%S %s</td>
 <td>Enable/disable standout.</td>
 </tr>
 <tr>
-<td>`%R %r`</td>
+<td>%R %r</td>
 <td>Enable/disable reverse.</td>
 </tr>
 <tr>
-<td>`%D %d`</td>
+<td>%D %d</td>
 <td>Enable/disable dim.</td>
 </tr>
 <tr>
-<td>`%N %n`</td>
+<td>%N %n</td>
 <td>Enable/disable normal.*</td>
 </tr>
 <tr>
-<td>`%C`</td>
+<td>%C</td>
 <td>Clear all non-color decorations.</td>
 </tr>
 </table>
@@ -523,28 +523,28 @@ In the above examples, we used functions like `story.wasread()`, and variables l
 <td>Result</td>
 </tr>
 <tr>
-<td>`story.wasread()`</td>
+<td><code>story.wasread()</code></td>
 <td>True if story has been read, False otherwise.</td>
 </tr>
 <tr>
-<td>`story.marked()`</td>
+<td><code>story.marked()</code></td>
 <td>True if story has been marked (by hand or by a search), False otherwise</td>
 </tr>
 <tr>
-<td>`story.selected()`</td>
+<td><code>story.selected()</code></td>
 <td>True if the story is selected, False otherwise.</td>
 </tr>
 <tr>
-<td>`story.idx`</td>
+<td><code>story.idx</code></td>
 <td>The index of the story within the tag.</td>
 </tr>
 <tr>
-<td>`story.last`</td>
+<td><code>story.last</code></td>
 <td>True if story is the last story in the feed, False otherwise.</td>
 </tr>
 <tr>
-<td>`story["key"]`</td>
-<td>Returns story content. Keys usually include "title","link","description", and "id". You can find a list of common elements from the feedparser docs ([here](http://feedparser.org/docs/basic.html)).</td>
+<td><code>story["key"]</code></td>
+<td>Returns story content. Keys usually include "title","link","description", and "id". You can find a list of common elements from the <a href="http://feedparser.org/docs/basic.html">feedparser docs</a>.</td>
 </tr>
 </table>
 
@@ -556,25 +556,25 @@ In the above examples, we used functions like `story.wasread()`, and variables l
 <td>Result</td>
 </tr>
 <tr>
-<td>`tag.tag`</td>
+<td><code>tag.tag</code></td>
 <td>Text of tag matching (usu. the feed handle)</td>
 </tr>
 <tr>
-<td>`tag.collapsed`</td>
+<td><code>tag.collapsed</code></td>
 <td>True if tag is collapsed, False otherwise.</td>
 </tr>
 <tr>
-<td>`tag.unread`</td>
+<td><code>tag.unread</code></td>
 <td>Number of unread items in the tag.</td>
 </tr>
 <tr>
-<td>`tag.read`</td>
+<td><code>tag.read</code></td>
 
 
 <td>Number of read items in the tag.</td>
 </tr>
 <tr>
-<td>`tag`</td>
+<td><code>tag</code></td>
 <td>Tag in it's basic form is a list of stories.</td>
 </tr>
 </table>
