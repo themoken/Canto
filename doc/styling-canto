@@ -2,7 +2,9 @@ is covers how to customize the Canto interface.
 
 [TOC]
 
-## Colors
+##  Colors
+
+<div class="section">
 
 If you're happy with the way that Canto prints out stories and everything, and just want to change the colors it uses, that's extremely easy.
 
@@ -124,7 +126,12 @@ You can also use Python to set a lot of colors at once, useful for changing the 
 
 This will change all of the colors to a background blue. Like MOC's default theme. If you set all of the backgrounds to "default" instead of "blue", it would allow the terminal to set the background. I would only suggest this if you've either changed the other colors to be readable on any background, or if you're using a transparent terminal.
 
-## A simple example
+
+</div>
+
+##  A simple example
+
+<div class="section">
 
 The easiest way to change the way that Canto outputs text is to subclass the renderer and override parts of it, rather than starting from scratch. In this series of examples, we'll change the renderer to output ASCII characters instead of nice Unicode lines for the boxes.
 
@@ -217,7 +224,12 @@ Simple fix is to now add an if statement to 'firsts()'.
 
 So now we have a fully function, Unicode line free interface. The reader and input boxes aren't handled, but those can be handled easily by similary override `rfirsts()`, `rmids()`, `rends()`, and the `box()` function. This will be covered later.
 
-## Applying decorations
+
+</div>
+
+##  Applying decorations
+
+<div class="section">
 
 The previous renderer example stripped out all of the Unicode lines from the default client, but unfortunately, it also took all of the color and highlighting with it.
 
@@ -432,7 +444,12 @@ Excellent. No bleed over of colors or decorations. Much nicer looking interface.
 
     default_renderer(MyAwesomeRenderer())
 
-## Decoration overview
+
+</div>
+
+##  Decoration overview
+
+<div class="section">
 
 When you actually want to manipulate more than simple color changes, you'll have to use "decorations", that is color or other attributes like bolding.
 
@@ -489,7 +506,12 @@ Color decorations are enabled once and after they are seen, that color is invari
 
 `%B%B%B%b%b` **This is still bold** `%b` this isn't
 
-## Object reference for styling
+
+</div>
+
+##  Object reference for styling
+
+<div class="section">
 
 In the above examples, we used functions like `story.wasread()`, and variables like tag.tag. This is where those are documented.
 
@@ -557,7 +579,12 @@ In the above examples, we used functions like `story.wasread()`, and variables l
 </tr>
 </table>
 
-## Styling the reader
+
+</div>
+
+##  Styling the reader
+
+<div class="section">
 
 The reader is simple to style. It follows the same form as the `first()`, `mids()`, `ends()` that the main interface uses. The content of the reader is essentially the same as the content of a single story.
 
