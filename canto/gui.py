@@ -35,15 +35,14 @@ import curses
 # directly.
 
 class Gui :
-    def __init__(self, cfg, tags, register, deregister):
+    def __init__(self, cfg, tags):
         self.keys = cfg.key_list
         self.window_list = []
         self.map = []
         self.focus = 0
+        self.reader = None
 
         self.cfg = cfg
-        self.register = register
-        self.deregister = deregister
 
         self.lines = 0
         self.sel = 0
@@ -52,8 +51,6 @@ class Gui :
 
         self.offset = 0
         self.max_offset = 0
-
-        register(self)
 
         self.tags = tags
         self.alarm()
@@ -255,17 +252,34 @@ class Gui :
                         self.cfg.new_hook(t, item)
                         item.old()
 
-    def action(self, a):
+    def action(self, k):
         # Allows user defined functions to manipulate Gui()
 
-        if hasattr(a, "__call__"):
+        if self.reader:
+            r = self.reader.action(k)
+            if type(r) == list:
+                return self.action(r)
+            else:
+                return r
+
+        if k in self.keys:
+            a = self.keys[k]
+        elif type(k) == str:
+            a = k
+        else:
+            return NOKEY
+
+        if type(a) == list:
+            for action in a:
+                return self.action(action)
+        elif hasattr(a, "__call__"):
             r = a(self)
         else:
             f = getattr(self, a, None)
             if f:
                 r = f()
             else:
-                r = -1
+                r = NOKEY
 
         if not r:
             self.draw_elements()
@@ -580,11 +594,7 @@ class Gui :
         for t in self.tags :
             t.all_unread()
 
-    def switch(self):
-        return WINDOW_SWITCH
-
     def quit(self):
         if self.cfg.end_hook:
             self.cfg.end_hook(self)
-        self.deregister()
-        return -1
+        return EXIT

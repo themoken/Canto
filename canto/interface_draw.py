@@ -82,10 +82,7 @@ class Renderer :
         base = u"%C%1%B│%b%0 "
     
         if dict["story"].selected() :
-            if dict["cfg"].key_handlers[0].focus:
-                base += u"%1%B>%b%0 "
-            else:
-                base += u"%1%B_%b%0 "
+            base += u"%1%B>%b%0 "
         else:
             base += u"  "
 

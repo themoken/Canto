@@ -71,7 +71,6 @@ class Cfg:
                          ":" : "goto_tag",
                          "C-r" : "force_update",
                          "C-l" : "refresh",
-                         "\t" : "switch",
                          "h" : "help"}
         
         self.reader_key_list = {"KEY_DOWN" : "scroll_down",
@@ -86,7 +85,6 @@ class Cfg:
                               "p" : ["destroy","prev_item","reader"],
                               "h" : ["destroy","help"],
                               "q" : ["destroy","quit"],
-                              "\t" : "switch",
                               " " : "quit"}
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
@@ -102,14 +100,6 @@ class Cfg:
         self.default_sort = None
         self.default_renderer = interface_draw.Renderer()
         self.default_msg_tick = 5
-
-        # Key handlers is a stack-like list that contains all "inputs"
-        # that can take keys from the user. Generally, this is every
-        # graphical class open at a time. The last item being the top
-        # window, receiving keys.
-
-        self.key_handlers = []
-        self.cur_kh = -1
 
         self.path = conf
         self.feed_dir = feed_dir

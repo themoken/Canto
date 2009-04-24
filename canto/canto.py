@@ -391,7 +391,7 @@ class Main():
     
         # Instantiate the base Gui class
         self.cfg.validate_tags()
-        Gui(self.cfg, self.cfg.tags.cur(), self.push_handler, self.pop_handler)
+        self.gui = Gui(self.cfg, self.cfg.tags.cur())
 
         self.cfg.log("GUI initialized.")
 
@@ -414,9 +414,6 @@ class Main():
             self.cfg.log("Beginning main loop.")
 
             while 1:
-                if not len(self.cfg.key_handlers):
-                    break
-
                 t = None
 
                 if self.cfg.wait_for_pid:
@@ -436,9 +433,8 @@ class Main():
                     for t in self.stories_threads:
                         self.stories_threads = self.stories_threads[1:]
                         if not t.alive:
-                            for h in self.cfg.key_handlers:
-                                h.alarm(t.new, t.old)
-                            self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
+                            self.gui.alarm(t.new, t.old)
+                            self.gui.draw_elements()
                             break
 
                 # KEY_RESIZE is the only key not propagated, to
@@ -461,44 +457,22 @@ class Main():
                 else:
                     t = (k, 0)
 
-                if hasattr(self.cfg.key_handlers[self.cfg.cur_kh], "keys"):
-                    if t in self.cfg.key_handlers[self.cfg.cur_kh].keys:
-                        actl = self.cfg.key_handlers[self.cfg.cur_kh].keys[t]
-                    else:
-                        actl = []
-                elif t:
-                    actl = [t]
-                else:
-                    actl = []
+                r = self.gui.action(t)
+                if r == REFRESH_ALL:
+                    self.refresh()
+                elif r == ALARM:
+                    self.ticks = 1
+                    self.tick()
+                elif r == REFILTER:
+                    self.stories_threads = []
+                    self.ticks = 1
+                    self.tick(1)
+                elif r == REDRAW_ALL:
+                    self.gui.draw_elements()
+                elif r == EXIT:
+                    break
 
-                for a in actl:
-                    if not len(self.cfg.key_handlers):
-                        self.done()
-                    r = self.cfg.key_handlers[self.cfg.cur_kh].action(a)
-                    if r == REFRESH_ALL:
-                        self.refresh()
-                    elif r == ALARM:
-                        self.ticks = 1
-                        self.tick()
-                    elif r == REFILTER:
-                        self.stories_threads = []
-                        self.ticks = 1
-                        self.tick(1)
-                    elif r == REDRAW_ALL:
-                        for k in self.cfg.key_handlers:
-                            k.draw_elements()
-                    elif r == WINDOW_SWITCH and len(self.cfg.key_handlers) >= 2:
-                        oldcur = self.cfg.key_handlers[self.cfg.cur_kh]
-                        if self.cfg.cur_kh == len(self.cfg.key_handlers) - 1:
-                            self.cfg.cur_kh = 0
-                        else:
-                            self.cfg.cur_kh += 1
-                        self.update_focus()
-                        oldcur.draw_elements()
-                        self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
         except Exception:
-            # Catch all _non-exit_ exceptions.
-            # -> No bug-report message on things like SystemExit.
             self.estring = traceback.format_exc()
         except KeyboardInterrupt:
             pass
@@ -632,29 +606,4 @@ class Main():
         self.cfg.msg.refresh()
 
         self.cfg.stdscr.keypad(1)
-
-        for g in self.cfg.key_handlers :
-            g.refresh()
-
-    # These two functions are known as register() and deregister()
-    # to the gui objects, and let the Main() class know when a gui
-    # object should start or stop receiving input.
-
-    def update_focus(self):
-        if len(self.cfg.key_handlers):
-            for h in self.cfg.key_handlers:
-                h.focus = 0
-            self.cfg.key_handlers[self.cfg.cur_kh].focus = 1
-
-    def push_handler(self, handler):
-        self.cfg.key_handlers.append(handler)
-        self.cfg.cur_kh = len(self.cfg.key_handlers) - 1
-        self.update_focus()
-
-    def pop_handler(self):
-        self.cfg.key_handlers.remove(self.cfg.key_handlers[self.cfg.cur_kh])
-        self.cfg.cur_kh = max(self.cfg.cur_kh - 1, 0)
-        self.update_focus()
-        if len(self.cfg.key_handlers):
-           for h in self.cfg.key_handlers:
-               h.refresh()
+        self.gui.refresh()
