@@ -64,6 +64,15 @@ class Tag(list):
             self.unread += 1
             self.read -= 1
 
+    def retract(self, iter):
+        for item in iter:
+            if item in self:
+                if item.was("read"):
+                    self.read -= 1
+                else:
+                    self.unread -= 1
+                self.remove(item)
+
     def extend(self, iter):
         self.last_iter = iter
         matched_tag = [s for s in iter if self.tag in s["canto_state"]]

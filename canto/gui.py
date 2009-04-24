@@ -35,7 +35,7 @@ import curses
 # directly.
 
 class Gui :
-    def __init__(self, cfg, list, tags, register, deregister):
+    def __init__(self, cfg, tags, register, deregister):
         self.keys = cfg.key_list
         self.window_list = []
         self.map = []
@@ -56,7 +56,7 @@ class Gui :
         register(self)
 
         self.tags = tags
-        self.alarm(list)
+        self.alarm()
 
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
@@ -198,13 +198,13 @@ class Gui :
         return dec
 
     @change_selected
-    def alarm(self, listobj):
+    def alarm(self, new=[], old=[]):
         # Clear all of the tags and repopulate with the new listobj.
         # At this point, self.sel and self.sel_idx may be invalid
 
         for t in self.tags:
-            t.clear()
-            t.extend(listobj)
+            t.retract(old)
+            t.extend(new)
 
         self.__do_new_hook()
         self.__map_items() 
@@ -422,7 +422,11 @@ class Gui :
             r,f = fn(self, *args)
             if r:
                 self.cfg.log("Filter: %s" % f)
-                return self.force_update(0)
+                for f in self.cfg.feeds:
+                    f.time = 1
+                for t in self.tags:
+                    t.clear()
+                return REFILTER
         return dec
 
     @change_filter
@@ -553,10 +557,8 @@ class Gui :
     def unset_collapse_all(self):
         self.__collapse_all(0)
 
-    def force_update(self, v = 1):
-        if v:
-            self.cfg.log("Forcing update.")
-
+    def force_update(self):
+        self.cfg.log("Forcing update.")
         for f in self.cfg.feeds :
             f.time = 1
         return ALARM

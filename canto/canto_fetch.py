@@ -78,13 +78,13 @@ def main(cfg, optlist, verbose=False, force=False):
     for fd in cfg.feeds:
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
         spath = cfg.script_dir
-        threads.append(UpdateThread(fd, fpath, spath, force, log_func))
+        threads.append(FetchThread(fd, fpath, spath, force, log_func))
         threads[-1].start()
 
     imdone()
     return 0
 
-class UpdateThread(Thread):
+class FetchThread(Thread):
     def __init__(self, fd, fpath, spath, force, log_func):
         Thread.__init__(self)
         self.fd = fd

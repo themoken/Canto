@@ -11,6 +11,7 @@ from const import VERSION_TUPLE
 import story
 import tag
 
+from threading import Thread
 import cPickle
 import fcntl
 
@@ -91,6 +92,7 @@ class Feed(list):
                 self.tags = [self.URL] + self.tags
 
         self.extend(self.ufp["entries"])
+        self.todisk()
         return 1
 
     def extend(self, entries):
@@ -150,11 +152,20 @@ class Feed(list):
     def changed(self):
         return [ x for x in self if x.updated ]
 
-    def tick(self):
-        self.time -= 1
-        if self.time <= 0:
-            if not self.update() or len(self) == 0 :
-                self.time = 1
-            else:
-                self.time = self.rate
-        self.todisk()
+class UpdateThread(Thread):
+    def __init__(self, feed):
+        self.feed = feed
+        self.new = []
+        self.alive = 1
+
+    def run(self, old, filter):
+        if self.feed.update():
+            self.feed.time = self.feed.rate
+
+        if not filter:
+            filter = lambda x, y: 1
+        self.new = [ item for item in self.feed if\
+                (item not in old) and filter(self.feed, item)]
+        self.old = [ item for item in old if\
+                (item not in self.feed) or (not filter(self.feed, item))]
+        self.alive = 0
