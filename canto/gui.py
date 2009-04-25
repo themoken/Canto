@@ -68,11 +68,8 @@ class Gui :
 
     def refresh(self):
         # Generate all of the columns
-        self.window_list = [curses.newwin(self.cfg.gui_height, \
-                    self.cfg.gui_width / self.cfg.columns, \
-                    self.cfg.gui_top,\
-                    (self.cfg.gui_width / self.cfg.columns) * i\
-                    + self.cfg.gui_right) \
+        self.window_list = [curses.newpad(self.cfg.gui_height + 1, \
+                    self.cfg.gui_width / self.cfg.columns)\
                     for i in range(0, self.cfg.columns)]
 
         # Setup the backgrounds.
@@ -143,14 +140,18 @@ class Gui :
                 row += item["lines"]
         else:
             row = -1
-        
+
         # Actually perform curses screen update.
         for i,win in enumerate(self.window_list) :
             if i * self.cfg.gui_height >= row:
                 win.erase()
             else:
                 win.clrtobot()
-            win.noutrefresh()
+            win.noutrefresh(0,0,
+                    self.cfg.gui_top,
+                    i*(self.cfg.gui_width / self.cfg.columns),
+                    self.cfg.gui_height - 1,
+                    (i+1)*(self.cfg.gui_width / self.cfg.columns))
         curses.doupdate()
 
     def __check_scroll(self) :
