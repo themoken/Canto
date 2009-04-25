@@ -241,18 +241,18 @@ class Renderer :
         row = dict["row"]
         if dict["story"].idx == 0:
             row = self.simple_out(self.tag_head(d),\
-                row, dict["tag"].cfg.height, \
+                row, dict["tag"].cfg.gui_height, \
                 dict["width"], dict["window_list"])
 
         if not dict["tag"].collapsed:
             row = self.out([[dict["content"], (self.firsts(d), self.mids(d), \
                     self.ends(d))]],
-                    row, dict["tag"].cfg.height,\
+                    row, dict["tag"].cfg.gui_height,\
                     dict["width"], dict["window_list"])
             
             if dict["story"].last:
                 row = self.simple_out(self.tag_foot(d),\
-                    row, dict["tag"].cfg.height, \
+                    row, dict["tag"].cfg.gui_height, \
                     dict["width"], dict["window_list"])
     
         return row
