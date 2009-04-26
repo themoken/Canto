@@ -527,6 +527,9 @@ class Main():
             print "Please report this bug. Send your logfile " +\
                 "(%s) to jack@codezen.org" % self.cfg.log_file
 
+        for thread in self.stories_threads:
+            thread.join()
+
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
             while feed.changed():
@@ -576,6 +579,7 @@ class Main():
                     t.run(old, self.cfg.filters.cur())
                 elif f.time > 1:
                     f.time -= 1
+                f.todisk()
 
             self.ticks = 60
 
