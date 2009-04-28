@@ -27,11 +27,17 @@ class Story():
             return 0
         return 1
 
+    def __str__(self):
+        return self.ufp["title"] + " " + str(id(self))
+
     def __getitem__(self, key):
         if key in self.ufp:
             return self.ufp[key]
         else:
             return ""
+
+    def __setitem__(self, key, item):
+        self.ufp[key] = item
 
     def __contains__(self, key):
         return key in self.ufp

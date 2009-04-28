@@ -579,7 +579,6 @@ class Main():
                     t.run(old, self.cfg.filters.cur())
                 elif f.time > 1:
                     f.time -= 1
-                f.todisk()
 
             self.ticks = 60
 

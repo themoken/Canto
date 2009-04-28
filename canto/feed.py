@@ -98,21 +98,6 @@ class Feed(list):
     def extend(self, entries):
         newlist = []
         for entry in entries:
-            # If out todisk() lock failed, then it's possible
-            # we have unwritten changes, so we need to move over
-            # the canto_state, rather than just using the already
-            # written one.
-
-            selected = 0
-
-            if entry in self:
-                i = self.index(entry)
-                if self.changed and entry["canto_state"] !=\
-                        self[i]["canto_state"]:
-                    entry["canto_state"] = self[i]["canto_state"]
-                    entry.updated = 1
-                selected = self[i].sel
-
             # If tags were added in the configuration, c-f won't
             # notice (doesn't care about tags), so we check and
             # append as needed.
@@ -121,11 +106,21 @@ class Feed(list):
                 if tag not in entry["canto_state"]:
                     entry["canto_state"].append(tag)
 
-            s = story.Story(entry)
-            s.sel = selected
-            newlist.append(s)
+            for centry in self:
+                if centry["id"] == entry["id"]:
+                    if entry["canto_state"] != centry["canto_state"]:
+                        if centry.updated:
+                            entry["canto_state"] = centry["canto_state"]
+                        else:
+                            centry["canto_state"] = entry["canto_state"]
+                    break
+            else:
+                newlist.append(story.Story(entry))
 
-        del self[:]
+        for centry in self:
+            if centry not in entries:
+                self.remove(centry)
+
         list.extend(self, filter(self.filter, newlist))
 
     def todisk(self):
@@ -164,8 +159,21 @@ class UpdateThread(Thread):
 
         if not filter:
             filter = lambda x, y: 1
-        self.new = [ item for item in self.feed if\
-                (item not in old) and filter(self.feed, item)]
-        self.old = [ item for item in old if\
-                (item not in self.feed) or (not filter(self.feed, item))]
+
+        self.new = []
+        for item in self.feed:
+            if item in old:
+                continue
+            if not filter(self.feed, item):
+                continue
+            self.new.append(item)
+
+        self.old = []
+        for item in old:
+            if item in self.feed:
+                continue
+            if filter(self.feed, item):
+                continue
+            self.old.append(item)
+
         self.alive = 0
