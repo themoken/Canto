@@ -162,17 +162,13 @@ class UpdateThread(Thread):
 
         self.new = []
         for item in self.feed:
-            if item in old:
-                continue
-            if not filter(self.feed, item):
+            if item in old or (not filter(self.feed, item)):
                 continue
             self.new.append(item)
 
         self.old = []
         for item in old:
-            if item in self.feed:
-                continue
-            if filter(self.feed, item):
+            if item in self.feed and filter(self.feed, item):
                 continue
             self.old.append(item)
 
