@@ -8,39 +8,21 @@
 #   published by the Free Software Foundation.
 
 from input import input, search, num_input
+from basegui import BaseGui
+from reader import Reader
 from const import *
 import utility
-import reader
 import extra 
 
 import curses
 
-# Gui() is the class encompassing the basic view of canto,
-# the list of feeds (tags) and items.
-
-# Gui()'s main data structure is self.tags, which is a list
-# of arbitrary Tag() objects, each being a list of stories.
-# A corresponding list is self.map, which maps out the visible
-# stories in order of appearance.
-
-# Self.map may seem redundant, but it's mostly for convenience.
-# For example, if the items are globally sorted, then iterating
-# over self.tags won't work. Or if you're testing membership
-# of a story in the self. list (see __select_topoftag).
-# Or if your iterating over all visible items (see draw_elements)
-
-# Self.list is still useful though, when dealing with things
-# like tag based sorting, or setting the attributes of a Tag()
-# since each story doesn't have access to its Tag() object
-# directly.
-
-class Gui :
+class Gui(BaseGui) :
     def __init__(self, cfg, tags):
         self.keys = cfg.key_list
         self.window_list = []
         self.map = []
         self.focus = 0
-        self.reader = None
+        self.reader_obj = None
 
         self.cfg = cfg
 
@@ -57,11 +39,6 @@ class Gui :
 
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
-
-    def __str__(self):
-        if self.focus:
-            return "%B[base]%b"
-        return "[base]"
 
     def refresh(self):
         # Generate all of the columns
@@ -80,6 +57,8 @@ class Gui :
 
         self.__map_items()
         self.draw_elements()
+        if self.reader_obj:
+            self.reader.refresh()
 
     def print_item(self, tag, story, row):
         d = { "story" : story, "tag" : tag, "row" : row,\
@@ -150,6 +129,18 @@ class Gui :
                     self.cfg.gui_height - 1,
                     (i+1)*(self.cfg.gui_width / self.cfg.columns))
         curses.doupdate()
+
+        if self.reader_obj:
+            self.reader_obj.draw_elements()
+
+    def action(self, k):
+        if self.reader_obj:
+            r = self.reader_obj.action(k)
+            if type(r) == list:
+                return self.action(r)
+            else:
+                return r
+        return BaseGui.action(self, k)
 
     def __check_scroll(self) :
         # If our current item is offscreen up, ret 1
@@ -252,38 +243,6 @@ class Gui :
                         self.cfg.new_hook(t, item)
                         item.old()
 
-    def action(self, k):
-        # Allows user defined functions to manipulate Gui()
-
-        if self.reader:
-            r = self.reader.action(k)
-            if type(r) == list:
-                return self.action(r)
-            else:
-                return r
-
-        if k in self.keys:
-            a = self.keys[k]
-        elif type(k) == str:
-            a = k
-        else:
-            return NOKEY
-
-        if type(a) == list:
-            for action in a:
-                return self.action(action)
-        elif hasattr(a, "__call__"):
-            r = a(self)
-        else:
-            f = getattr(self, a, None)
-            if f:
-                r = f()
-            else:
-                r = NOKEY
-
-        if not r:
-            self.draw_elements()
-        return r
 
     @noitem_unsafe
     @change_selected
@@ -428,9 +387,12 @@ class Gui :
     @noitem_unsafe
     def reader(self) :
         self.sel["tag"].set_read(self.sel["item"])
-        reader.Reader(self.cfg, self.sel["tag"], self.sel["item"],\
-                self.register, self.deregister) 
+        self.reader_obj = Reader(self.cfg, self.sel["tag"],\
+                self.sel["item"], self.reader_dead)
         return REDRAW_ALL
+
+    def reader_dead(self):
+        self.reader_obj = None
 
     def change_filter(fn):
         def dec(self, *args):

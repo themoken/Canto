@@ -7,14 +7,15 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from basegui import BaseGui
 from input import input
 from const import *
 import utility
 
 import curses
 
-class Reader :
-    def __init__(self, cfg, tag, story, register, deregister):
+class Reader(BaseGui):
+    def __init__(self, cfg, tag, story, dead_call):
 
         self.story = story
         self.cfg = cfg
@@ -27,16 +28,9 @@ class Reader :
         self.height = 0
         self.show_links = 0
         self.tag = tag
+        self.dead = dead_call
 
-        register(self)
-        self.register = register
-        self.deregister = deregister
         self.refresh()
-
-    def __str__(self):
-        if self.focus:
-            return u"%B[" + self.story["title"][:10] + u"]%b"
-        return u"[" + self.story["title"][:10] + u"]"
 
     def refresh(self):
         # It's unfortunate, but because the interface is so complex,
@@ -172,30 +166,8 @@ class Reader :
             utility.goto(self.links[n], self.cfg)
         return 1
 
-    def switch(self):
-        return WINDOW_SWITCH
-
-    def alarm(self, a=None, b=None):
-        pass
-    
-    def action(self, a):
-        if hasattr(a, "__call__"):
-            r = a(self)
-        else:
-            r = 0
-            f = getattr(self,a,None)
-            if f:
-                r = f()
-
-        if not r:
-            self.draw_elements()
-        return r
-
-    def quit(self):
-        self.destroy()
-        return REDRAW_ALL
-
     def destroy(self):
         self.window.erase()
         self.draw_elements()
-        self.deregister()
+        self.dead()
+        return REDRAW_ALL

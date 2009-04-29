@@ -85,7 +85,7 @@ class Cfg:
                               "p" : ["destroy","prev_item","reader"],
                               "h" : ["destroy","help"],
                               "q" : ["destroy","quit"],
-                              " " : "quit"}
+                              " " : "destroy"}
 
         self.colors = [("white","black"),("blue","black"),("yellow","black"),
                 ("green","black"),("pink","black"),("black","black"),("blue","black"),(0,0)]
