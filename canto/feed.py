@@ -106,15 +106,7 @@ class Feed(list):
                 if tag not in entry["canto_state"]:
                     entry["canto_state"].append(tag)
 
-            for centry in self:
-                if centry["id"] == entry["id"]:
-                    if entry["canto_state"] != centry["canto_state"]:
-                        if centry.updated:
-                            entry["canto_state"] = centry["canto_state"]
-                        else:
-                            centry["canto_state"] = entry["canto_state"]
-                    break
-            else:
+            if entry not in self:
                 newlist.append(story.Story(entry))
 
         for centry in self:
@@ -127,6 +119,14 @@ class Feed(list):
         changed = self.changed()
         if not changed :
             return
+
+        for entry in changed:
+            old = self.ufp["entries"][self.ufp["entries"].index(entry)]
+            if old["canto_state"] != entry["canto_state"]:
+               if entry.updated:
+                   old["canto_state"] = entry["canto_state"]
+               else:
+                   entry["canto_state"] = old["canto_state"]
 
         f = open(self.path, "r+")
         try:
