@@ -399,8 +399,6 @@ class Gui(BaseGui) :
             r,f = fn(self, *args)
             if r:
                 self.cfg.log("Filter: %s" % f)
-                for f in self.cfg.feeds:
-                    f.time = 1
                 for t in self.tags:
                     t.clear()
                 return REFILTER

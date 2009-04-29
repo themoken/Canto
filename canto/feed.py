@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from const import VERSION_TUPLE
+from const import *
 import story
 import tag
 
@@ -148,15 +148,18 @@ class Feed(list):
         return [ x for x in self if x.updated ]
 
 class UpdateThread(Thread):
-    def __init__(self, feed):
+    def __init__(self, cfg, feed):
+        self.cfg = cfg
         self.feed = feed
-        self.new = []
-        self.alive = 1
+        self.status = THREAD_IDLE
 
-    def run(self, old, filter):
+    def run(self, old):
+        self.status = THREAD_UPDATING
         if self.feed.update():
             self.feed.time = self.feed.rate
 
+        self.status = THREAD_FILTERING
+        filter = self.cfg.filters.cur()
         if not filter:
             filter = lambda x, y: 1
 
@@ -172,4 +175,12 @@ class UpdateThread(Thread):
                 continue
             self.old.append(item)
 
-        self.alive = 0
+    def tick(self, old=None):
+        self.feed.time -= 1
+        if self.feed.time <= 0 and self.status == THREAD_IDLE:
+            self.status = THREAD_START
+            if old == None:
+                old = self.feed[:]
+            self.run(old)
+            self.status = THREAD_DONE
+
