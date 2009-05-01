@@ -1,6 +1,7 @@
 This is where we'll go into the magic of `~/.canto/conf`. This file is actually parsed and driven by the Python interpreter itself, so it's immensely powerful. It has the entirety of the Python language behind it, and allows for an incredible amount of flexibility.
 
-If you've already gone through the basics, then you might be looking for [Advanced Configuration](/canto/advconfig/). That's were all the neat hooks and filters are covered.
+If you've already gone through the basics, then you might be looking for
+[Advanced Configuration](../advconfig/). That's were all the neat hooks and filters are covered.
 
 [TOC]
 
@@ -163,9 +164,9 @@ implemented as tags.
 However, anything that can be accomplished with those tags might be better
 accomplished with filters.
 
-The `renderer` option is covered [here](/canto/style/#per-feed-theming). The
-`filter` option is used identically to the filters described [here](
-http://codezen.org/canto/advconfig/#filters).
+The `renderer` option is covered [here](../style/#per-feed-theming). The
+`filter` option is used identically to the filters described 
+[here](../advconfig/#filters).
 
 ### Scripts
 
@@ -340,8 +341,9 @@ Now, you'll have 10 lines of dedicated space for the reader at the top of the sc
         cfg.reader_lines = cfg.width / 2
         cfg.columns = (cfg.width / 2) / 50
 
-This will set half of the screen to the left as dedicated space for the reader, and try to divide the rest into columns of width 50. `resize_hook` is covered with the rest of the [hooks](http://codezen.org/canto/advconfig/#hooks).
-
+This will set half of the screen to the left as dedicated space for the reader,
+and try to divide the rest into columns of width 50. `resize_hook` is covered 
+with the rest of the [hooks](../advconfig/#hooks).
 
 </div>
 
@@ -635,15 +637,17 @@ Set 'x' to set current item read and move to the next item.
 
 There are a handful of other configuration options that you can use.
 
-Canto has many options that allow you to change (radically, I might add) the way that Canto draws the screen, and (a little more safely) change the default colors used to display. These are covered in detail on the [styling](/canto/style/) page.
+Canto has many options that allow you to change (radically, I might add) the way
+that Canto draws the screen, and (a little more safely) change the default
+colors used to display. These are covered in detail on the [styling](../style/) page.
 
-**Filters** are covered [here](/canto/advconfig/#filters)
+**Filters** are covered [here](../advconfig/#filters)
 
-**Hooks** are covered [here](/canto/advconfig/#hooks).
+**Hooks** are covered [here](../advconfig/#hooks).
 
-**Sorting** feeds arbitrarily is covered [here](/canto/advconfig/#sorting).
+**Sorting** feeds arbitrarily is covered [here](../advconfig/#sorting).
 
-As are a lot of other goodies, like writing your own [arbitrary keybinds](/canto/advconfig/#advanced-keybinds).
+As are a lot of other goodies, like writing your own [arbitrary keybinds](../advconfig/#advanced-keybinds).
 
 
 </div>
