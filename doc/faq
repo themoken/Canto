@@ -46,7 +46,7 @@ Yes. Canto uses [feedparser](http://feedparser.org) which is capable of parsing 
 
 <div class="section">
 
-Yes, as of 0.5.2, Canto support importing from/export to OPML, as well as adding feeds from an OPML file via config using ([source_opml](http://codezen.org:8000/canto/config/#source_opml)).
+Yes, as of 0.5.2, Canto support importing from/export to OPML, as well as adding feeds from an OPML file via config using ([source_opml](../config/#source_opml)).
 
 </div>
 
@@ -120,6 +120,6 @@ Since 0.5.7 there's been an official Debian package which is built on every arch
 
 <div class="section">
 
-Read the [contact](/canto/contact) page. In short you should either get into the IRC channel, write a message on the Mailing List or submit a bug report to the [bug tracker](http://code.google.com/p/canto-reader/issues/list).
+Read the [contact](../contact) page. In short you should either get into the IRC channel, write a message on the Mailing List or submit a bug report to the [bug tracker](http://code.google.com/p/canto-reader/issues/list).
 
 </div>
