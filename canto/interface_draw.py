@@ -287,8 +287,8 @@ class Renderer :
                     link[0] + u"%1 - " + link[1]
 
     def reader_highlight_quotes(self, dict):
-        dict["content"] = self.highlight_quote_rgx.sub(dict["content"],\
-                u"%5\"\\1\"%0")
+        dict["content"] = self.highlight_quote_rgx.sub(u"%5\"\\1\"%0",\
+                dict["content"])
 
     @draw_hooks
     def reader(self, dict):
