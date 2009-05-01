@@ -666,3 +666,4 @@ Canto 0.6.0 deprecated a number of configuration options. `browser` and
 All of these configuration options **will** disappear from Canto in the **near
 future**, so please update your configs.
 
+</div>

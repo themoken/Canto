@@ -4,6 +4,8 @@ If you're looking for a bit more customization, then you've come to the right pl
 
 ## Using Tags
 
+<div class="section">
+
 Tags are the simplest "advanced" feature of Canto. You add an arbitrary number of tags to every feed:
 
     :::python
@@ -28,7 +30,12 @@ Now when you switch to the "news" tag (defaults `<` and `>` to switch), you'll g
     tag_sorts=[[None],[by_unread, by_len]]
     tag_filters=[None, show_unread]
 
+
+</div>
+
 ## Hooks
+
+<div class="section">
 
 Hooks are used in order to execute code on a particular event. These hooks are all used in your config by setting
 
@@ -92,7 +99,12 @@ There are a number of different hooks.
 
 Each hook is passed the relevant information. It may require a little [browsing of the code](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git) to make use of them, but the ability is there. The canto.extra module already has some example hooks for setting/unsetting the xterm title. If you need help using a hook, come by #canto in irc.freenode.net.
 
+
+</div>
+
 ## Filters
+
+<div class="section">
 
 Filters allow you to arbitrarily remove items from the list. A filter takes the form of a class with at least two methods. For example, `show_unread()` from canto.extra:
 
@@ -137,7 +149,12 @@ Lastly, because they are classes, you can make them inherit from each other. Tak
 
 Back to two lines of real code, inheriting the rest from `only_with`.
 
+
+</div>
+
 ### Types of filters
+
+<div class="section">
 
 Here are the three types of filters:
 
@@ -177,7 +194,12 @@ Here's a config snippet summarizing the above syntax:
     keys['b'] = set_tag_filter(show_unread)
 
 
+
+</div>
+
 ## Sorting
+
+<div class="section">
 
 Sorting a feed in Canto is just like sorting any list in Python: You define a function that determines whether one item is ahead of another. Let's look at the unread sort (from [canto/extra.py](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=blob;f=canto/extra.py;hb=HEAD")). This function is wrapped in a class to provide some extra info for the GUI.
 
@@ -210,7 +232,12 @@ Each sort is a list of sorting functions, used as follows:
 
 This will, by default, sort the Slashdot tag alphabetically, and then by unread status. Because both of those sorts are well-behaved, the read  and unread portions of the list will still be in alphabetical order. You can then use the `next_tag_sort` and `prev_stag_sort` keys (=/- by default) to switch between the two sort lists. Note that `[None]` will not sort at all, and this is the default.
 
+
+</div>
+
 ## Advanced Keybinds
+
+<div class="section">
 
 Keybinds can be strings or functions or lists intermixing both.
 
@@ -247,3 +274,4 @@ Other nice keybind defined in `canto/extra.py`:
     keys['d'] = set_tag_sort(by_alpha) # Set tag sort with a keybind
     keys['b'] = set_tags(["Reddit", "Proggit"]) # Set current tags
 
+</div>

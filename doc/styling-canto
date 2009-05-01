@@ -589,3 +589,5 @@ In the above examples, we used functions like `story.wasread()`, and variables l
 The reader is simple to style. It follows the same form as the `first()`, `mids()`, `ends()` that the main interface uses. The content of the reader is essentially the same as the content of a single story.
 
 The only difference is that you use `rfirsts()`, `rmids()`, `rends()`, `reader_head()` and `reader_foot()`.
+
+</div>
