@@ -128,10 +128,10 @@ class Gui(BaseGui) :
                     i*(self.cfg.gui_width / self.cfg.columns),
                     self.cfg.gui_height - 1,
                     (i+1)*(self.cfg.gui_width / self.cfg.columns))
-        curses.doupdate()
 
         if self.reader_obj:
             self.reader_obj.draw_elements()
+        curses.doupdate()
 
     def action(self, k):
         if self.reader_obj:

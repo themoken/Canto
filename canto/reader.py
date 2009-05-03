@@ -88,7 +88,7 @@ class Reader(BaseGui):
 
     def draw_elements(self):
         self.more = self.lines - (self.height + self.offset)
-        self.window.refresh(self.offset, 0, self.top, self.right, \
+        self.window.noutrefresh(self.offset, 0, self.top, self.right, \
                 self.height - 1 + self.top, self.width + self.right)
 
     def toggle_show_links(self):
