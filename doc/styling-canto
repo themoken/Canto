@@ -126,6 +126,19 @@ You can also use Python to set a lot of colors at once, useful for changing the 
 
 This will change all of the colors to a background blue. Like MOC's default theme. If you set all of the backgrounds to "default" instead of "blue", it would allow the terminal to set the background. I would only suggest this if you've either changed the other colors to be readable on any background, or if you're using a transparent terminal.
 
+### 256 colors
+
+Canto supports using 256 colors by number. To use the extended colors, you can just set a color like this
+
+    :::python
+    colors[0] = (123, "default")
+
+In order to use them, however, you need to make sure that your terminal supports it (most modern terminals do), and that your `TERM` variable is correctly set. For example, with xterm, you'd either `export TERM="xterm-265color"` before you run it. Or invoke canto like so:
+
+    :::bash
+    TERM="xterm-256color" canto
+
+Lastly, if you're interested in checking if your terminal supports the colors, or getting a list of the colors by number you can use a script like [this](http://codezen.org/static/colortest) (local copy of a Vim script [here](http://www.vim.org/scripts/script.php?script_id=1349)) to output a nice list. If you don't want to use a script, there's a [static chart](http://www.calmar.ws/vim/256-xterm-24bit-rgb-color-chart.html) to use as well.
 
 </div>
 
