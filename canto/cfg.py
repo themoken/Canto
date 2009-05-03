@@ -210,7 +210,7 @@ class Cfg:
             return -1
 
         if "renderer" in kwargs:
-            self.cfg.log("Renderer is no longer accepted as an argument to\
+            self.log("Renderer is no longer accepted as an argument to\
                     add(), now you must add a tag (addtag()) to use a custom\
                     renderer")
 
