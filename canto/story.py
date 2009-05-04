@@ -95,3 +95,11 @@ class Story():
         return self.renderer.story(cfg, tag, self, row, \
                 i.cfg.gui_height, i.cfg.gui_width / i.cfg.columns, \
                 i.window_list)
+
+    def get_text(self):
+        if "content" in self:
+            for c in self["content"]:
+                if "text" in c["type"]:
+                    return c["value"]
+
+        return self["description"]
