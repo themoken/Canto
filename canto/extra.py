@@ -8,8 +8,11 @@
 #   published by the Free Software Foundation.
 
 import interface_draw
+import canto_html
 import utility
+import input
 
+import subprocess
 import locale
 import time
 import os
@@ -89,6 +92,30 @@ class only_without(only_with):
     def __call__(self, tag, item):
         return not self.match.match(item["title"])
 
+# Display feed when it has one or more of the specified tags
+class with_tag_in():
+    def __init__(self, *tags):
+        self.tags = set(tags)
+    def __str__(self):
+        return "With Tags: %s" % '/'.join(self.tags)
+
+    def __call__(self, tag, item):
+        tags=set(item.feed.tags)
+        return bool(self.tags.intersection(tags))
+
+# Display when all filters match
+#
+# Usage : filters=[all_of(with_tag_in('news'), show_unread)]
+
+class all_of():
+    def __init__(self, *filters):
+        self.filters = [utility.get_instance(f) for f in filters]
+    def __str__(self):
+        return ' & '.join(["(%s)" % f for f in self.filters])
+
+    def __call__(self, tag, item):
+        return all([f(tag, item) for f in self.filters])
+
 def set_filter(filter):
     filter = utility.get_instance(filter)
     return lambda x : x.set_filter(filter)
@@ -115,6 +142,21 @@ def search(s, **kwargs):
     else:
         return lambda x : x.do_inline_search(re.compile(".*" + s + ".*"))
 
+# Creates a keybind to do a interactive search.
+#
+# Usage : keys["/"] = search_filter
+
+def search_filter(gui):
+    rex = input.input(gui.cfg, "Search Filter")
+    if not rex:
+        return gui.set_filter(None)
+    elif rex.startswith("rgx:"):
+        rex = rex[4:]
+    else:
+        rex = "(?i).*" + re.escape(rex) + ".*"
+
+    return gui.set_filter(only_with(rex, regex=True))
+
 # Creates a keybind to append current story information to a file in the user's
 # home directory. This is merely an example, but with a little modification it
 # could be used to output XML chunks or Markdown output, etc.
@@ -126,6 +168,24 @@ def save(x):
     file.write(x.sel["title"] + "\n")
     file.write(x.sel["link"] + "\n\n")
     file.close()
+
+# Creates a keybind to copy the URL of the current story to the clipboard.
+# xclip must be available for this to work.
+#
+# Usage : keys["y"] = ["just_read", yank, "next_item"]
+
+def yank(gui):
+    xclip = subprocess.Popen('xclip -i', shell=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE)
+    try:
+        xclip.stdin.write(gui.sel["link"])
+        xclip.stdin.close()
+        assert xclip.wait() == 0
+    except (IOError, AssertionError):
+        gui.cfg.log("xclip must be installed for yank to work!")
+    else:
+        gui.cfg.log("Yanked: %s" % gui.sel["title"])
 
 # Note: the following two hacks are for xterm and compatible
 # terminal emulators ([u]rxvt, eterm, aterm, etc.). These should
@@ -174,6 +234,17 @@ class by_len:
 
     def __call__(self, x, y):
         return len(x["title"]) - len(y["title"])
+
+class by_content:
+    def __str__(self):
+        return "By Length of Content"
+
+    def __call__(self, x, y):
+        def get_text(story):
+            s,links = canto_html.convert(story.get_text())
+            return s
+
+        return len(get_text(x)) - len(get_text(y))
 
 class by_alpha:
     def __str__(self):
