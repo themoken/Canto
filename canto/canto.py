@@ -481,8 +481,12 @@ class Main():
                         self.update_focus()
                         oldcur.draw_elements()
                         self.cfg.key_handlers[self.cfg.cur_kh].draw_elements()
-        except:
+        except Exception:
+            # Catch all _non-exit_ exceptions.
+            # -> No bug-report message on things like SystemExit.
             self.estring = traceback.format_exc()
+        except KeyboardInterrupt:
+            pass
 
         self.done()
 
