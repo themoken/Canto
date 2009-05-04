@@ -10,18 +10,16 @@
 from const import *
 
 class BaseGui:
-    def action(self, k):
+    def key(self, k):
         if k in self.keys:
-            a = self.keys[k]
-        elif type(k) == str:
-            a = k
+            if type(self.keys[k]) == list:
+                return self.keys[k]
+            return [self.keys[k]]
         else:
-            return NOKEY
+            return []
 
-        if type(a) == list:
-            for action in a:
-                return self.action(action)
-        elif hasattr(a, "__call__"):
+    def action(self, a):
+        if hasattr(a, "__call__"):
             r = a(self)
         else:
             f = getattr(self, a, None)

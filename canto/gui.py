@@ -133,14 +133,15 @@ class Gui(BaseGui) :
             self.reader_obj.draw_elements()
         curses.doupdate()
 
-    def action(self, k):
+    def key(self, k):
         if self.reader_obj:
-            r = self.reader_obj.action(k)
-            if type(r) == list:
-                return self.action(r)
-            else:
-                return r
-        return BaseGui.action(self, k)
+            return self.reader_obj.key(k)
+        return BaseGui.key(self, k)
+
+    def action(self, a):
+        if self.reader_obj:
+            return self.reader_obj.action(a)
+        return BaseGui.action(self, a)
 
     def __check_scroll(self) :
         # If our current item is offscreen up, ret 1

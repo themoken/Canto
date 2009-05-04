@@ -411,6 +411,9 @@ class Main():
             while 1:
                 t = None
 
+                if not self.gui:
+                    break
+
                 if self.cfg.wait_for_pid:
                     signal.pause()
 
@@ -454,25 +457,28 @@ class Main():
                 else:
                     t = (k, 0)
 
-                r = self.gui.action(t)
-                if r == REFRESH_ALL:
-                    self.refresh()
-                elif r == ALARM:
-                    self.ticks = 1
-                    self.tick()
-                elif r == REFILTER:
-                    self.uthreads = self.sorted_uthreads
-                    for t in self.uthreads:
-                        while t.status not in [THREAD_IDLE, THREAD_DONE]:
-                            pass
-                        t.status = THREAD_IDLE
-                        t.feed.time = 1
-                    self.ticks = 1
-                    self.tick(1)
-                elif r == REDRAW_ALL:
-                    self.gui.draw_elements()
-                elif r == EXIT:
-                    break
+                actions = self.gui.key(t)
+                for a in actions:
+                    r = self.gui.action(a)
+                    if r == REFRESH_ALL:
+                        self.refresh()
+                    elif r == ALARM:
+                        self.ticks = 1
+                        self.tick()
+                    elif r == REFILTER:
+                        self.uthreads = self.sorted_uthreads
+                        for t in self.uthreads:
+                            while t.status not in [THREAD_IDLE, THREAD_DONE]:
+                                pass
+                            t.status = THREAD_IDLE
+                            t.feed.time = 1
+                        self.ticks = 1
+                        self.tick(1)
+                    elif r == REDRAW_ALL:
+                        self.gui.draw_elements()
+                    elif r == EXIT:
+                        self.gui = None
+                        break
 
         except Exception:
             self.estring = traceback.format_exc()
