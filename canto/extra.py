@@ -20,7 +20,7 @@ import re
 
 # Adds Slashdot department information to reader
 #
-# Usage : addfeed("Slashdot",\
+# Usage : add("Slashdot",\
 #        "http://rss.slashdot.org/slashdot/Slashdot", \
 #        renderer=slashdot_renderer()
 
@@ -51,7 +51,7 @@ class show_unread():
 
 # Filter for filtering out all unread stories.
 #
-# Usage : filterlist=[None, show_marked()]
+# Usage : filters=[None, show_marked()]
 #       then using [/] to cycle through
 
 class show_marked():
@@ -64,8 +64,8 @@ class show_marked():
 # A filter to take a keyword or regex and filter
 # all stories that don't contain/match it.
 #
-# Usage : filterlist=[None, only_with("Obama")]
-#         filterlist=[None, only_with(".*[Ll]inux.*", regex=True)]
+# Usage : filters=[None, only_with("Obama")]
+#         filters=[None, only_with(".*[Ll]inux.*", regex=True)]
 #
 
 class only_with():
