@@ -284,7 +284,7 @@ class Renderer :
                 color = u"%8"
 
             dict["content"] += color + u"[" + unicode(idx) + u"] " + \
-                    link[0] + u"%1 - " + link[1]
+                    link[0] + u"%1 - " + link[1] + "\n"
 
     def reader_highlight_quotes(self, dict):
         dict["content"] = self.highlight_quote_rgx.sub(u"%5\"\\1\"%0",\
