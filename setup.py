@@ -3,8 +3,8 @@ from __future__ import with_statement # This isn't required in Python 2.6
 from distutils.core import setup, Extension
 from distutils.command.install_data import install_data
 
-version = ['0','6','10']
-man_date = "17 April 2009"
+version = ['0','6','11']
+man_date = "06 May 2009"
 
 class Canto_install_data(install_data):
     def run(self):

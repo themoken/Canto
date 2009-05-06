@@ -1,3 +1,9 @@
+Canto 0.6.11 ChangeLog
+* Fix OPML handling for OPML without text attribute
+* Exception clean ups
+* Doc clean ups
+* canto.extra additions
+
 Canto 0.6.10 ChangeLog
 * Make HTML parser more resistant to broken HTML
 * Fix minor exception in c-f thread
