@@ -476,10 +476,12 @@ class Main():
                             update.put((self.cfg, f, f[:], THREAD_BOTH))
                     elif r == REFILTER:
                         while not update.empty():
-                            update.get().task_done()
+                            update.get()
+                            update.task_done()
                         ulock.acquire()
                         while not updated.empty():
-                            updated.get().task_done()
+                            updated.get()
+                            updated.task_done()
                         ulock.release()
                         for f in self.cfg.feeds:
                             update.put((self.cfg, f, [], THREAD_BOTH))
