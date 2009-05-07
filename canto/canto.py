@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from feed import update, updated, work, ulock
+from feed import update, updated, work, flush
 from utility import Cycle
 from const import *
 from gui import Gui
@@ -475,15 +475,8 @@ class Main():
                     elif r == ALARM:
                         for f in self.cfg.feeds:
                             update.put((self.cfg, f, f[:], THREAD_BOTH))
-                    elif r == REFILTER:
-                        while not update.empty():
-                            update.get()
-                            update.task_done()
-                        ulock.acquire()
-                        while not updated.empty():
-                            updated.get()
-                            updated.task_done()
-                        ulock.release()
+                    elif r in [REFILTER, RETAG]:
+                        flush()
                         for f in self.cfg.feeds:
                             update.put((self.cfg, f, [], THREAD_BOTH))
                     elif r == REDRAW_ALL:

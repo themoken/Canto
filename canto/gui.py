@@ -197,9 +197,13 @@ class Gui(BaseGui) :
                 if l:
                     self.tags[i].retract(l)
         if new:
-            for i, l in enumerate(new):
-                if l:
-                    self.tags[i].extend(l)
+            if len(new) != len(self.tags):
+                self.cfg.log("Non matching len: %d / %d" % (len(new),
+                    len(self.tags)))
+            else:
+                for i, l in enumerate(new):
+                    if l:
+                        self.tags[i].extend(l)
         self.__do_new_hook()
         self.__map_items() 
 
@@ -469,10 +473,12 @@ class Gui(BaseGui) :
         def dec(self, *args):
             r,t = fn(self, *args)
             if r:
+                for ot in self.tags:
+                    ot.clear()
                 self.tags = t
-                self.cfg.log("Tags: %s" % ", ".join(\
-                        [unicode(x) for x in t if x]))
-                return ALARM
+                self.sel = None
+                self.cfg.log("Tags: %s" % ", ".join([unicode(x) for x in t]))
+                return RETAG
         return dec
 
     @change_tags

@@ -201,3 +201,12 @@ def work():
             ulock.release()
         update.task_done()
 
+def flush():
+    while not update.empty():
+        update.get()
+        update.task_done()
+    ulock.acquire()
+    while not updated.empty():
+        updated.get()
+        updated.task_done()
+    ulock.release()

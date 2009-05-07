@@ -92,7 +92,7 @@ class Tag(list):
                   "id" : None
                 }
 
-            stub = story.Story(d , None, self.cfg.default_renderer)
+            stub = story.Story(d)
             self.append(stub)
             empty = 1
         else:
