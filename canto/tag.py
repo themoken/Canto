@@ -72,6 +72,7 @@ class Tag(list):
                 else:
                     self.unread -= 1
                 self.remove(item)
+        self.enum()
 
     def extend(self, iter):
         self.last_iter = iter
@@ -103,7 +104,9 @@ class Tag(list):
             for s in dosorts:
                 if s:
                     list.sort(self, s)
+        self.enum(empty)
 
+    def enum(self, empty = 0):
         if empty:
             self.read = 0
             self.unread = 0
