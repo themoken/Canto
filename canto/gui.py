@@ -192,9 +192,14 @@ class Gui(BaseGui) :
         # Clear all of the tags and repopulate with the new listobj.
         # At this point, self.sel and self.sel_idx may be invalid
 
-        for t in self.tags:
-            t.retract(old)
-            t.extend(new)
+        if new:
+            for i, l in enumerate(new):
+                if l:
+                    self.tags[i].extend(l)
+        if old:
+            for i, l in enumerate(old):
+                if l:
+                    self.tags[i].retract(l)
 
         self.__do_new_hook()
         self.__map_items() 

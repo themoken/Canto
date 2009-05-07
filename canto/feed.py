@@ -11,7 +11,8 @@ from const import *
 import story
 import tag
 
-from threading import Thread
+from threading import Lock
+from Queue import Queue
 import cPickle
 import fcntl
 
@@ -147,40 +148,56 @@ class Feed(list):
     def changed(self):
         return [ x for x in self if x.updated ]
 
-class UpdateThread(Thread):
-    def __init__(self, cfg, feed):
-        self.cfg = cfg
-        self.feed = feed
-        self.status = THREAD_IDLE
+update = Queue()
+updated = Queue()
+ulock = Lock()
 
-    def run(self, old):
-        self.status = THREAD_UPDATING
-        if self.feed.update():
-            self.feed.time = self.feed.rate
-
-        self.status = THREAD_FILTERING
-        filter = self.cfg.filters.cur()
-        if not filter:
-            filter = lambda x, y: 1
-
-        self.new = []
-        for item in self.feed:
-            if item in old or (not filter(self.feed, item)):
+def work():
+    while True:
+        cfg, feed, prev, do_filter = update.get()
+        if do_filter != THREAD_FILTER:
+            if feed.update():
+                feed.time = feed.rate
+            else:
                 continue
-            self.new.append(item)
 
-        self.old = []
-        for item in old:
-            if item in self.feed and filter(self.feed, item):
-                continue
-            self.old.append(item)
+        if do_filter >= THREAD_FILTER:
+            filter = cfg.filters.cur()
+            if not filter:
+                filter = lambda x, y: 1
 
-    def tick(self, old=None):
-        self.feed.time -= 1
-        if self.feed.time <= 0 and self.status == THREAD_IDLE:
-            self.status = THREAD_START
-            if old == None:
-                old = self.feed[:]
-            self.run(old)
-            self.status = THREAD_DONE
+            new = []
+            for item in feed:
+                if item in prev or (not filter(feed, item)):
+                    continue
+                new.append(item)
+
+            old = []
+            for item in prev:
+                if item in feed and filter(feed, item):
+                    continue
+                old.append(item)
+
+            tags = cfg.tags.cur()
+            ndiff = [None] * len(tags)
+            for item in new:
+                for i, t in enumerate(tags):
+                    if t.tag in item["canto_state"]:
+                        if not ndiff[i]:
+                            ndiff[i] = [item]
+                        else:
+                            ndiff[i].append(item)
+
+            odiff = [None] * len(tags)
+            for item in old:
+                for i, t in enumerate(tags):
+                    if t.tag in item["canto_state"]:
+                        if not odiff[i]:
+                            odiff[i] = [item]
+                        else:
+                            odiff[i].append(item)
+            ulock.acquire()
+            updated.put((ndiff, odiff))
+            ulock.release()
+        update.task_done()
 

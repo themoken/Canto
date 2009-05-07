@@ -7,16 +7,17 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from feed import update, updated, work, ulock
+from utility import Cycle
 from const import *
 from gui import Gui
-from utility import Cycle
-from feed import UpdateThread
 
 import canto_fetch
 import utility
 import cfg
 import tag
 
+from threading import Thread
 import traceback
 import signal
 import locale
@@ -271,18 +272,20 @@ class Main():
         # Collapse the feed array, if we had to remove some unfetchables.
         self.cfg.feeds = filter(lambda x: x != None, self.cfg.feeds)
 
-        self.sorted_uthreads = []
         self.uthreads = []
+        self.new = []
+        self.old = []
+        for i in range(1):
+            t = Thread(target=work)
+            t.setDaemon(True)
+            t.start()
+            self.uthreads.append(t)
 
         # Force an update from disk
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
             try:
-                t = UpdateThread(self.cfg, f)
-                self.sorted_uthreads.append(t)
-                self.uthreads.append(t)
-                t.tick()
-
+                update.put((self.cfg, f, [], THREAD_UPDATE))
             # A KeyError is raised by tick() if canto_version on disk
             # doesn't exist or doesn't match the current info.
 
@@ -292,6 +295,7 @@ class Main():
                 f.time = 1
                 f.tick()
 
+        update.join()
         base_tags = {}
         for f in [x for x in self.cfg.feeds if \
                 x.base_set and not x.base_explicit]:
@@ -306,6 +310,8 @@ class Main():
                     s.set(f.tags[0])
             else:
                 base_tags[f.tags[0]] = 1
+
+        self.cfg.validate_tags()
 
         # Print out a feed list, bail
         if flags & FEED_LIST:
@@ -336,6 +342,10 @@ class Main():
 
         # Handle -a/-n flags (print number of new items)
 
+        for f in self.cfg.feeds:
+            update.put((self.cfg, f, [], THREAD_FILTER))
+        update.join()
+
         if flags & CHECK_NEW:
             if not feed_ct:
                 feed_ct = "*"
@@ -364,7 +374,6 @@ class Main():
         try:
                 curses.noecho()
                 curses.start_color()
-                curses.halfdelay(1)
                 curses.use_default_colors()
         except:
                 self.cfg.log("Unable to init curses, bailing")
@@ -385,7 +394,6 @@ class Main():
         self.cfg.log("Curses initialized.")
     
         # Instantiate the base Gui class
-        self.cfg.validate_tags()
         self.gui = Gui(self.cfg, self.cfg.tags.cur())
 
         self.cfg.log("GUI initialized.")
@@ -395,6 +403,7 @@ class Main():
         signal.signal(signal.SIGALRM, self.alarm)
         signal.signal(signal.SIGCHLD, self.chld)
         signal.signal(signal.SIGINT, self.done)
+        signal.signal(signal.SIGUSR1, self.debug_out)
 
         self.cfg.log("Signals set.")
         self.estring = None
@@ -428,14 +437,14 @@ class Main():
                 # No input, time to check on the threads.
 
                 if k == -1:
-                    for t in self.uthreads:
-                        if t.status == THREAD_DONE:
-                            self.gui.alarm(t.new, t.old)
-                            self.gui.draw_elements()
-                            t.status = THREAD_IDLE
-                            self.uthreads = self.uthreads[1:] +\
-                                    [self.uthreads[0]]
-                            break
+                    if updated.empty():
+                        time.sleep(0.01)
+                    else:
+                        self.new, self.old = updated.get()
+                        self.gui.alarm(self.new, self.old)
+                        updated.task_done()
+                        self.gui.draw_elements()
+                    continue
 
                 # KEY_RESIZE is the only key not propagated, to
                 # keep users from rebinding it and crashing.
@@ -463,17 +472,17 @@ class Main():
                     if r == REFRESH_ALL:
                         self.refresh()
                     elif r == ALARM:
-                        self.ticks = 1
-                        self.tick()
+                        for f in self.cfg.feeds:
+                            update.put((self.cfg, f, f[:], THREAD_BOTH))
                     elif r == REFILTER:
-                        self.uthreads = self.sorted_uthreads
-                        for t in self.uthreads:
-                            while t.status not in [THREAD_IDLE, THREAD_DONE]:
-                                pass
-                            t.status = THREAD_IDLE
-                            t.feed.time = 1
-                        self.ticks = 1
-                        self.tick(1)
+                        while not update.empty():
+                            update.get().task_done()
+                        ulock.acquire()
+                        while not updated.empty():
+                            updated.get().task_done()
+                        ulock.release()
+                        for f in self.cfg.feeds:
+                            update.put((self.cfg, f, [], THREAD_BOTH))
                     elif r == REDRAW_ALL:
                         self.gui.draw_elements()
                     elif r == EXIT:
@@ -508,11 +517,6 @@ class Main():
             print self.estring
             print "Please report this bug. Send your logfile " +\
                 "(%s) to jack@codezen.org" % self.cfg.log_file
-
-        for t in self.uthreads:
-            while THREAD_IDLE < t.status < THREAD_FILTERING:
-                pass
-            self.uthreads.remove(t)
 
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
@@ -552,12 +556,6 @@ class Main():
     def tick(self, refilter=0):
         self.ticks -= 1
         if self.ticks <= 0:
-            for t in self.uthreads:
-                if refilter:
-                    t.tick([])
-                else:
-                    t.tick()
-
             self.ticks = 60
 
         self.cfg.msg_tick -= 1
@@ -611,3 +609,7 @@ class Main():
 
         self.cfg.stdscr.keypad(1)
         self.gui.refresh()
+    
+    def debug_out(self, a, b):
+        self.cfg.log("%s" % traceback.format_stack())
+
