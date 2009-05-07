@@ -362,6 +362,7 @@ class Main():
         # information to our Cfg().
 
         self.cfg.stdscr = curses.initscr()
+        self.cfg.stdscr.nodelay(1)
 
         # curs_set can return ERR, we shouldn't care
         try:
@@ -611,7 +612,7 @@ class Main():
 
         self.cfg.stdscr.keypad(1)
         self.gui.refresh()
-    
+
     def debug_out(self, a, b):
         self.cfg.log("%s" % traceback.format_stack())
 
