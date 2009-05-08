@@ -7,19 +7,11 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-# Story() controls a single story and is always contained in a feed().
-# Like Feed(), it contains a self.ufp variable that holds a verbatim copy of
-# the data returned by the UFP. The class then mostly serves as a soft wrapper
-# around that data.
-
-# Data that is persistent (everything except being selected) is appended to
-# the canto_state key in self.ufp and is written to disk by the Feed() object
-# automatically.
-
 class Story():
-    def __init__(self, ufp):
+    def __init__(self, d, get_ufp):
         self.updated = 0
-        self.ufp = ufp
+        self.get_ufp = get_ufp
+        self.d = d
         self.sel = 0
     
     def __eq__(self, other):
@@ -28,31 +20,51 @@ class Story():
         return 1
 
     def __str__(self):
-        return self.ufp["title"] + " " + str(id(self))
+        return self.d["title"] + " " + str(id(self))
+
+    def get_ufp_entry(self):
+        ufp = self.get_ufp()
+        if not ufp:
+            return None
+        for ondisk in ufp["entries"]:
+            if ondisk["id"] == self["id"]:
+                break
+        else:
+            return None
+        return ondisk
 
     def __getitem__(self, key):
-        if key in self.ufp:
-            return self.ufp[key]
+        if key in self.d:
+            return self.d[key]
         else:
+            ondisk = self.get_ufp_entry()
+            if not ondisk:
+                return ""
+            if key in ondisk:
+                return self.d[key]
             return ""
 
     def __setitem__(self, key, item):
-        self.ufp[key] = item
+        self.d[key] = item
 
     def __contains__(self, key):
-        return key in self.ufp
+        if key in self.d:
+            return True
+        else:
+            ondisk = self.get_ufp_entry()
+            return key in ondisk
 
     def was(self, tag):
-        return tag in self.ufp["canto_state"]
+        return tag in self.d["canto_state"]
 
     def set(self, tag):
-        if not tag in self.ufp["canto_state"]:
-            self.ufp["canto_state"].append(tag)
+        if not tag in self.d["canto_state"]:
+            self.d["canto_state"].append(tag)
             self.updated = 1
     
     def unset(self,tag):
-        if tag in self.ufp["canto_state"]:
-            self.ufp["canto_state"].remove(tag)
+        if tag in self.d["canto_state"]:
+            self.d["canto_state"].remove(tag)
             self.updated = 1
 
     def selected(self):

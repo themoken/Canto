@@ -118,22 +118,12 @@ class Feed(list):
             elif "href" in entry:
                 nentry["link"] = entry["href"]
 
-            if "summary" in entry:
-                nentry["description"] = entry["summary"]
-            elif "subtitle" in entry:
-                nentry["description"] = entry["subtitle"]
-
-            if "content" in entry:
-                nentry["content"] = entry["content"]
-            if "enclosures" in entry:
-                nentry["enclosures"] = entry["enclosures"]
-
             for tag in self.tags:
                 if tag not in nentry["canto_state"]:
                     nentry["canto_state"].append(tag)
 
             if nentry not in self:
-                newlist.append(story.Story(nentry))
+                newlist.append(story.Story(nentry, self.get_ufp))
 
         for centry in self:
             if centry not in entries:
