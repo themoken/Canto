@@ -57,9 +57,8 @@ class Feed(list):
         # Other necessities
         self.path = dirpath
         self.cfg = cfg
-        self.ufp = []
-   
-    def update(self):
+
+    def get_ufp(self):
         lockflags = fcntl.LOCK_SH
         if self.base_set:
             lockflags |= fcntl.LOCK_NB
@@ -68,7 +67,7 @@ class Feed(list):
             f = open(self.path, "r")
             try:
                 fcntl.flock(f.fileno(), lockflags)
-                self.ufp = cPickle.load(f)
+                ufp = cPickle.load(f)
             except:
                 return 0
             finally:
@@ -76,24 +75,30 @@ class Feed(list):
                 f.close()
         except:
             return 0
+        return ufp
+
+    def update(self):
+        ufp = self.get_ufp()
+        if not ufp:
+            return 0
 
         # If this data pre-dates 0.6.0 (the last disk format update)
         # toss a key error.
-        if "canto_version" not in self.ufp or\
-                self.ufp["canto_version"][1] < 6:
+        if "canto_version" not in ufp or\
+                ufp["canto_version"][1] < 6:
             raise KeyError
 
         if not self.base_set:
             self.base_set = 1
-            if "feed" in self.ufp and "title" in self.ufp["feed"]:
-                replace = lambda x: x or self.ufp["feed"]["title"]
+            if "feed" in ufp and "title" in ufp["feed"]:
+                replace = lambda x: x or ufp["feed"]["title"]
                 self.tags = [ replace(x) for x in self.tags]
             else:
                 # Using URL for tag, no guarantees
                 self.tags = [self.URL] + self.tags
 
-        self.extend(self.ufp["entries"])
-        self.todisk()
+        self.extend(ufp["entries"])
+        self.todisk(ufp)
         return 1
 
     def extend(self, entries):
@@ -103,12 +108,32 @@ class Feed(list):
             # notice (doesn't care about tags), so we check and
             # append as needed.
 
-            for tag in self.tags:
-                if tag not in entry["canto_state"]:
-                    entry["canto_state"].append(tag)
+            nentry = {}
+            nentry["id"] = entry["id"]
+            nentry["canto_state"] = entry["canto_state"]
+            nentry["title"] = entry["title"]
 
-            if entry not in self:
-                newlist.append(story.Story(entry))
+            if "link" in entry:
+                nentry["link"] = entry["link"]
+            elif "href" in entry:
+                nentry["link"] = entry["href"]
+
+            if "summary" in entry:
+                nentry["description"] = entry["summary"]
+            elif "subtitle" in entry:
+                nentry["description"] = entry["subtitle"]
+
+            if "content" in entry:
+                nentry["content"] = entry["content"]
+            if "enclosures" in entry:
+                nentry["enclosures"] = entry["enclosures"]
+
+            for tag in self.tags:
+                if tag not in nentry["canto_state"]:
+                    nentry["canto_state"].append(tag)
+
+            if nentry not in self:
+                newlist.append(story.Story(nentry))
 
         for centry in self:
             if centry not in entries:
@@ -116,13 +141,17 @@ class Feed(list):
 
         list.extend(self, filter(self.filter, newlist))
 
-    def todisk(self):
+    def todisk(self, ufp=None):
+        if ufp == None:
+            ufp = self.get_ufp()
+        if not ufp:
+            return
         changed = self.changed()
         if not changed :
             return
 
         for entry in changed:
-            old = self.ufp["entries"][self.ufp["entries"].index(entry)]
+            old = ufp["entries"][ufp["entries"].index(entry)]
             if old["canto_state"] != entry["canto_state"]:
                if entry.updated:
                    old["canto_state"] = entry["canto_state"]
@@ -134,7 +163,7 @@ class Feed(list):
             fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
             f.seek(0, 0)
             f.truncate()
-            cPickle.dump(self.ufp, f)
+            cPickle.dump(ufp, f)
             f.flush()
             for x in changed:
                 x.updated = 0
@@ -143,6 +172,7 @@ class Feed(list):
         finally:
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
             f.close()
+        del ufp
         return 1
 
     def changed(self):

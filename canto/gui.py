@@ -58,7 +58,7 @@ class Gui(BaseGui) :
         self.__map_items()
         self.draw_elements()
         if self.reader_obj:
-            self.reader.refresh()
+            self.reader_obj.refresh()
 
     def print_item(self, tag, story, row):
         d = { "story" : story, "tag" : tag, "row" : row,\

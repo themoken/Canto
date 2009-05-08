@@ -514,6 +514,7 @@ class Main():
             print "Please report this bug. Send your logfile " +\
                 "(%s) to jack@codezen.org" % self.cfg.log_file
 
+        flush()
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
             while feed.changed():
