@@ -23,7 +23,6 @@ class Tag(list):
         self.start = 0
         self.read = 0
         self.unread = 0
-        self.last_iter = []
 
         self.filters = filters
         self.sorts = sorts
@@ -75,14 +74,11 @@ class Tag(list):
         self.enum()
 
     def extend(self, iter):
-        self.last_iter = iter
-        matched_tag = [s for s in iter if self.tag in s["canto_state"]]
-
         filt = self.filters.cur()
         if filt:
-            list.extend(self, filter(lambda x: filt(self, x), matched_tag))
+            list.extend(self, filter(lambda x: filt(self, x), iter))
         else:
-            list.extend(self, matched_tag)
+            list.extend(self, iter)
 
         empty = 0
         if filt and not len(self):

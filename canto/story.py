@@ -41,7 +41,7 @@ class Story():
             if not ondisk:
                 return ""
             if key in ondisk:
-                return self.d[key]
+                return ondisk[key]
             return ""
 
     def __setitem__(self, key, item):

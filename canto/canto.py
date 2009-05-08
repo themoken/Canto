@@ -272,14 +272,12 @@ class Main():
         # Collapse the feed array, if we had to remove some unfetchables.
         self.cfg.feeds = filter(lambda x: x != None, self.cfg.feeds)
 
-        self.uthreads = []
         self.new = []
         self.old = []
         for i in range(1):
             t = Thread(target=work)
             t.setDaemon(True)
             t.start()
-            self.uthreads.append(t)
 
         # Force an update from disk
         self.cfg.log("Populating feeds...")
@@ -606,6 +604,7 @@ class Main():
 
         self.cfg.stdscr.keypad(1)
         self.gui.refresh()
+        self.gui.draw_elements()
 
     def debug_out(self, a, b):
         self.cfg.log("%s" % traceback.format_stack())
