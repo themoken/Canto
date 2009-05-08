@@ -433,6 +433,14 @@ class Main():
 
                 k = self.cfg.stdscr.getch()
 
+                # KEY_RESIZE is the only key not propagated, to
+                # keep users from rebinding it and crashing.
+
+                if k == curses.KEY_RESIZE or self.resize:
+                    self.resize = 0
+                    self.refresh()
+                    continue
+
                 # No input, time to check on the threads.
 
                 if k == -1:
@@ -443,14 +451,6 @@ class Main():
                         self.gui.alarm(self.new, self.old)
                         updated.task_done()
                         self.gui.draw_elements()
-                    continue
-
-                # KEY_RESIZE is the only key not propagated, to
-                # keep users from rebinding it and crashing.
-
-                if k == curses.KEY_RESIZE or self.resize:
-                    self.resize = 0
-                    self.refresh()
                     continue
 
                 # Handle Meta pairs
