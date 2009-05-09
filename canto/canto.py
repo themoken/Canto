@@ -471,12 +471,10 @@ class Main():
                     if r == REFRESH_ALL:
                         self.refresh()
                     elif r == ALARM:
-                        for f in self.cfg.feeds:
-                            update.put((self.cfg, f, f[:], THREAD_BOTH))
+                        self.update()
                     elif r in [REFILTER, RETAG]:
                         flush()
-                        for f in self.cfg.feeds:
-                            update.put((self.cfg, f, [], THREAD_BOTH))
+                        self.update(1)
                     elif r == REDRAW_ALL:
                         self.gui.draw_elements()
                     elif r == EXIT:
@@ -551,6 +549,10 @@ class Main():
     def tick(self, refilter=0):
         self.ticks -= 1
         if self.ticks <= 0:
+            if "interval" in self.cfg.utrig:
+                for f in self.cfg.feeds:
+                    f.time -= 1
+                self.update(0, [f for f in self.cfg.feeds if f.time < 0])
             self.ticks = 60
 
         self.cfg.msg_tick -= 1
@@ -558,6 +560,15 @@ class Main():
             self.cfg.message(self.cfg.status(self.cfg), 1)
 
         signal.alarm(1)
+
+    def update(self, refilter = 0, iter = None):
+        old = []
+        if not iter:
+            iter = self.cfg.feeds
+        for f in iter:
+            if not refilter:
+                old = f[:]
+            update.put((self.cfg, f, old, THREAD_BOTH))
 
     # Refresh should only be called initially, if we have a 
     # resize event, or if it's possible that the terminal has
@@ -608,4 +619,3 @@ class Main():
 
     def debug_out(self, a, b):
         self.cfg.log("%s" % traceback.format_stack())
-

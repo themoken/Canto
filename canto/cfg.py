@@ -135,6 +135,8 @@ class Cfg:
         self.tag_sorts = [[None]]
         self.filters = [None]
 
+        self.utrig = ["interval"]
+
         self.no_conf = 0
 
         # If we can't stat self.path, generate a default config
