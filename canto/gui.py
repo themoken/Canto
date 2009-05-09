@@ -27,7 +27,7 @@ class Gui(BaseGui) :
         self.cfg = cfg
 
         self.lines = 0
-        self.sel = 0
+        self.sel = None
         self.sel_idx = -1
         self.items = 0
 
@@ -35,7 +35,6 @@ class Gui(BaseGui) :
         self.max_offset = 0
 
         self.tags = tags
-        self.alarm()
 
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
@@ -184,6 +183,10 @@ class Gui(BaseGui) :
                 self.sel["item"].select()
                 if self.cfg.select_hook:
                     self.cfg.select_hook(self.sel["tag"], self.sel["item"])
+            if "change_tag" in self.cfg.utrig and\
+                oldsel and self.sel and \
+                oldsel["tag"] != self.sel["tag"]:
+                    r = ALARM
             return r
         return dec
 
@@ -197,13 +200,9 @@ class Gui(BaseGui) :
                 if l:
                     self.tags[i].retract(l)
         if new:
-            if len(new) != len(self.tags):
-                self.cfg.log("Non matching len: %d / %d" % (len(new),
-                    len(self.tags)))
-            else:
-                for i, l in enumerate(new):
-                    if l:
-                        self.tags[i].extend(l)
+            for i, l in enumerate(new):
+                if l:
+                    self.tags[i].extend(l)
         self.__do_new_hook()
         self.__map_items() 
 

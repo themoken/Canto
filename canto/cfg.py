@@ -135,7 +135,7 @@ class Cfg:
         self.tag_sorts = [[None]]
         self.filters = [None]
 
-        self.utrig = ["interval"]
+        self.utrig = ["change_tag"]
 
         self.no_conf = 0
 
