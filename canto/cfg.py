@@ -135,7 +135,7 @@ class Cfg:
         self.tag_sorts = [[None]]
         self.filters = [None]
 
-        self.utrig = ["change_tag","signal"]
+        self.triggers = ["interval","signal"]
 
         self.no_conf = 0
 
@@ -373,7 +373,8 @@ class Cfg:
             "source_opml" : self.source_opml,
             "source_urls" : self.source_urls,
             "link_handler" : self.link_handler,
-            "image_handler" : self.image_handler}
+            "image_handler" : self.image_handler,
+            "triggers" : self.triggers}
 
         # The entirety of the config is read in first (rather
         # than using execfile) because the config could be in
@@ -394,7 +395,7 @@ class Cfg:
         # locals directly, so we do it by hand.
 
         for attr in ["render", "columns", "reader_orientation",\
-                "reader_lines", "status", "tags"]:
+                "reader_lines", "status", "tags", "triggers"]:
             if attr in locals:
                 setattr(self, attr, locals[attr])
 

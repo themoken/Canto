@@ -183,7 +183,7 @@ class Gui(BaseGui) :
                 self.sel["item"].select()
                 if self.cfg.select_hook:
                     self.cfg.select_hook(self.sel["tag"], self.sel["item"])
-            if "change_tag" in self.cfg.utrig and\
+            if "change_tag" in self.cfg.triggers and\
                 oldsel and self.sel and \
                 oldsel["tag"] != self.sel["tag"]:
                     r = ALARM

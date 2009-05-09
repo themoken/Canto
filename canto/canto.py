@@ -550,7 +550,7 @@ class Main():
     def tick(self, refilter=0):
         self.ticks -= 1
         if self.ticks <= 0:
-            if "interval" in self.cfg.utrig:
+            if "interval" in self.cfg.triggers:
                 for f in self.cfg.feeds:
                     f.time -= 1
                 self.update(0, [f for f in self.cfg.feeds if f.time < 0])
@@ -619,7 +619,7 @@ class Main():
         self.gui.draw_elements()
 
     def sigusr(self, a, b):
-        if "signal" in self.cfg.utrig:
+        if "signal" in self.cfg.triggers:
             self.cfg.log("Update from signal")
             self.update()
 
