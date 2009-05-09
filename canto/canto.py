@@ -402,7 +402,8 @@ class Main():
         signal.signal(signal.SIGALRM, self.alarm)
         signal.signal(signal.SIGCHLD, self.chld)
         signal.signal(signal.SIGINT, self.done)
-        signal.signal(signal.SIGUSR1, self.debug_out)
+        signal.signal(signal.SIGUSR1, self.sigusr)
+        signal.signal(signal.SIGUSR2, self.debug_out)
 
         self.cfg.log("Signals set.")
         self.estring = None
@@ -616,6 +617,11 @@ class Main():
         self.cfg.stdscr.keypad(1)
         self.gui.refresh()
         self.gui.draw_elements()
+
+    def sigusr(self, a, b):
+        if "signal" in self.cfg.utrig:
+            self.cfg.log("Update from signal")
+            self.update()
 
     def debug_out(self, a, b):
         self.cfg.log("%s" % traceback.format_stack())
