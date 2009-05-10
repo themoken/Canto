@@ -203,7 +203,7 @@ class Gui(BaseGui) :
             for i, l in enumerate(new):
                 if l:
                     self.tags[i].extend(l)
-        self.__do_new_hook()
+
         self.__map_items() 
 
         # sel_idx may no longer be valid, because the item
@@ -238,19 +238,6 @@ class Gui(BaseGui) :
 
         if self.cfg.update_hook:
             self.cfg.update_hook(self)
-
-    # Use the new_hook on any "new" items.
-    # The new attribute is never accessible from the
-    # renderer, and is only used for the hook.
-
-    def __do_new_hook(self):
-        if self.cfg.new_hook:
-            for t in self.tags:
-                for item in t:
-                    if item.isnew():
-                        self.cfg.new_hook(t, item)
-                        item.old()
-
 
     @noitem_unsafe
     @change_selected

@@ -78,19 +78,20 @@ def main(cfg, optlist, verbose=False, force=False):
     for fd in cfg.feeds:
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
         spath = cfg.script_dir
-        threads.append(FetchThread(fd, fpath, spath, force, log_func))
+        threads.append(FetchThread(cfg, fd, fpath, spath, force, log_func))
         threads[-1].start()
 
     imdone()
     return 0
 
 class FetchThread(Thread):
-    def __init__(self, fd, fpath, spath, force, log_func):
+    def __init__(self, cfg, fd, fpath, spath, force, log_func):
         Thread.__init__(self)
         self.fd = fd
         self.fpath = fpath
         self.spath = spath
         self.force = force
+        self.cfg = cfg
         self.log_func = log_func
         self.prevtime = 0
 
@@ -278,6 +279,7 @@ class FetchThread(Thread):
         # make item state persistent, and loop until
         # it's safe to update on disk.
 
+        new = []
         while 1:
             for entry in newfeed["entries"]:
                 for centry in curfeed["entries"]:
@@ -290,11 +292,12 @@ class FetchThread(Thread):
 
                         curfeed["entries"].remove(centry)
                         break
+                else:
+                    new.append(e)
 
                 # Apply default state to genuinely new items.
-                if not "canto_state" in entry:
-                    entry["canto_state"] = self.fd.tags + \
-                            [u"*", u"new"]
+                if "canto_state" not in entry:
+                    entry["canto_state"] = self.fd.tags + [u"*"]
 
             # Tailor the list to the correct number of items.
             if len(newfeed["entries"]) < self.fd.keep:
@@ -302,6 +305,10 @@ class FetchThread(Thread):
                     curfeed["entries"][:self.fd.keep - len(newfeed["entries"])]
             else:
                 newfeed["entries"] = newfeed["entries"][:self.fd.keep]
+
+            if self.cfg.new_hook:
+                for entry in new:
+                    self.cfg.new_hook(newfeed, entry, entry == new[-1])
 
             # Dump the output to the new file.
             f = open(self.fpath, "a")
