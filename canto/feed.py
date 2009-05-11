@@ -146,6 +146,12 @@ class Feed(list):
             old = ufp["entries"][ufp["entries"].index(entry)]
             if old["canto_state"] != entry["canto_state"]:
                if entry.updated:
+                   if self.cfg.state_change_hook:
+                       add = [t for t in entry["canto_state"] if\
+                               t not in old["canto_state"]]
+                       rem = [t for t in old["canto_state"] if\
+                               t not in entry["canto_state"]]
+                       self.cfg.state_change_hook(self, entry, add, rem)
                    old["canto_state"] = entry["canto_state"]
                else:
                    entry["canto_state"] = old["canto_state"]

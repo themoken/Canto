@@ -418,7 +418,7 @@ class Cfg:
 
         # Wrap hooks in the exception handler
         for hook in ["resize_hook","new_hook","select_hook","update_hook",\
-                "unselect_hook","start_hook","end_hook"]:
+                "unselect_hook","start_hook","end_hook", "state_change_hook"]:
             if hook in locals:
                 setattr(self, hook, self.hook_dec(locals[hook]))
 
