@@ -307,7 +307,7 @@ class FetchThread(Thread):
                 newfeed["entries"] = newfeed["entries"][:self.fd.keep]
 
             if self.cfg.new_hook:
-                for entry in new:
+                for entry in [e for e in new if e in newfeed["entries"]]:
                     self.cfg.new_hook(newfeed, entry, entry == new[-1])
 
             # Dump the output to the new file.
