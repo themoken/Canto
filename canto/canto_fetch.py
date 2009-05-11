@@ -293,7 +293,7 @@ class FetchThread(Thread):
                         curfeed["entries"].remove(centry)
                         break
                 else:
-                    new.append(e)
+                    new.append(entry)
 
                 # Apply default state to genuinely new items.
                 if "canto_state" not in entry:
