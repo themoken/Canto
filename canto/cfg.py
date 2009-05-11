@@ -130,6 +130,7 @@ class Cfg:
         self.start_hook = None
         self.end_hook = None
         self.update_hook = None
+        self.state_change_hook = None
 
         self.tag_filters = [None]
         self.tag_sorts = [[None]]
