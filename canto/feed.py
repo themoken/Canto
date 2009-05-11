@@ -141,6 +141,8 @@ class Feed(list):
             return
 
         for entry in changed:
+            if entry not in ufp["entries"]:
+                continue
             old = ufp["entries"][ufp["entries"].index(entry)]
             if old["canto_state"] != entry["canto_state"]:
                if entry.updated:
