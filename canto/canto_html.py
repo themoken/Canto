@@ -61,10 +61,16 @@ class CantoHTML(HTMLParser):
             return u"[?]"
         return unichr(c)
 
+    def handle_charref(self, ref):
+        self.result += self.convert_charref(ref)
+
     def convert_entityref(self, ref):
         if ref in htmlentitydefs.name2codepoint:
             return unichr(htmlentitydefs.name2codepoint[ref])
         return u"[?]"
+
+    def handle_entityref(self, ref):
+        self.result += self.convert_entityref(ref)
 
     # This is the real workhorse of the HTML parser.
 
@@ -120,6 +126,9 @@ class CantoHTML(HTMLParser):
                 else:
                     self.list_stack[-1][1] += 1
                     self.result += unicode(self.list_stack[-1][1])+ "."
+            else:
+                self.result += u"\n"
+
         elif tag in [u"i", u"small", u"em"]:
             if open:
                 self.result += u"%6%B"
