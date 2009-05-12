@@ -32,8 +32,14 @@ static int theme_strlen(char *message, char end)
             len++;
         } else if ((unsigned char) message[i] > 0x7f) {
             wchar_t dest[2];
-            i += mbtowc(dest, &message[i], 3) - 1;
-            len += wcwidth(dest[0]);
+            int bytes = mbtowc(dest, &message[i], 3);
+            if (bytes > 0) {
+                i += bytes;
+                len += wcwidth(dest[0]);
+            } else {
+                i++;
+                len += 1;
+            }
         } else if (message[i] != '\n')
             len++;
         i++;
@@ -169,9 +175,7 @@ static int putxy(WINDOW *win, int width, int *i, int *y, int *x, char *str)
         wchar_t dest[2];
         int bytes = mbtowc(dest, &str[0], 3) - 1;
 
-        if (bytes < 0)
-            mvwaddch(win, *y, (*x)++, str[0]);
-        else {
+        if (bytes >= 0) {
             /* To deal with non-latin characters that can take
                up more than one character's alotted width, 
                with offset x by wcwidth(character) rather than 1 */
@@ -180,6 +184,8 @@ static int putxy(WINDOW *win, int width, int *i, int *y, int *x, char *str)
                Andreas (newsbeuter) for that one. */
 
             int rwidth = wcwidth(dest[0]);
+            if (rwidth < 0)
+                rwidth = 1;
             if (rwidth > (width - *x))
                 return 1;
 
