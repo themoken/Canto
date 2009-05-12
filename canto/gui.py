@@ -490,7 +490,8 @@ class Gui :
             r,t = fn(self, *args)
             if r:
                 self.tags = t
-                self.cfg.log("Tags: %s" % ", ".join([unicode(x) for x in t]))
+                self.cfg.log("Tags: %s" % ", ".join(\
+                        [unicode(x) for x in t if x]))
                 return ALARM
         return dec
 
