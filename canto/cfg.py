@@ -332,7 +332,7 @@ class Cfg:
             data = f.read()
 
             try:
-                ret = unicode(data)
+                ret = unicode(data, enc)
             except UnicodeDecodeError:
                 # If the Python built-in decoders can't figure it
                 # out, it might need some help from chardet.
