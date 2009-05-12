@@ -88,7 +88,7 @@ class Tag(list):
                   "id" : None
                 }
 
-            stub = story.Story(d)
+            stub = story.Story(d, lambda : {})
             self.append(stub)
             empty = 1
         else:
