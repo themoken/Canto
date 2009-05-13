@@ -1,3 +1,6 @@
+Canto 0.6.13 ChangeLog
+* Fix drawing regression
+
 Canto 0.6.12 ChangeLog
 * Fix tag crash
 * Fix strange character weirdness
