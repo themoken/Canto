@@ -32,7 +32,12 @@ class Feed(list):
 
         # Configuration set settings
         self.tags = tags
-        self.base_set = 0
+        if self.tags[0] == None:
+            self.base_set = 0
+            self.base_explicit = 0
+        else:
+            self.base_set = 1
+            self.base_explicit = 1
 
         self.URL = URL
         self.renderer = renderer

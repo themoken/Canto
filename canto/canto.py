@@ -295,7 +295,8 @@ class Main():
                 f.tick()
 
         base_tags = {}
-        for f in [x for x in self.cfg.feeds if x.base_set]:
+        for f in [x for x in self.cfg.feeds if \
+                x.base_set and not x.base_explicit]:
             otag = f.tags[0]
             if f.tags[0] in base_tags:
                 base_tags[otag] += 1
@@ -307,6 +308,8 @@ class Main():
                     s.tagwrap(f.tags[0], 1)
             else:
                 base_tags[f.tags[0]] = 1
+
+        for f in [x for x in self.cfg.feeds if x.base_set]:
             self.filter_extend(f)
 
         # Print out a feed list, bail

@@ -546,13 +546,13 @@ class Cfg:
 
             if newtag in self.cfgtags:
                 newtag = self.cfgtags[self.cfgtags.index(newtag)]
-            r.append(newtag)
-
+            if not newtag in r:
+                r.append(newtag)
         return r
 
     def validate_tags(self):
         # Change tags into actual tag objects
-        self.tags = Cycle([ self.get_real_tagl(x) for x in self.tags ])
+        self.tags = Cycle([self.get_real_tagl(t) for t in self.tags])
 
 def default_status(cfg):
     return u"%8%B" + u"Canto %d.%d.%d" % VERSION_TUPLE + u"%b%1"
