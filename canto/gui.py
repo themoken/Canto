@@ -35,6 +35,7 @@ class Gui(BaseGui) :
         self.max_offset = 0
 
         self.tags = tags
+        self.change_tag_override = 0
 
         if self.cfg.start_hook:
             self.cfg.start_hook(self)
@@ -140,7 +141,11 @@ class Gui(BaseGui) :
     def action(self, a):
         if self.reader_obj:
             return self.reader_obj.action(a)
-        return BaseGui.action(self, a)
+        r = BaseGui.action(self, a)
+        if self.change_tag_override:
+            self.change_tag_override = 0
+            return ALARM
+        return r
 
     def __check_scroll(self) :
         # If our current item is offscreen up, ret 1
@@ -171,22 +176,25 @@ class Gui(BaseGui) :
 
     def change_selected(fn):
         def dec(self, *args):
-            if self.sel_idx >= 0:
-                if self.cfg.unselect_hook:
-                    self.cfg.unselect_hook(self.sel["tag"], self.sel["item"])
             oldsel = self.sel
+
             r = fn(self, *args)
+
             if oldsel:
                 oldsel["item"].unselect()
+                if self.cfg.unselect_hook:
+                    self.cfg.unselect_hook(oldsel["tag"], oldsel["item"])
+
             if self.sel_idx >= 0:
                 self.sel = self.map[self.sel_idx]
                 self.sel["item"].select()
                 if self.cfg.select_hook:
                     self.cfg.select_hook(self.sel["tag"], self.sel["item"])
+
             if "change_tag" in self.cfg.triggers and\
                 oldsel and self.sel and \
                 oldsel["tag"] != self.sel["tag"]:
-                    r = ALARM
+                    self.change_tag_override = ALARM
             return r
         return dec
 
