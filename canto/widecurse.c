@@ -32,8 +32,8 @@ static int theme_strlen(char *message, char end)
             len++;
         } else if ((unsigned char) message[i] > 0x7f) {
             wchar_t dest[2];
-            int bytes = mbtowc(dest, &message[i], 3);
-            if (bytes > 0) {
+            int bytes = mbtowc(dest, &message[i], 3) - 1;
+            if (bytes >= 0) {
                 int rwidth = wcwidth(dest[0]);
                 if(rwidth < 0)
                     rwidth = 1;
