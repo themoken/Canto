@@ -56,9 +56,9 @@ class Gui(BaseGui) :
         self.lines = self.cfg.columns * self.cfg.gui_height
 
         self.__map_items()
-        self.draw_elements()
         if self.reader_obj:
             self.reader_obj.refresh()
+        self.draw_elements()
 
     def print_item(self, tag, story, row):
         d = { "story" : story, "tag" : tag, "row" : row,\
