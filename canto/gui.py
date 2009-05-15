@@ -470,16 +470,19 @@ class Gui :
                 return ALARM
         return dec
 
+    @noitem_unsafe
     @change_sorts
     def next_tag_sort(self):
         return (self.tags[self.sel.tag_idx].sorts.next(),
                 self.tags[self.sel.tag_idx].sorts.cur())
 
+    @noitem_unsafe
     @change_sorts
     def prev_tag_sort(self):
         return (self.tags[self.sel.tag_idx].sorts.prev(),
                 self.tags[self.sel.tag_idx].sorts.cur())
 
+    @noitem_unsafe
     @change_sorts
     def set_tag_sort(self, sort):
         return (self.tags[self.sel.tag_idx].sorts.override(sort),\
