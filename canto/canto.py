@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from feed import update, updated, work, flush
+from thread import ThreadHandler
 from utility import Cycle
 from const import *
 from gui import Gui
@@ -17,7 +17,6 @@ import utility
 import cfg
 import tag
 
-from threading import Thread
 import traceback
 import signal
 import locale
@@ -274,16 +273,13 @@ class Main():
 
         self.new = []
         self.old = []
-        for i in range(1):
-            t = Thread(target=work)
-            t.daemon = True
-            t.start()
+        self.th = ThreadHandler()
 
         # Force an update from disk
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
             try:
-                update.put((self.cfg, f, [], THREAD_UPDATE))
+                self.th.update.put((self.cfg, f, [], THREAD_UPDATE))
             # A KeyError is raised by tick() if canto_version on disk
             # doesn't exist or doesn't match the current info.
 
@@ -293,7 +289,7 @@ class Main():
                 f.time = 1
                 f.tick()
 
-        update.join()
+        self.th.update.join()
         base_tags = {}
         for f in [x for x in self.cfg.feeds if \
                 x.base_set and not x.base_explicit]:
@@ -341,8 +337,8 @@ class Main():
         # Handle -a/-n flags (print number of new items)
 
         for f in self.cfg.feeds:
-            update.put((self.cfg, f, [], THREAD_FILTER))
-        update.join()
+            self.th.update.put((self.cfg, f, [], THREAD_FILTER))
+        self.th.update.join()
 
         if flags & CHECK_NEW:
             if not feed_ct:
@@ -445,12 +441,12 @@ class Main():
                 # No input, time to check on the threads.
 
                 if k == -1:
-                    if updated.empty():
+                    if self.th.updated.empty():
                         time.sleep(0.01)
                     else:
-                        self.new, self.old = updated.get()
+                        self.new, self.old = self.th.updated.get()
                         self.gui.alarm(self.new, self.old)
-                        updated.task_done()
+                        self.th.updated.task_done()
                         self.gui.draw_elements()
                     continue
 
@@ -474,7 +470,7 @@ class Main():
                     elif r == ALARM:
                         self.update()
                     elif r in [REFILTER, RETAG]:
-                        flush()
+                        self.th.flush()
                         self.update(1)
                     elif r == REDRAW_ALL:
                         self.gui.draw_elements()
@@ -511,7 +507,7 @@ class Main():
             print "Please report this bug. Send your logfile " +\
                 "(%s) to jack@codezen.org" % self.cfg.log_file
 
-        flush()
+        self.th.flush(0)
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
             while feed.changed():
@@ -569,7 +565,7 @@ class Main():
         for f in iter:
             if not refilter:
                 old = f[:]
-            update.put((self.cfg, f, old, THREAD_BOTH))
+            self.th.update.put((self.cfg, f, old, THREAD_BOTH))
 
     # Refresh should only be called initially, if we have a 
     # resize event, or if it's possible that the terminal has

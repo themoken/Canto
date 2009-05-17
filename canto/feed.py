@@ -11,8 +11,6 @@ from const import *
 import story
 import tag
 
-from threading import Lock
-from Queue import Queue
 import cPickle
 import fcntl
 
@@ -175,66 +173,3 @@ class Feed(list):
 
     def changed(self):
         return [ x for x in self if x.updated ]
-
-update = Queue()
-updated = Queue()
-ulock = Lock()
-
-def work():
-    while True:
-        cfg, feed, prev, do_filter = update.get()
-        if do_filter != THREAD_FILTER:
-            if feed.update():
-                feed.time = feed.rate
-            else:
-                continue
-
-        if do_filter >= THREAD_FILTER:
-            filter = cfg.filters.cur()
-            if not filter:
-                filter = lambda x, y: 1
-
-            new = []
-            for item in feed:
-                if item in prev or (not filter(feed, item)):
-                    continue
-                new.append(item)
-
-            old = []
-            for item in prev:
-                if item in feed and filter(feed, item):
-                    continue
-                old.append(item)
-
-            tags = cfg.tags.cur()
-            ndiff = [None] * len(tags)
-            for item in new:
-                for i, t in enumerate(tags):
-                    if t.tag in item["canto_state"]:
-                        if not ndiff[i]:
-                            ndiff[i] = [item]
-                        else:
-                            ndiff[i].append(item)
-
-            odiff = [None] * len(tags)
-            for item in old:
-                for i, t in enumerate(tags):
-                    if t.tag in item["canto_state"]:
-                        if not odiff[i]:
-                            odiff[i] = [item]
-                        else:
-                            odiff[i].append(item)
-            ulock.acquire()
-            updated.put((ndiff, odiff))
-            ulock.release()
-        update.task_done()
-
-def flush():
-    while not update.empty():
-        update.get()
-        update.task_done()
-    ulock.acquire()
-    while not updated.empty():
-        updated.get()
-        updated.task_done()
-    ulock.release()
