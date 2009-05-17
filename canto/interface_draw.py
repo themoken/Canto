@@ -224,7 +224,10 @@ class Renderer :
         return s
 
     def story_base(self, dict):
-        dict["content"] = dict["story"]["title"]
+        if dict["story"]["title"]:
+            dict["content"] = dict["story"]["title"]
+        else:
+            dict["content"] = "%B%b"
 
     def story_strip_entities(self, dict):
         dict["content"] = self.do_regex(dict["content"], self.story_rgx)
