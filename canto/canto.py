@@ -66,6 +66,8 @@ def print_common_usage():
 
 class Main():
     def __init__(self):
+        signal.signal(signal.SIGUSR2, self.debug_out)
+
         # Let locale figure itself out
         locale.setlocale(locale.LC_ALL, "")
         enc = locale.getpreferredencoding()
@@ -399,7 +401,6 @@ class Main():
         signal.signal(signal.SIGCHLD, self.chld)
         signal.signal(signal.SIGINT, self.done)
         signal.signal(signal.SIGUSR1, self.sigusr)
-        signal.signal(signal.SIGUSR2, self.debug_out)
 
         self.cfg.log("Signals set.")
         self.estring = None
@@ -620,4 +621,7 @@ class Main():
             self.update()
 
     def debug_out(self, a, b):
-        self.cfg.log("%s" % traceback.format_stack())
+        f = open("canto_debug_out", "w")
+        for l in traceback.format_stack():
+            f.write(l)
+        f.close()
