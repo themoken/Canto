@@ -561,6 +561,8 @@ class Main():
 
     def update(self, refilter = 0, iter = None):
         old = []
+        if not refilter and not self.th.update.empty():
+            return
         if not iter:
             iter = self.cfg.feeds
         for f in iter:
