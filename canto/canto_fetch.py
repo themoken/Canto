@@ -79,6 +79,7 @@ def main(cfg, optlist, verbose=False, force=False):
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
         spath = cfg.script_dir
         threads.append(FetchThread(cfg, fd, fpath, spath, force, log_func))
+        threads[-1].daemon = True
         threads[-1].start()
 
     imdone()

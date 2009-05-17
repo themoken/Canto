@@ -276,7 +276,7 @@ class Main():
         self.old = []
         for i in range(1):
             t = Thread(target=work)
-            t.setDaemon(True)
+            t.daemon = True
             t.start()
 
         # Force an update from disk
