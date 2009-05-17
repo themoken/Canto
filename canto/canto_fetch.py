@@ -300,11 +300,9 @@ class FetchThread(Thread):
                     entry["canto_state"] = self.fd.tags + [u"*"]
 
             # Tailor the list to the correct number of items.
-            if len(newfeed["entries"]) < self.fd.keep:
-                newfeed["entries"] += \
-                    curfeed["entries"][:self.fd.keep - len(newfeed["entries"])]
-            else:
-                newfeed["entries"] = newfeed["entries"][:self.fd.keep]
+            if self.fd.keep and len(newfeed["entries"]) < self.fd.keep:
+                newfeed["entries"] += curfeed["entries"]\
+                        [:self.fd.keep - len(newfeed["entries"])]
 
             if self.cfg.new_hook:
                 for entry in [e for e in new if e in newfeed["entries"]]:
