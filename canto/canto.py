@@ -9,12 +9,12 @@
 
 from thread import ThreadHandler
 from utility import Cycle
+from cfg.base import get_cfg
 from const import *
 from gui import Gui
 
 import canto_fetch
 import utility
-import cfg
 import tag
 
 import traceback
@@ -155,9 +155,10 @@ class Main():
         # Instantiate Cfg() using paths in args.
 
         try :
-            self.cfg = cfg.Cfg(conf_file, log_file, feed_dir, script_dir)
+            self.cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
             self.cfg.parse()
         except :
+            traceback.print_exc()
             sys.exit(-1)
 
         self.cfg.log("Canto v %s (%s)" % \
@@ -192,7 +193,7 @@ class Main():
                     time.sleep(60)
                     oldcfg = self.cfg
                     try :
-                        self.cfg = cfg.Cfg(conf_file, log_file, feed_dir,\
+                        self.cfg = get_cfg(conf_file, log_file, feed_dir,\
                                 script_dir)
                         self.cfg.parse()
                     except:

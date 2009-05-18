@@ -44,7 +44,7 @@ setup(name='Canto',
         platforms=["linux"],
         license='GPLv2',
         scripts=['bin/canto','bin/canto-fetch'],
-        packages=['canto'],
+        packages=['canto', 'canto.cfg'],
         ext_modules=[Extension('canto.widecurse',\
                 sources = ['canto/widecurse.c'], libraries = ['ncursesw'],
                 library_dirs=["/usr/local/lib", "/opt/local/lib"],

@@ -119,44 +119,6 @@ def convcolor(c):
             return colordir[c]
     return 0
 
-def convkey(s):
-    if len(s) == 1:
-        return (ord(s),0)
-    elif s.startswith("C-"):
-        k, m = convkey(s[2:])
-        
-        # & 0x1F indicates CTRL status.
-        return (k & 0x1F, m) 
-
-    elif s.startswith("M-"):
-        k, m = self.convkey(s[2:])
-        return (k, 1)
-
-    #For some reason, RETURN isn't in curses
-    elif s == "KEY_RETURN":
-        return (10, 0)
-    else:
-        return (getattr(curses, s), 0)
-
-def conv_key_list(dict):
-    ret = {}
-    for key in dict:
-        if not dict[key]:
-            continue
-
-        try:
-            newkey = convkey(key)
-        except AttributeError:
-            continue
-
-        # All the items in a key_list must be lists.
-        if type(dict[key]) != type([]):
-            ret[newkey] = [dict[key]]
-        else:
-            ret[newkey] = dict[key]
-
-    return ret
-
 def silentfork(path, href, text, fetch):
 
     pid = os.fork()
