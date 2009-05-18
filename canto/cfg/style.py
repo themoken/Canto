@@ -95,6 +95,11 @@ def validate_colors(colors, len_check = 1):
 
     return newcolors
 
+def validate_renderer(r):
+    if not isinstance(r, BaseRenderer):
+        raise Exception,\
+            "Renderers must be subclass of BaseRenderer in canto.interface_draw"
+
 def validate(c):
     # No need to validate colors is curses isn't init'd
     # (i.e. the config is being parsed in canto-fetch)

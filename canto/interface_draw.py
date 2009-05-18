@@ -32,7 +32,15 @@ def draw_hooks(func):
 
     return new_func
 
-class Renderer :
+class BaseRenderer :
+    def status(self, bar, height, width, str):
+        pass
+    def reader(self, dict):
+        pass
+    def story(self, dict):
+        pass
+
+class Renderer(BaseRenderer):
     def __init__(self):
         self.prefcode = locale.getpreferredencoding()
 
