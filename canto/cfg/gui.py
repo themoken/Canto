@@ -30,3 +30,6 @@ def post_parse(c):
 
 def validate(c):
     pass
+
+def test(c):
+    pass

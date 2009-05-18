@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 #Canto - ncurses RSS reader
@@ -152,3 +153,8 @@ def get_cfg(conf, log_file, feed_dir, script_dir):
     for h in handlers:
         h.register(c)
     return c
+
+if __name__ == "__main__":
+    c = Cfg("/dev/null","/dev/null","/dev/null", "/dev/null")
+    for h in handlers:
+        h.test(c)
