@@ -97,28 +97,6 @@ def daemonize():
     os.close(1)
     os.close(2)
 
-def convcolor(c):
-    colordir = {"default" : -1, 
-            "black" : 0, 
-            "white" : 7, 
-            "red" : 1, 
-            "green" : 2, 
-            "yellow" : 3, 
-            "blue" : 4, 
-            "magenta" : 5, 
-            "pink" : 5, 
-            "cyan" : 6}
-
-    if type(c) == int:
-        if 0 <= c <= curses.COLORS:
-            return c
-        else:
-            return 0
-    elif type(c) == str:
-        if c in colordir:
-            return colordir[c]
-    return 0
-
 def silentfork(path, href, text, fetch):
 
     pid = os.fork()

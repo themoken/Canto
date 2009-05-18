@@ -37,30 +37,6 @@ def register(c):
                     kwargs["filters"],
                     unicode(t, "UTF-8", "ignore")))
 
-    def get_real_tagl(tl):
-        if not tl:
-            tl = [ f.tags[0] for f in c.feeds ]
-        if not hasattr(tl, "__iter__"):
-            tl = [tl]
-
-        r = []
-        for t in tl:
-            if t and type(t) != unicode:
-                t = unicode(t, "UTF-8", "ignore")
-            newtag = Tag(c, c.default_renderer,
-                    Cycle(c.tag_sorts), Cycle(c.tag_filters), t)
-
-            if newtag in c.cfgtags:
-                newtag = c.cfgtags[c.cfgtags.index(newtag)]
-            if not newtag in r:
-                r.append(newtag)
-        return r
-
-    def validate_tags():
-        # Change tags into actual tag objects
-        c.tags = Cycle([get_real_tagl(t) for t in c.tags])
-    c.validate_tags = validate_tags
-
     c.locals.update({
         "add_tag" : add_tag,
         "default_tag_sorts" : set_default_tag_sorts,
@@ -69,8 +45,113 @@ def register(c):
 def post_parse(c):
     c.tags = c.locals["tags"]
 
+def validate_tags(c):
+    configured_tags = [ x.tag for x in c.cfgtags ]
+    potential_tags = []
+
+    if type(c.tags) != list:
+        raise Exception, "tags must be a list of lists of strings"
+
+    if not len(c.tags):
+        raise Exception, "tags must not be empty"
+
+    one_good_set = 0
+    for i in c.tags:
+        if i:
+            if type(i) != list:
+                raise Exception, "tags must be a list of lists of strings"
+            if not len(i):
+                continue
+            one_good_set = 1
+            for t in i:
+                if type(t) not in [str, unicode]:
+                    raise Exception, "tags are referenced as strings, not %s" %\
+                        type(t)
+                if type(t) == str:
+                    t = unicode(t, "UTF-8", "ignore")
+                if t not in potential_tags and\
+                    t not in configured_tags:
+                    potential_tags.append(t)
+        elif i == None:
+            # Default case
+            one_good_set = 1
+
+    if not one_good_set:
+        raise Exception, "tag lists must not all be empty"
+
+    for f in c.feeds:
+        for t in f.tags:
+            if type(t) not in [str, unicode]:
+                raise Exception, "tags are referenced as strings, not %s" %\
+                        type(t)
+            if type(t) == str:
+                t = unicode(t, "UTF-8", "ignore")
+            if t not in configured_tags and\
+                t not in potential_tags:
+                potential_tags.append(t)
+
+    for tag in potential_tags:
+        c.cfgtags.append(Tag(c, c.default_renderer,\
+                Cycle(c.tag_sorts), Cycle(c.tag_filters), tag))
+
+    def get_tag_obj(s):
+        for t in c.cfgtags:
+            if t.tag == s:
+                return t
+
+    newtags = []
+    for tagl in c.tags:
+        if tagl == None:
+            newtags.append([get_tag_obj(f.tags[0]) for f in c.feeds])
+        else:
+            newtags.append(\
+                    [get_tag_obj(unicode(x, "UTF-8", "ignore")) for x in tagl])
+
+    return newtags
+
 def validate(c):
-    pass
+    c.tags = Cycle(validate_tags(c))
+
+class StubFeed:
+    def __init__(self, tags):
+        self.tags = tags
 
 def test(c):
-    pass
+    c.feeds = []
+    c.cfgtags = []
+
+    #Bullshit type for tags
+    for badtype in [None, [], ["garbage"], [[1]], [[]]]:
+        c.tags = badtype
+        try:
+            validate_tags(c)
+        except:
+            pass
+        else:
+            raise Exception,\
+                "Bad tags (%s) failed to raise exception." % badtype
+
+    # Actually creating a tag requires some stub defaults
+    c.default_renderer = None
+    c.tag_sorts = []
+    c.tag_filters = []
+
+    #Default
+    c.tags = [["sometag"]]
+    validate_tags(c)
+    if "sometag" not in [t.tag for t in c.cfgtags]:
+        raise Exception, "Failed to use hard coded tag."
+    
+    # Stub feeds to create tags for.
+    c.feeds = [StubFeed([u"Slashdot",u"news"]), StubFeed([u"Reddit", u"news"])]
+    c.tags = [None]
+
+    c.tags = validate_tags(c)
+    for tag in [u"Slashdot", u"Reddit", u"news"]:
+        if tag not in [t.tag for t in c.cfgtags]:
+            raise Exception, "Failed to use feed tag."
+    tagstr = [t.tag for t in c.tags[0]]
+    if tagstr != [u"Slashdot", u"Reddit"]:
+        raise Exception, "Failed to generate default tags %s" % tagstr
+
+    print "Tag tests passed."

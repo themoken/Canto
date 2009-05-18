@@ -144,9 +144,6 @@ class Cfg:
         for h in handlers:
             h.post_parse(self)
 
-        for h in handlers:
-            h.validate(self)
-
     def validate(self):
         for h in handlers:
             h.validate(self)

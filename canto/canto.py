@@ -308,7 +308,11 @@ class Main():
             else:
                 base_tags[f.tags[0]] = 1
 
-        self.cfg.validate_tags()
+        try:
+            self.cfg.validate()
+        except:
+            print traceback.format_exc()
+            sys.exit(0)
 
         # Print out a feed list, bail
         if flags & FEED_LIST:
@@ -384,10 +388,8 @@ class Main():
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
         # Init colors
-        for i in range(8) :
-            f = utility.convcolor(self.cfg.colors[i][0])
-            b = utility.convcolor(self.cfg.colors[i][1])
-            curses.init_pair(i + 1, f, b)
+        for i, (fg, bg) in enumerate(self.cfg.colors):
+            curses.init_pair(i + 1, fg, bg)
 
         self.cfg.log("Curses initialized.")
     
