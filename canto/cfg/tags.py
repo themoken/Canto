@@ -101,11 +101,18 @@ def validate_tags(c):
 
     newtags = []
     for tagl in c.tags:
+        new = []
         if tagl == None:
-            newtags.append([get_tag_obj(f.tags[0]) for f in c.feeds])
+            for f in c.feeds:
+                obj = get_tag_obj(f.tags[0])
+                if obj not in new:
+                    new.append(obj)
         else:
-            newtags.append(\
-                    [get_tag_obj(unicode(x, "UTF-8", "ignore")) for x in tagl])
+            for x in tagl:
+                obj = get_tag_obj(unicode(x, "UTF-8", "ignore"))
+                if obj not in new:
+                    new.append(obj)
+        newtags.append(new)
 
     return newtags
 
