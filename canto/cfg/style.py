@@ -1,4 +1,4 @@
-from canto.interface_draw import Renderer
+from canto.interface_draw import BaseRenderer, Renderer
 
 MAX_COLORS = 255
 INVALID_COLOR = -2
@@ -101,6 +101,8 @@ def validate_renderer(r):
             "Renderers must be subclass of BaseRenderer in canto.interface_draw"
 
 def validate(c):
+    for tag in c.cfgtags:
+        validate_renderer(tag.renderer)
     c.colors = validate_colors(c.colors)
 
 def test(c):

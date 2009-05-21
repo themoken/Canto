@@ -22,7 +22,7 @@ import filters
 import triggers
 import gui
 
-handlers = [feeds, keys, style, tags,\
+handlers = [tags, feeds, keys, style,\
         links, hooks, filters, triggers, gui]
 
 import xml.parsers.expat
