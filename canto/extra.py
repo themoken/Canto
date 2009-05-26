@@ -7,6 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from cfg.filters import Filter
 import interface_draw
 import canto_html
 import utility
@@ -72,7 +73,7 @@ def tabbed_status(cfg):
 # Usage : filters=[None, show_unread()]
 #       then using [/] to cycle through.
 
-class show_unread():
+class show_unread(Filter):
     def __str__(self):
         return "Show unread"
 
@@ -84,7 +85,7 @@ class show_unread():
 # Usage : filters=[None, show_marked()]
 #       then using [/] to cycle through
 
-class show_marked():
+class show_marked(Filter):
     def __str__(self):
         return "Show marked"
 
@@ -98,7 +99,7 @@ class show_marked():
 #         filters=[None, only_with(".*[Ll]inux.*", regex=True)]
 #
 
-class only_with():
+class only_with(Filter):
     def __init__(self, keyword, **kwargs):
         self.keyword = keyword
         if "regex" in kwargs and kwargs["regex"]:
@@ -123,7 +124,7 @@ class only_without(only_with):
         return not self.match.match(item["title"])
 
 # Display feed when it has one or more of the specified tags
-class with_tag_in():
+class with_tag_in(Filter):
     def __init__(self, *tags):
         self.tags = set(tags)
     def __str__(self):
@@ -137,7 +138,7 @@ class with_tag_in():
 #
 # Usage : filters=[all_of(with_tag_in('news'), show_unread)]
 
-class all_of():
+class all_of(Filter):
     def __init__(self, *filters):
         self.filters = [utility.get_instance(f) for f in filters]
     def __str__(self):

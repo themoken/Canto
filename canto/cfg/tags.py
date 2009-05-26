@@ -21,10 +21,9 @@ def register(c):
             kwargs["sorts"] = Cycle([[None]])
 
         if "filters" in kwargs:
-            kwargs["filters"] = \
-                    Cycle(get_list_of_instances(kwargs["filters"]))
+            kwargs["filters"] = kwargs["filters"]
         else:
-            kwargs["filters"] = Cycle(c.tag_filters)
+            kwargs["filters"] = c.tag_filters
 
         if not hasattr(tags, "__iter__"):
             tags = [tags]
@@ -92,7 +91,7 @@ def validate_tags(c):
 
     for tag in potential_tags:
         c.cfgtags.append(Tag(c, c.default_renderer,\
-                Cycle(c.tag_sorts), Cycle(c.tag_filters), tag))
+                Cycle(c.tag_sorts), c.tag_filters, tag))
 
     def get_tag_obj(s):
         for t in c.cfgtags:

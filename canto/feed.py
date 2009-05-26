@@ -48,7 +48,7 @@ class Feed(list):
 
         # Hard filter
         if filter:
-            self.filter = lambda x: filter(self, x)
+            self.filter = filter
         else:
             self.filter = None
 

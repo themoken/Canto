@@ -7,7 +7,6 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from utility import Cycle
 import story
 
 class Tag(list):
