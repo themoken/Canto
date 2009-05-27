@@ -54,17 +54,22 @@ def validate_filter(c, f):
     if not f:
         return None
     if type(f) != types.ClassType:
-        raise "All filters must be classes that subclass Filter (%s)" % f
+        raise Exception, \
+            "All filters must be classes that subclass Filter (%s)" % f
     if not isinstance(f, Filter):
         f = f()
     if not issubclass(f.__class__, Filter):
-        raise "All filters must subclass Filter class ("\
+        raise Exception, "All filters must subclass Filter class ("\
                 + f.__class__.__name__ + ")"
     return filter_dec(c, f)
 
 def validate(c):
+    if type(c.filters) != list:
+        raise Exception, "filters must be a list %s" % c.filters
     c.filters = Cycle([ validate_filter(c, f) for f in c.filters ])
     for tag in c.cfgtags:
+        if type(tag.filters) != list:
+            raise Exception, "tag filters must be a list %s" % tag.filters
         tag.filters = Cycle([validate_filter(c, f) for f in tag.filters])
 
 def test(c):
