@@ -158,4 +158,6 @@ def get_cfg(conf, log_file, feed_dir, script_dir):
 if __name__ == "__main__":
     c = Cfg("/dev/null","/dev/null","/dev/null", "/dev/null")
     for h in handlers:
+        h.register(c)
+    for h in handlers:
         h.test(c)

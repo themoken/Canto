@@ -153,4 +153,5 @@ def test(c):
     if tagstr != [u"Slashdot", u"Reddit"]:
         raise Exception, "Failed to generate default tags %s" % tagstr
 
+    c.feeds = []
     print "Tag tests passed."
