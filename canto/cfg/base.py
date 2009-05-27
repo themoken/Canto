@@ -21,9 +21,10 @@ import hooks
 import filters
 import triggers
 import gui
+import sorts
 
 handlers = [tags, feeds, keys, style,\
-        links, hooks, filters, triggers, gui]
+        links, hooks, filters, triggers, gui, sorts]
 
 import xml.parsers.expat
 import traceback
