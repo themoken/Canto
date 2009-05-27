@@ -6,10 +6,12 @@ def post_parse(c):
     c.triggers = c.locals["triggers"]
 
 def validate(c):
+    if type(c.triggers) != list:
+        raise Exception, "triggers must be a list (%s)" % c.triggers
     for t in c.triggers:
         if t not in ["interval","signal","change_tag"]:
             raise Exception, "%s is not a valid trigger name, try\
-                    \"interval\", \"signal\", or \"change_tag\""
+                    \"interval\", \"signal\", or \"change_tag\"" % t
 
 def test(c):
     pass
