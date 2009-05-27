@@ -47,10 +47,7 @@ class Feed(list):
         self.password = password
 
         # Hard filter
-        if filter:
-            self.filter = filter
-        else:
-            self.filter = None
+        self.filter = filter
 
         # Other necessities
         self.path = dirpath
