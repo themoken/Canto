@@ -4,25 +4,12 @@ from canto.tag import Tag
 def register(c):
     c.tags = [None]
     c.cfgtags = []
-    c.tag_filters = [None]
-    c.tag_sorts = [[None]]
     
-    def set_default_tag_filters(filters):
-        c.tag_filters = get_list_of_instances(filters)
-
-    def set_default_tag_sorts(sorts):
-        c.tag_sorts = get_list_of_instances(sorts)
-
     def add_tag(tags, **kwargs):
-        if "sorts" in kwargs:
-            kwargs["sorts"] = \
-                Cycle(get_list_of_instances(kwargs["sorts"]))
-        else:
-            kwargs["sorts"] = Cycle([[None]])
+        if "sorts" not in kwargs:
+            kwargs["sorts"] = [None]
 
-        if "filters" in kwargs:
-            kwargs["filters"] = kwargs["filters"]
-        else:
+        if "filters" not in kwargs:
             kwargs["filters"] = c.tag_filters
 
         if not hasattr(tags, "__iter__"):
@@ -36,10 +23,7 @@ def register(c):
                     kwargs["filters"],
                     unicode(t, "UTF-8", "ignore")))
 
-    c.locals.update({
-        "add_tag" : add_tag,
-        "default_tag_sorts" : set_default_tag_sorts,
-        "default_tag_filters" : set_default_tag_filters})
+    c.locals.update({"add_tag" : add_tag })
 
 def post_parse(c):
     c.tags = c.locals["tags"]
@@ -91,7 +75,7 @@ def validate_tags(c):
 
     for tag in potential_tags:
         c.cfgtags.append(Tag(c, c.default_renderer,\
-                Cycle(c.tag_sorts), c.tag_filters, tag))
+                c.tag_sorts, c.tag_filters, tag))
 
     def get_tag_obj(s):
         for t in c.cfgtags:

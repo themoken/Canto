@@ -29,11 +29,15 @@ def filter_dec(c, f):
     return fdec(f, c.log)
 
 def register(c):
+    def set_default_tag_filters(filters):
+        c.tag_filters = filters
+
     c.tag_filters = [None]
     c.filters = [None]
 
     c.locals.update({
         "Filter" : Filter,
+        "default_tag_filters" : set_default_tag_filters,
         "tag_filters" : c.tag_filters,
         "filters" : c.filters })
 

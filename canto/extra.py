@@ -8,6 +8,8 @@
 #   published by the Free Software Foundation.
 
 from cfg.filters import Filter
+from cfg.sorts import Sort
+
 import interface_draw
 import canto_html
 import utility
@@ -242,7 +244,7 @@ def clear_xterm_title(*args):
 
 # SORTS
 
-class by_date:
+class by_date(Sort):
     def __str__(self):
         return "By Date"
 
@@ -259,14 +261,14 @@ class by_date:
 
         return b - a
 
-class by_len:
+class by_len(Sort):
     def __str__(self):
         return "By Length"
 
     def __call__(self, x, y):
         return len(x["title"]) - len(y["title"])
 
-class by_content:
+class by_content(Sort):
     def __str__(self):
         return "By Length of Content"
 
@@ -277,7 +279,7 @@ class by_content:
 
         return len(get_text(x)) - len(get_text(y))
 
-class by_alpha:
+class by_alpha(Sort):
     def __str__(self):
         return "Alphabetical"
 
@@ -288,7 +290,7 @@ class by_alpha:
 
         return len(x["title"]) - len(y["title"])
 
-class by_unread:
+class by_unread(Sort):
     def __str__(self):
         return "By Unread"
 
@@ -299,7 +301,7 @@ class by_unread:
             return -1
         return 0
 
-class reverse_sort:
+class reverse_sort(Sort):
     def __init__(self, other_sort):
         self.other_sort = utility.get_instance(other_sort)
 
