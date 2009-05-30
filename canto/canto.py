@@ -51,6 +51,7 @@ def print_fetch_usage():
     print "--force      -f       Force update, regardless of timeestamps."
     print "--daemon     -d       Run as a daemon."
     print "--background -b       Background (implies -d)"
+    print "--interval   -i       Update interval when run as a daemon"
     print ""
     print_common_usage()
 
@@ -83,10 +84,10 @@ class Main():
 
             iam = "canto"
         elif sys.argv[0].endswith("canto-fetch"):
-            shortopts = 'hvVfdbD:C:L:F:S:'
+            shortopts = 'hvVfdbD:C:L:F:S:i:'
             longopts =   ["help","version","verbose","force","dir=",\
                          "conf=", "log=", "fdir=","sdir=",\
-                         "daemon","background"]
+                         "daemon","background", "interval="]
 
             iam = "fetch"
         else:
@@ -168,6 +169,7 @@ class Main():
 
         if iam == "fetch":
             # Process canto-fetch specific args.
+            updateInterval = 60
 
             daemon = False
             background = False
@@ -177,6 +179,17 @@ class Main():
                 if opt in ["-b","--background"]:
                     background = True
                     daemon = True
+                if opt in ["-i","--interval"]:
+                    try:
+                        i = int(arg)
+                        if i < 60:
+                            self.cfg.log("interval must be >= 60 (one minute)")
+                        else:
+                            updateInterval = i
+                    except:
+                        self.cfg.log("%s isn't a valid interval" % arg)
+                    else:
+                        self.cfg.log("interval = %d seconds" % updateInterval)
 
             # Daemonize the process, which is sorta confusing
             # in this context, because daemonizing is running
@@ -190,7 +203,7 @@ class Main():
             if daemon:
                 while 1:
                     canto_fetch.main(self.cfg, optlist)
-                    time.sleep(60)
+                    time.sleep(updateInterval)
                     oldcfg = self.cfg
                     try :
                         self.cfg = get_cfg(conf_file, log_file, feed_dir,\
