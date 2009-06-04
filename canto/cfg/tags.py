@@ -11,7 +11,7 @@ from canto.utility import Cycle, get_list_of_instances
 from canto.tag import Tag
 
 def register(c):
-    c.tags = [None]
+    c.tags = None
     c.cfgtags = []
     
     def add_tag(tags, **kwargs):
@@ -32,7 +32,8 @@ def register(c):
                     kwargs["filters"],
                     unicode(t, "UTF-8", "ignore")))
 
-    c.locals.update({"add_tag" : add_tag })
+    c.locals.update({"add_tag" : add_tag,
+                     "tags" : c.tags })
 
 def post_parse(c):
     c.tags = c.locals["tags"]
@@ -40,6 +41,13 @@ def post_parse(c):
 def validate_tags(c):
     configured_tags = [ x.tag for x in c.cfgtags ]
     potential_tags = []
+
+    if c.tags == None:
+        c.tags = [ None ]
+        for feed in c.feeds:
+            for tag in feed.tags[1:]:
+                if [tag] not in c.tags:
+                    c.tags.append([tag])
 
     if type(c.tags) != list:
         raise Exception, "tags must be a list of lists of strings"
@@ -101,7 +109,11 @@ def validate_tags(c):
                     new.append(obj)
         else:
             for x in tagl:
-                obj = get_tag_obj(unicode(x, "UTF-8", "ignore"))
+                if type(x) == str:
+                    obj = get_tag_obj(unicode(x, "UTF-8", "ignore"))
+                else:
+                    obj = get_tag_obj(x)
+
                 if obj not in new:
                     new.append(obj)
         newtags.append(new)
@@ -120,7 +132,7 @@ def test(c):
     c.cfgtags = []
 
     #Bullshit type for tags
-    for badtype in [None, [], ["garbage"], [[1]], [[]]]:
+    for badtype in [[], ["garbage"], [[1]], [[]]]:
         c.tags = badtype
         try:
             validate_tags(c)
@@ -151,7 +163,13 @@ def test(c):
             raise Exception, "Failed to use feed tag."
     tagstr = [t.tag for t in c.tags[0]]
     if tagstr != [u"Slashdot", u"Reddit"]:
-        raise Exception, "Failed to generate default tags %s" % tagstr
+        raise Exception, "Failed to generate default None tags %s" % tagstr
+
+    c.tags = None
+    c.tags = validate_tags(c)
+    tagstr = [[t.tag for t in tagl] for tagl in c.tags]
+    if tagstr != [[u"Slashdot", u"Reddit"], [u"news"]]:
+        raise Exception, "Failed to generate default tag list %s" % tagstr
 
     c.feeds = []
     print "Tag tests passed."
