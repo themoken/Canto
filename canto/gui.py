@@ -441,10 +441,9 @@ class Gui(BaseGui) :
         def dec(self, *args):
             r,s = fn(self, *args)
             if r:
-                self.cfg.log("Sort: %s" % ", ".join([unicode(x) for x in s]))
-                for t in self.tags:
-                    t.sort()
-                    t.enum()
+                self.cfg.log("Sort: %s" % s)
+                self.sel["tag"].sort()
+                self.sel["tag"].enum()
                 return ALARM
         return dec
 

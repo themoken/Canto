@@ -16,7 +16,7 @@ def register(c):
     
     def add_tag(tags, **kwargs):
         if "sorts" not in kwargs:
-            kwargs["sorts"] = [None]
+            kwargs["sorts"] = c.tag_sorts
 
         if "filters" not in kwargs:
             kwargs["filters"] = c.tag_filters

@@ -49,7 +49,7 @@ def register(c):
         "tag_sorts" : c.tag_sorts })
 
 def post_parse(c):
-    c.tag_sorts = c.locals["tag_sorts"]
+    pass
 
 def validate_sort(c, s):
     if not s:
