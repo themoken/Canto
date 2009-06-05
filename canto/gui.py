@@ -389,7 +389,6 @@ class Gui(BaseGui) :
 
     @noitem_unsafe
     def reader(self) :
-        self.sel["tag"].set_read(self.sel["item"])
         self.reader_obj = Reader(self.cfg, self.sel["tag"],\
                 self.sel["item"], self.reader_dead)
         return REDRAW_ALL

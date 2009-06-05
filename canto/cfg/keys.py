@@ -70,7 +70,7 @@ def register(c):
          "f" : "inline_search",
          "n" : "next_mark",
          "p" : "prev_mark",
-         " " : "reader",
+         " " : ["just_read", "reader"],
          "c" : "toggle_collapse_tag",
          "C" : "set_collapse_all",
          "V" : "unset_collapse_all",
