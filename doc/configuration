@@ -112,6 +112,7 @@ This gives a fairly comprehensive view of the config. Everything that is not def
 ##  add()
 
 <div class="section">
+
 **add(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
 
 `add()` is the most basic function of Canto's config, adding a feed to your
@@ -199,6 +200,7 @@ Make sure this script is executable by `chmod +x <script>` before you try it. Th
 ##  add_tag()
 
 <div class="section">
+
 ** add_tag("name", [filters=],[sorts=]) **
 
 `add_tag` is used to specify the attributes of tags. It's not necessary to add
@@ -216,6 +218,7 @@ defined by feeds.
 ##  change_feed()
 
 <div class="section">
+
 **change_feed(URL, [tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
 
 `change_feed` acts identically to `add`, but (as you would imagine) changes
@@ -229,6 +232,7 @@ included in the input data.
 ##  source_opml()
 
 <div class="section">
+
 **source_opml("path", [append=True/False])**
 
 `source_opml` allows you to add feeds from an opml file at run time, rather than permanently. If you're interested in permanently adding or exporting your feeds with OPML, use `canto -i` and `canto -o` to import and export, respectively.
@@ -246,6 +250,7 @@ That append option determines whether the feeds added will be appended to your c
 ##  source_urls()
 
 <div class="section">
+
 **source_urls("path", [append=True/False])**
 
 `source_urls` works similarly to `source_opml`, except it generates `add_feed` statements from a newline delimited list of URLs.
@@ -256,6 +261,7 @@ That append option determines whether the feeds added will be appended to your c
 ##  Setting defaults
 
 <div class="section">
+
 **default_rate(rate)**
 
 **default_keep(keep)**
@@ -283,6 +289,7 @@ Example:
 ##  Content Handlers
 
 <div class="section">
+
 **link_handler(path, [text=],[fetch=],[ext=])**
 
 **image_handler(path, [text=],[fetch=],[ext=])**
