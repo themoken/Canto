@@ -117,7 +117,7 @@ class Feed(list):
                 if tag not in nentry["canto_state"]:
                     nentry["canto_state"].append(tag)
 
-            if nentry not in self:
+            if (nentry not in self) and (nentry not in newlist):
                 newlist.append(story.Story(nentry, self.get_ufp))
 
         for centry in self:
