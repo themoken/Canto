@@ -62,6 +62,16 @@ class Tag(list):
             self.unread += 1
             self.read -= 1
 
+    def sort(self):
+        if not hasattr(self.sorts.cur(), "__iter__"):
+            dosorts = [self.sorts.cur()]
+        else:
+            dosorts = self.sorts.cur()
+
+        for s in dosorts:
+            if s:
+                list.sort(self, s)
+
     def retract(self, iter):
         for item in iter:
             if item in self:
@@ -91,14 +101,7 @@ class Tag(list):
             self.append(stub)
             empty = 1
         else:
-            if not hasattr(self.sorts.cur(), "__iter__"):
-                dosorts = [self.sorts.cur()]
-            else:
-                dosorts = self.sorts.cur()
-
-            for s in dosorts:
-                if s:
-                    list.sort(self, s)
+            self.sort()
         self.enum(empty)
 
     def enum(self, empty = 0):
