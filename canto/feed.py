@@ -99,10 +99,6 @@ class Feed(list):
     def extend(self, entries):
         newlist = []
         for entry in entries:
-            # If tags were added in the configuration, c-f won't
-            # notice (doesn't care about tags), so we check and
-            # append as needed.
-
             nentry = {}
             nentry["id"] = entry["id"]
             nentry["canto_state"] = entry["canto_state"]
@@ -112,6 +108,10 @@ class Feed(list):
                 nentry["link"] = entry["link"]
             elif "href" in entry:
                 nentry["link"] = entry["href"]
+
+            # If tags were added in the configuration, c-f won't
+            # notice (doesn't care about tags), so we check and
+            # append as needed.
 
             for tag in self.tags:
                 if tag not in nentry["canto_state"]:
