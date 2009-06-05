@@ -1,6 +1,0 @@
-TODO (in no particular order)
-===
--- Change alarms to be triggered as well as timed
--- Fix different process names for runhere.sh started canto-fetches
--- Finer grain hooks (state changes)
-   - Eye towards integration w/ other readers
