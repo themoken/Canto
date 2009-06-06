@@ -204,12 +204,18 @@ class Gui(BaseGui) :
         # At this point, self.sel and self.sel_idx may be invalid
 
         if old:
-            for i, l in enumerate(old):
-                if l:
+            for i, t in enumerate(old):
+                if not t:
+                    continue
+                f,s,l = t
+                if l and self.tags[i].sorts.cur() == s:
                     self.tags[i].retract(l)
         if new:
-            for i, l in enumerate(new):
-                if l:
+            for i, t in enumerate(new):
+                if not t:
+                    continue
+                f,s,l = t
+                if l and self.tags[i].sorts.cur() == s:
                     self.tags[i].extend(l)
 
         self.__map_items() 

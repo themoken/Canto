@@ -71,8 +71,19 @@ class ThreadHandler():
                                 odiff[i] = [item]
                             else:
                                 odiff[i].append(item)
+
+                for i, t in enumerate(tags):
+                    sort = t.sorts.cur()
+                    if ndiff[i]:
+                        ndiff[i].sort(sort)
+                        ndiff[i] = (filter, sort, ndiff[i])
+                    if odiff[i]:
+                        odiff[i].sort(sort)
+                        odiff[i] = (filter, sort, odiff[i])
+
                 if not self.kill_me:
                     self.updated.put((ndiff, odiff))
+
             self.update.task_done()
 
     def start_thread(self):
