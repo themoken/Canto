@@ -17,6 +17,16 @@ class Story():
     def __eq__(self, other):
         if self["id"] != other["id"]:
             return 0
+
+        # The reason that we have to check for membership is
+        # that sometimes (like when writing to disk) it's convenient
+        # to compare against a dict in the feedparser block than
+        # another Story object. In all of these cases, the feeds
+        # are guaranteed to be the same anyway.
+
+        if "feed" in other and (self["feed"] != other["feed"]):
+            return 0
+
         return 1
 
     def __str__(self):

@@ -101,6 +101,7 @@ class Feed(list):
         for entry in entries:
             nentry = {}
             nentry["id"] = entry["id"]
+            nentry["feed"] = self.URL
             nentry["canto_state"] = entry["canto_state"]
             nentry["title"] = entry["title"]
 
