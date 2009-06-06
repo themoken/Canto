@@ -8,6 +8,7 @@
 #   published by the Free Software Foundation.
 
 from canto.utility import Cycle
+import traceback
 import types
 
 class Sort:

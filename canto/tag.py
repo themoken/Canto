@@ -62,15 +62,21 @@ class Tag(list):
             self.unread += 1
             self.read -= 1
 
-    def sort(self):
-        if not hasattr(self.sorts.cur(), "__iter__"):
-            dosorts = [self.sorts.cur()]
-        else:
-            dosorts = self.sorts.cur()
+    def sort_add(self, iter):
+        if not iter:
+            return
+        sort = self.sorts.cur()
+        if not len(self) or not sort:
+            list.extend(self, iter)
+            return
 
-        for s in dosorts:
-            if s:
-                list.sort(self, s)
+        for i, item in enumerate(self):
+            while sort(item, iter[0]) > 0:
+                list.insert(self, i, iter[0])
+                del iter[0]
+                if not iter:
+                    return
+        list.extend(self, iter)
 
     def retract(self, iter):
         for item in iter:
@@ -85,9 +91,9 @@ class Tag(list):
     def extend(self, iter):
         filt = self.filters.cur()
         if filt:
-            list.extend(self, filter(lambda x: filt(self, x), iter))
+            self.sort_add(filter(lambda x: filt(self, x), iter))
         else:
-            list.extend(self, iter)
+            self.sort_add(iter)
 
         empty = 0
         if filt and not len(self):
@@ -100,8 +106,7 @@ class Tag(list):
             stub = story.Story(d, lambda : {})
             self.append(stub)
             empty = 1
-        else:
-            self.sort()
+
         self.enum(empty)
 
     def enum(self, empty = 0):

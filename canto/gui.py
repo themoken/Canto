@@ -7,6 +7,8 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from cfg.sorts import validate_sort
+
 from input import input, search, num_input
 from basegui import BaseGui
 from reader import Reader
@@ -447,7 +449,7 @@ class Gui(BaseGui) :
             r,s = fn(self, *args)
             if r:
                 self.cfg.log("Sort: %s" % s)
-                self.sel["tag"].sort()
+                self.sel["tag"].sort(s)
                 self.sel["tag"].enum()
                 return ALARM
         return dec
@@ -467,6 +469,7 @@ class Gui(BaseGui) :
     @noitem_unsafe
     @change_sorts
     def set_tag_sort(self, sort):
+        sort = validate_sort(self.cfg, sort)
         return (self.sel["tag"].sorts.override(sort),\
                 self.sel["tag"].sorts.cur())
 

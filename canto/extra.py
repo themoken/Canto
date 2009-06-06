@@ -8,7 +8,7 @@
 #   published by the Free Software Foundation.
 
 from cfg.filters import Filter
-from cfg.sorts import Sort
+from cfg.sorts import Sort, validate_sort
 
 import interface_draw
 import canto_html
@@ -150,15 +150,12 @@ class all_of(Filter):
         return all([f(tag, item) for f in self.filters])
 
 def set_filter(filter):
-    filter = utility.get_instance(filter)
     return lambda x : x.set_filter(filter)
 
 def set_tag_filter(filter):
-    filter = utility.get_instance(filter)
     return lambda x : x.set_tag_filter(filter)
 
 def set_tag_sort(sort):
-    sort = utility.get_list_of_instances(sort)
     return lambda x : x.set_tag_sort(sort)
 
 def set_tags(tags):
