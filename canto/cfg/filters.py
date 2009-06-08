@@ -51,7 +51,6 @@ def register(c):
         "filters" : c.filters })
 
 def post_parse(c):
-    c.tag_filters = c.locals["tag_filters"]
     c.filters = c.locals["filters"]
 
     # This has to be done before the validate stage

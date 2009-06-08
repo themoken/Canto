@@ -202,23 +202,18 @@ class Gui(BaseGui) :
 
     @change_selected
     def alarm(self, new=[], old=[]):
-        # Clear all of the tags and repopulate with the new listobj.
-        # At this point, self.sel and self.sel_idx may be invalid
-
-        if old:
-            for i, t in enumerate(old):
-                if not t:
-                    continue
-                f,s,l = t
-                if l and self.tags[i].sorts.cur() == s:
-                    self.tags[i].retract(l)
-        if new:
-            for i, t in enumerate(new):
-                if not t:
-                    continue
-                f,s,l = t
-                if l and self.tags[i].sorts.cur() == s:
-                    self.tags[i].extend(l)
+        for lst in [new, old]:
+            if lst:
+                for i, t in enumerate(lst):
+                    if not t:
+                        continue
+                    f,s,l = t
+                    if l and self.tags[i].sorts.cur() == s and\
+                        self.tags[i].filters.cur() == f:
+                        if lst == old:
+                            self.tags[i].retract(l)
+                        else:
+                            self.tags[i].extend(l)
 
         self.__map_items() 
 
@@ -227,16 +222,7 @@ class Gui(BaseGui) :
         self.sel_idx = min(self.sel_idx, self.items - 1)
         
         if self.items > 0:
-            # Attempt to update sel_idx, if the item is still
-            # visible (in self.map), otherwise just select
-            # the top of the current (or first previous feed).
-
             if self.sel:
-                # Since items can show up in multiple feeds
-                # (i.e. reddit and subreddits), check that the
-                # tag_idx is the same, so we don't jump from one
-                # tag to another inadvertently.
-
                 for i, item in enumerate(self.map):
                     if self.sel["item"] == item["item"] and\
                             self.sel["tag"] == item["tag"]:
@@ -259,14 +245,15 @@ class Gui(BaseGui) :
     @change_selected
     def __select_topoftag(self, t=-1):
         if t < 0:
-            t = self.tags.index(self.sel["tag"])
-        for tag in self.tags[t:]:
-            for item in tag:
-                for i in xrange(len(self.map)):
-                    if self.map[i]["item"] == item:
-                        self.sel = self.map[i]
-                        self.sel_idx = i
-                        return
+            ts = self.tags[self.tags.index(self.sel["tag"]):]
+        else:
+            ts = self.tags[t:]
+
+        for i in xrange(len(self.map)):
+            if self.map[i]["tag"] in ts:
+                self.sel = self.map[i]
+                self.sel_idx = i
+                return
 
     @change_selected
     def next_item(self):
@@ -418,28 +405,37 @@ class Gui(BaseGui) :
     def set_filter(self, filt):
         return (self.cfg.filters.override(filt), self.cfg.filters.cur())
 
-    @noitem_unsafe
-    @change_filter
-    def set_tag_filter(self, filt):
-        return (self.sel["tag"].filters.override(filt),\
-                self.sel["tag"].filters.cur())
-
     @change_filter
     def next_filter(self):
         return (self.cfg.filters.next(), self.cfg.filters.cur())
-    
-    @noitem_unsafe
-    @change_filter
-    def next_tag_filter(self):
-        return (self.sel["tag"].filters.next(),\
-                self.sel["tag"].filters.cur())
 
     @change_filter
     def prev_filter(self):
         return (self.cfg.filters.prev(), self.cfg.filters.cur())
 
+    def change_tag_filter(fn):
+        def dec(self, *args):
+            r,f = fn(self, *args)
+            if r:
+                self.cfg.log("Tag Filter: %s" % f)
+                return TFILTER
+        return dec
+
     @noitem_unsafe
-    @change_filter
+    @change_tag_filter
+    def set_tag_filter(self, filt):
+        return (self.sel["tag"].filters.override(filt),\
+                self.sel["tag"].filters.cur())
+
+    @noitem_unsafe
+    @change_tag_filter
+    def next_tag_filter(self):
+        self.cfg.log("%s" % self.sel["tag"].filters)
+        return (self.sel["tag"].filters.next(),\
+                self.sel["tag"].filters.cur())
+
+    @noitem_unsafe
+    @change_tag_filter
     def prev_tag_filter(self):
         return (self.sel["tag"].filters.prev(),\
                 self.sel["tag"].filters.cur())

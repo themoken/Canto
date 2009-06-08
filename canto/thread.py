@@ -27,6 +27,14 @@ class QueueList():
             self.work += 1
         self.lock.release()
 
+    def put_next(self, obj):
+        self.lock.acquire()
+        if obj in self.iter:
+            self.iter.remove(obj)
+        self.iter.append(obj)
+        self.work += 1
+        self.lock.release()
+
     def get(self):
         r = None
         self.lock.acquire()
@@ -76,8 +84,9 @@ class ThreadHandler():
 
             if do_filter >= THREAD_FILTER:
                 filter = cfg.filters.cur()
+                nofilt = lambda x, y: 1
                 if not filter:
-                    filter = lambda x, y: 1
+                    filter = nofilt
 
                 new = []
                 for item in feed:
@@ -91,11 +100,12 @@ class ThreadHandler():
                         continue
                     old.append(item)
 
-                tags = cfg.tags.cur()
+                tags = [(t, t.filters.cur() or nofilt)\
+                        for t in cfg.tags.cur() ]
                 ndiff = [None] * len(tags)
                 for item in new:
-                    for i, t in enumerate(tags):
-                        if t.tag in item["canto_state"]:
+                    for i, (t, ff) in enumerate(tags):
+                        if t.tag in item["canto_state"] and ff(t, item):
                             if not ndiff[i]:
                                 ndiff[i] = [item]
                             else:
@@ -103,21 +113,24 @@ class ThreadHandler():
 
                 odiff = [None] * len(tags)
                 for item in old:
-                    for i, t in enumerate(tags):
-                        if t.tag in item["canto_state"]:
+                    for i, (t, ff) in enumerate(tags):
+                        ffilter = t.filters.cur()
+                        if t.tag in item["canto_state"] and ff(t, item):
                             if not odiff[i]:
                                 odiff[i] = [item]
                             else:
                                 odiff[i].append(item)
 
-                for i, t in enumerate(tags):
+                for i, (t, ff) in enumerate(tags):
+                    if ff == nofilt:
+                        ff = None
                     sort = t.sorts.cur()
                     if ndiff[i]:
                         ndiff[i].sort(sort)
-                        ndiff[i] = (filter, sort, ndiff[i])
+                        ndiff[i] = (ff, sort, ndiff[i])
                     if odiff[i]:
                         odiff[i].sort(sort)
-                        odiff[i] = (filter, sort, odiff[i])
+                        odiff[i] = (ff, sort, odiff[i])
 
                 if not self.kill_me:
                     self.updated.put((ndiff, odiff))

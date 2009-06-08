@@ -489,6 +489,12 @@ class Main():
                     elif r in [REFILTER, RETAG]:
                         self.th.flush()
                         self.update(1)
+                    elif r == TFILTER:
+                        t = self.gui.sel["tag"]
+                        ufds = [ f for f in self.cfg.feeds\
+                                if t.tag in f.tags]
+                        t.clear()
+                        self.update(1, ufds, 1)
                     elif r == REDRAW_ALL:
                         self.gui.draw_elements()
                     elif r == EXIT:
@@ -575,16 +581,17 @@ class Main():
 
         signal.alarm(1)
 
-    def update(self, refilter = 0, iter = None):
+    def update(self, refilter = 0, iter = None, priority = 0):
         old = []
-        if not refilter and not self.th.update.empty():
-            return
         if not iter:
             iter = self.cfg.feeds
         for f in iter:
             if not refilter:
                 old = f[:]
-            self.th.update.put((self.cfg, f, old, THREAD_BOTH))
+            if priority:
+                self.th.update.put_next((self.cfg, f, old, THREAD_BOTH))
+            else:
+                self.th.update.put((self.cfg, f, old, THREAD_BOTH))
 
     # Refresh should only be called initially, if we have a 
     # resize event, or if it's possible that the terminal has

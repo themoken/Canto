@@ -86,21 +86,13 @@ class Tag(list):
                 else:
                     self.unread -= 1
                 self.remove(item)
-        self.enum()
-
-    def extend(self, iter):
-        filt = self.filters.cur()
-        if filt:
-            self.sort_add(filter(lambda x: filt(self, x), iter))
-        else:
-            self.sort_add(iter)
 
         empty = 0
-        if filt and not len(self):
+        if self.filters.cur() and not len(self):
             d = { "title" : "No unfiltered items.",
                   "description" : "You've filtered out everything!",
                   "canto_state" : [self.tag, "unread"],
-                  "id" : None
+                  "id" : "canto-internal"
                 }
 
             stub = story.Story(d, lambda : {})
@@ -108,6 +100,13 @@ class Tag(list):
             empty = 1
 
         self.enum(empty)
+
+    def extend(self, iter):
+        self.sort_add(iter)
+        if len(self) > 1 and self[0]["id"] == "canto-internal":
+            del self[0]
+
+        self.enum()
 
     def enum(self, empty = 0):
         if empty:
@@ -127,4 +126,4 @@ class Tag(list):
             self.unread = len(self) - self.read
 
     def clear(self):
-        del self[:]
+        self.retract(self[:])

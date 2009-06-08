@@ -35,7 +35,7 @@ class Story():
     def get_ufp_entry(self):
         ufp = self.get_ufp()
         if not ufp:
-            return None
+            return ufp
         for ondisk in ufp["entries"]:
             if ondisk["id"] == self["id"]:
                 break
