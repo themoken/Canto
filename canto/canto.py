@@ -461,10 +461,10 @@ class Main():
                     if self.th.updated.empty():
                         time.sleep(0.01)
                     else:
-                        self.new, self.old = self.th.updated.get()
-                        self.gui.alarm(self.new, self.old)
-                        self.th.updated.task_done()
-                        self.gui.draw_elements()
+                        r = self.th.updated.get()
+                        if r:
+                            self.gui.alarm(r[0], r[1])
+                            self.gui.draw_elements()
                     continue
 
                 # Handle Meta pairs

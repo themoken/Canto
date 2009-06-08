@@ -53,6 +53,9 @@ class Feed(list):
         self.path = dirpath
         self.cfg = cfg
 
+    def __eq__(self, other):
+        return self.URL == other.URL
+
     def get_ufp(self):
         lockflags = fcntl.LOCK_SH
         if self.base_set:
@@ -87,10 +90,10 @@ class Feed(list):
             self.base_set = 1
             if "feed" in ufp and "title" in ufp["feed"]:
                 replace = lambda x: x or ufp["feed"]["title"]
-                self.tags = [ replace(x) for x in self.tags]
             else:
                 # Using URL for tag, no guarantees
-                self.tags = [self.URL] + self.tags
+                replace = lambda x: x or self.URL
+            self.tags = [ replace(x) for x in self.tags]
 
         self.extend(ufp["entries"])
         self.todisk(ufp)

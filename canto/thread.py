@@ -7,17 +7,49 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from threading import Thread
-from Queue import Queue
+from threading import Thread, Lock
 from const import *
 
 import signal
+import time
 import os
+
+class QueueList():
+    def __init__(self):
+        self.iter = []
+        self.work = 0
+        self.lock = Lock()
+
+    def put(self, obj):
+        self.lock.acquire()
+        if obj not in self.iter:
+            self.iter.insert(0, obj)
+            self.work += 1
+        self.lock.release()
+
+    def get(self):
+        r = None
+        self.lock.acquire()
+        if len(self.iter):
+            r = self.iter.pop(-1)
+        self.lock.release()
+        return r
+
+    def join(self):
+        while self.work: time.sleep(0.1)
+
+    def empty(self):
+        return self.work == 0
+
+    def task_done(self):
+        self.lock.acquire()
+        self.work -= 1
+        self.lock.release()
 
 class ThreadHandler():
     def __init__(self):
-        self.update = Queue()
-        self.updated = Queue()
+        self.update = QueueList()
+        self.updated = QueueList()
         self.kill_me = 0
         self.start_thread()
 
@@ -25,9 +57,12 @@ class ThreadHandler():
         while True:
             if self.kill_me:
                 return
-            try:
-                cfg, feed, prev, do_filter = self.update.get(True, 0.1)
-            except:
+
+            r = self.update.get()
+            if r:
+                cfg, feed, prev, do_filter = r
+            else:
+                time.sleep(0.1)
                 continue
 
             if do_filter != THREAD_FILTER:
@@ -83,7 +118,6 @@ class ThreadHandler():
 
                 if not self.kill_me:
                     self.updated.put((ndiff, odiff))
-
             self.update.task_done()
 
     def start_thread(self):
