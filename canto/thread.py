@@ -39,7 +39,10 @@ class QueueList():
         while self.work: time.sleep(0.1)
 
     def empty(self):
-        return self.work == 0
+        self.lock.acquire()
+        r = len(self.iter) == 0
+        self.lock.release()
+        return r
 
     def task_done(self):
         self.lock.acquire()
