@@ -7,12 +7,10 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+from const import THREAD_FILTER
 from threading import Thread, Lock
-from const import *
 
-import signal
 import time
-import os
 
 class QueueList():
     def __init__(self):

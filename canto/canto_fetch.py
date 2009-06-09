@@ -19,7 +19,6 @@ import urllib2
 import cPickle
 import socket
 import signal
-import shutil
 import fcntl
 import time
 import sys

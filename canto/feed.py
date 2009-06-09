@@ -7,9 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from const import *
 import story
-import tag
 
 import cPickle
 import fcntl

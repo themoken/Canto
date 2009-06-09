@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from const import *
+from const import NOKEY
 
 class BaseGui:
     def key(self, k):

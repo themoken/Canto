@@ -8,9 +8,8 @@
 #   published by the Free Software Foundation.
 
 from cfg.filters import Filter
-from cfg.sorts import Sort, validate_sort
+from cfg.sorts import Sort
 
-import interface_draw
 import canto_html
 import utility
 import input
