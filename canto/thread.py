@@ -52,6 +52,12 @@ class QueueList():
         self.lock.release()
         return r
 
+    def flush(self):
+        self.lock.acquire()
+        self.iter = []
+        self.work = 0
+        self.lock.release()
+
     def task_done(self):
         self.lock.acquire()
         self.work -= 1
@@ -147,12 +153,8 @@ class ThreadHandler():
 
     def flush(self, restart = 1):
         self.kill_thread()
-        while not self.update.empty():
-            self.update.get()
-            self.update.task_done()
+        self.update.flush()
         while self.thread.isAlive(): pass
-        while not self.updated.empty():
-            self.updated.get()
-            self.updated.task_done()
+        self.updated.flush()
         if restart:
             self.start_thread()

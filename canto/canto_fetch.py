@@ -6,9 +6,13 @@
 #   published by the Free Software Foundation.
 
 from const import VERSION_TUPLE
+from cfg.base import get_cfg
+import utility
+import args
 
 from threading import Thread
 import feedparser
+import traceback
 import commands
 import urlparse
 import urllib2
@@ -21,7 +25,67 @@ import time
 import sys
 import os
 
-def main(cfg, optlist, verbose=False, force=False):
+def main(enc):
+    conf_dir, log_file, conf_file, feed_dir, script_dir, optlist =\
+        args.parse_common_args(enc,
+            "hvVfdbi:", ["help","version","verbose","force","daemon",\
+                    "background", "interval="], "canto-fetch")
+
+    if not log_file:
+        log_file = conf_dir + "fetchlog"
+
+    try :
+        cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
+        cfg.parse()
+    except :
+        traceback.print_exc()
+        sys.exit(-1)
+
+    updateInterval = 60
+    daemon = False
+    background = False
+
+    for opt, arg in optlist :
+        if opt in ["-d","--daemon"]:
+            daemon = True
+        if opt in ["-b","--background"]:
+            background = True
+            daemon = True
+        if opt in ["-i","--interval"]:
+            try:
+                i = int(arg)
+                if i < 60:
+                    cfg.log("interval must be >= 60 (one minute)")
+                else:
+                    updateInterval = i
+            except:
+                cfg.log("%s isn't a valid interval" % arg)
+            else:
+                cfg.log("interval = %d seconds" % updateInterval)
+
+        # Daemonize the process, which is sorta confusing
+        # in this context, because daemonizing is running
+        # in the background (separate from the shell)
+        # Whereas running as a daemon means looping canto-fetch
+        # to avoid the need for a crontab.
+
+        if background:
+            utility.daemonize()
+
+        if daemon:
+            while 1:
+                run(cfg, optlist)
+                time.sleep(updateInterval)
+                oldcfg = cfg
+                try :
+                    cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
+                    self.cfg.parse()
+                except:
+                    cfg = oldcfg
+
+    sys.exit(run(cfg, optlist))
+
+def run(cfg, optlist, verbose=False, force=False):
 
     socket.setdefaulttimeout(30)
 

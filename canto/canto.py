@@ -15,52 +15,16 @@ from gui import Gui
 
 import canto_fetch
 import utility
+import args
 import tag
 
 import traceback
 import signal
 import locale
 import curses
-import getopt
 import time
 import sys
 import os
-
-def print_canto_usage():
-    print "USAGE: canto [-hvulaniortDCLF]"
-    print "--help      -h        This help."
-    print "--version   -v        Print version info."
-    print "--update    -u        Fetch updates before running."
-    print "--list      -l        List configured feeds."
-    print "--checkall  -a        Prints number of new items."
-    print "--checknew  -n [feed] Prints number of items that are new in feed."
-
-    print ""
-    print "--opml      -o        Convert conf to OPML and print to stdout."
-    print "--import    -i [path] Add feeds from OPML file to conf."
-    print "--url       -r [url]  Add feed at URL to conf."
-    print "--tag       -t [tag]  Set tag (for -r)"
-    print ""
-    print_common_usage()
-
-def print_fetch_usage():
-    print "USAGE: canto-fetch [-hvVfdbDCLF]"
-    print "--help       -h       This help."
-    print "--version    -v       Print version info."
-    print "--verbose    -V       Print extra info while running."
-    print "--force      -f       Force update, regardless of timeestamps."
-    print "--daemon     -d       Run as a daemon."
-    print "--background -b       Background (implies -d)"
-    print "--interval   -i       Update interval when run as a daemon"
-    print ""
-    print_common_usage()
-
-def print_common_usage():
-    print "--dir       -D [path] Set configuration directory. (~/.canto/)"
-    print "--conf      -C [path] Set configuration file. (~/.canto/conf)"
-    print "--log       -L [path] Set client log file. (~/.canto/log)"
-    print "--fdir      -F [path] Set feed directory. (~/.canto/feeds/)"
-    print "--sdir      -S [path] Set script directory (~/.canto/scripts/)"
 
 # The Main class encompasses a single instance of Canto or Canto-fetch
 # running. It handles arguments and parses the config for both binaries.
@@ -73,87 +37,17 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         enc = locale.getpreferredencoding()
 
-        # Figure out which binary we are, canto or canto-fetch
-        # and determine which arguments we'll accept.
+        if sys.argv[0].endswith("canto-fetch"):
+            canto_fetch.main(enc)
 
-        if sys.argv[0].endswith("canto"):
-            shortopts = 'hvulaor:t:i:n:D:C:L:F:S:'
-            longopts = ["help","version","update","list","checkall","opml",\
-                    "import=","url=","checknew=","dir=",\
-                    "conf=","log=","fdir=","sdir=", "tag="]
+        conf_dir, log_file, conf_file, feed_dir, script_dir, optlist =\
+                args.parse_common_args(enc,
+                    "hvulaor:t:i:n:",
+                    ["help","version","update","list","checkall","opml",
+                        "import=","url=","checknew=","tag="])
 
-            iam = "canto"
-        elif sys.argv[0].endswith("canto-fetch"):
-            shortopts = 'hvVfdbD:C:L:F:S:i:'
-            longopts =   ["help","version","verbose","force","dir=",\
-                         "conf=", "log=", "fdir=","sdir=",\
-                         "daemon","background", "interval="]
-
-            iam = "fetch"
-        else:
-            print "No idea how you called me..."
-            sys.exit(-1)
-
-        # Parse the args.
-
-        try :
-            optlist = getopt.getopt(sys.argv[1:],shortopts,longopts)[0]
-        except getopt.GetoptError, e:
-            print "Error: %s" % e.msg
-            sys.exit(-1)
-
-        # Canto and canto-fetch share a certain number of args,
-        # mainly the ones dealing with locations of a number of
-        # directories and files. These args are all capitalized.
-
-        # Search the args once for changing the root, because
-        # the root directory will effect other options.
-
-        for opt, arg in optlist:
-            if opt in ["-D", "--dir"]:
-                conf_dir = unicode(arg, enc, "ignore")
-                break
-        else:
-            conf_dir = os.getenv("HOME") + "/.canto/"
-
-        if conf_dir[-1] != '/' :
-            conf_dir += '/'
-
-        # Now we process the remaining common arguments.
-
-        if iam == "canto":
+        if not log_file:
             log_file = conf_dir + "log"
-        else:
-            log_file = conf_dir + "fetchlog"
-
-        conf_file = conf_dir + "conf"
-        feed_dir = conf_dir + "feeds/"
-        script_dir = conf_dir + "scripts/"
-
-        for opt, arg in optlist :
-            if opt in ["-C", "--conf"] :
-                conf_file = unicode(arg, enc, "ignore")
-            elif opt in ["-L","--log"] :
-                log_file = unicode(arg, enc, "ignore")
-            elif opt in ["-F","--fdir"] :
-                feed_dir = unicode(arg, enc, "ignore")
-                if feed_dir[-1] != '/' :
-                    feed_dir += '/'
-            elif opt in ["-S","--sdir"] :
-                script_dir = unicode(arg, enc, "ignore")
-                if script_dir[-1] != '/' :
-                    script_dir += '/'
-            elif opt in ["-h","--help"] :
-                if iam == "canto":
-                    print_canto_usage()
-                else:
-                    print_fetch_usage()
-                sys.exit(0)
-            elif opt in ["-v","--version"] :
-                print "Canto v %s (%s)" % ("%d.%d.%d" % VERSION_TUPLE, GIT_SHA)
-                sys.exit(0)
-
-        # Instantiate Cfg() using paths in args.
 
         try :
             self.cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
@@ -166,52 +60,6 @@ class Main():
                 ("%d.%d.%d" % VERSION_TUPLE, GIT_SHA), "w")
         self.cfg.log("Time: %s" % time.asctime())
         self.cfg.log("Config parsed successfully.")
-
-        if iam == "fetch":
-            # Process canto-fetch specific args.
-            updateInterval = 60
-
-            daemon = False
-            background = False
-            for opt, arg in optlist :
-                if opt in ["-d","--daemon"]:
-                    daemon = True
-                if opt in ["-b","--background"]:
-                    background = True
-                    daemon = True
-                if opt in ["-i","--interval"]:
-                    try:
-                        i = int(arg)
-                        if i < 60:
-                            self.cfg.log("interval must be >= 60 (one minute)")
-                        else:
-                            updateInterval = i
-                    except:
-                        self.cfg.log("%s isn't a valid interval" % arg)
-                    else:
-                        self.cfg.log("interval = %d seconds" % updateInterval)
-
-            # Daemonize the process, which is sorta confusing
-            # in this context, because daemonizing is running
-            # in the background (separate from the shell)
-            # Whereas running as a daemon means looping canto-fetch
-            # to avoid the need for a crontab.
-
-            if background:
-                utility.daemonize()
-
-            if daemon:
-                while 1:
-                    canto_fetch.main(self.cfg, optlist)
-                    time.sleep(updateInterval)
-                    oldcfg = self.cfg
-                    try :
-                        self.cfg = get_cfg(conf_file, log_file, feed_dir,\
-                                script_dir)
-                        self.cfg.parse()
-                    except:
-                        self.cfg = oldcfg
-            sys.exit(canto_fetch.main(self.cfg, optlist))
 
         # From this point forward, we are definitely canto,
         # not canto-fetch. Begin processing canto specific args.
@@ -265,7 +113,7 @@ class Main():
 
         if flags & UPDATE_FIRST:
             self.cfg.log("Pausing to update...")
-            canto_fetch.main(self.cfg, [], True, True)
+            canto_fetch.run(self.cfg, [], True, True)
 
         # Detect if there are any new feeds by whether their
         # set path exists. If not, run canto-fetch but don't
@@ -274,7 +122,7 @@ class Main():
         for i,f in enumerate(self.cfg.feeds) :
             if not os.path.exists(f.path):
                 self.cfg.log("Detected unfetched feed: %s." % f.URL)
-                canto_fetch.main(self.cfg, [], True, False)
+                canto_fetch.run(self.cfg, [], True, False)
 
                 #Still no go?
                 if not os.path.exists(f.path):
@@ -301,7 +149,7 @@ class Main():
 
             except KeyError:
                 self.cfg.log("Detected old feed data, forcing update")
-                canto_fetch.main(self.cfg, [], True, True)
+                canto_fetch.run(self.cfg, [], True, True)
                 f.time = 1
                 f.tick()
 
