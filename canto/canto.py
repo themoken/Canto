@@ -399,7 +399,7 @@ class Main():
                     r = self.gui.action(a)
                     if r == REFRESH_ALL:
                         self.refresh()
-                    elif r == ALARM:
+                    elif r == UPDATE:
                         self.update()
                     elif r in [REFILTER, RETAG]:
                         self.th.flush()
