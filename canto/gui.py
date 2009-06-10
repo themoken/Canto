@@ -207,9 +207,10 @@ class Gui(BaseGui) :
                 for i, t in enumerate(lst):
                     if not t:
                         continue
-                    f,s,l = t
+                    gf, ff, s, l = t
                     if l and self.tags[i].sorts.cur() == s and\
-                        self.tags[i].filters.cur() == f:
+                        self.tags[i].filters.cur() == ff and\
+                        self.cfg.filters.cur() == gf:
                         if lst == old:
                             self.tags[i].retract(l)
                         else:
