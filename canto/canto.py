@@ -7,6 +7,26 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+# The Main object encompasses a running instance of Canto. It can be divided
+# into a number of parts.
+#    init
+#        if called as canto-fetch jump to canto_fetch.main
+#        parse config
+#        parse canto specific arguments
+#        start work thread
+#        load the initial feed data (from thread)
+#        do one-off operation flags (like -a, -n, -o, -i, etc.)
+#        do basic curses init
+#        instantiate Gui class
+#    main loop
+#        check that Gui is still alive
+#        if we're waiting for a process, sleep
+#        check for input
+#            if no input, check on threads
+#                if work done, update screen
+#            if input, pass to Gui and interpret return
+#                if return implies update, queue up work for thread
+
 from thread import ThreadHandler
 from utility import Cycle
 from cfg.base import get_cfg
@@ -26,9 +46,6 @@ import time
 import sys
 import os
 
-# The Main class encompasses a single instance of Canto or Canto-fetch
-# running. It handles arguments and parses the config for both binaries.
-
 class Main():
     def __init__(self):
         signal.signal(signal.SIGUSR2, self.debug_out)
@@ -37,8 +54,13 @@ class Main():
         locale.setlocale(locale.LC_ALL, "")
         enc = locale.getpreferredencoding()
 
+        # If we're canto-fetch, jump to that main function
         if sys.argv[0].endswith("canto-fetch"):
             canto_fetch.main(enc)
+
+        # Parse arguments that canto shares with canto-fetch, return
+        # a lot of file locations and an optlist that will contain the
+        # parsed, but yet unused canto specific arguments.
 
         conf_dir, log_file, conf_file, feed_dir, script_dir, optlist =\
                 args.parse_common_args(enc,
@@ -46,9 +68,7 @@ class Main():
                     ["help","version","update","list","checkall","opml",
                         "import=","url=","checknew=","tag="])
 
-        if not log_file:
-            log_file = conf_dir + "log"
-
+        # Instantiate the config and start the log.
         try :
             self.cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
             self.cfg.parse()
@@ -61,14 +81,15 @@ class Main():
         self.cfg.log("Time: %s" % time.asctime())
         self.cfg.log("Config parsed successfully.")
 
-        # From this point forward, we are definitely canto,
-        # not canto-fetch. Begin processing canto specific args.
-
+        # Default arguments.
         flags = 0 
         feed_ct = None
         opml_file = None
         url = None
         newtag = None
+
+        # Note that every single flag that takes an argument has its
+        # argument converted to unicode. Saves a lot of bullshit later.
 
         for opt, arg in optlist :
             if opt in ["-u","--update"] :
@@ -90,6 +111,10 @@ class Main():
                 url = unicode(arg, enc, "ignore")
             elif opt in ["-t","--tag"] :
                 newtag = unicode(arg, enc, "ignore")
+
+        # Import flags harness the same functions as their config
+        # based counterparts, source_opml and source_url.
+        # XXX THIS SHIT IS BROKEN
 
         if flags & IN_OPML:
             self.cfg.source_opml(opml_file, append=True)
@@ -139,35 +164,49 @@ class Main():
         self.old = []
         self.th = ThreadHandler()
 
-        # Force an update from disk
+        # Force an update from disk by queueing a work item for each thread.
+        # At this point, we just want to do the portion of the update where the
+        # disk is read, so THREAD_UPDATE is used.
+
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
-            try:
-                self.th.update.put((self.cfg, f, [], THREAD_UPDATE))
-            # A KeyError is raised by tick() if canto_version on disk
-            # doesn't exist or doesn't match the current info.
+            self.th.update.put((self.cfg, f, [], THREAD_UPDATE))
 
-            except KeyError:
-                self.cfg.log("Detected old feed data, forcing update")
-                canto_fetch.run(self.cfg, [], True, True)
-                f.time = 1
-                f.tick()
-
+        # Wait for all of the disk updates to be done.
         self.th.update.join()
+
+        # This chunk of code takes any base tags that inadvertantly conflict
+        # (i.e. weren't explicitly set by the user) and resolves them into
+        # Tag, Tag (2), Tag (3), etc.
+
+        # This may seem like paranoia, but half-assed feed generators that use
+        # default feed titles shouldn't break Canto.
+
         base_tags = {}
         for f in [x for x in self.cfg.feeds if \
                 x.base_set and not x.base_explicit]:
             otag = f.tags[0]
             if f.tags[0] in base_tags:
                 base_tags[otag] += 1
+
+                # We check each tag is unique, even if we're generating a new
+                # one so that if a user defines "Tag, Tag, Tag (2)", it resolves
+                # to "Tag, Tag (3), Tag (2)"
+
                 while f.tags[0] + (" (%d)" % base_tags[otag]) in base_tags:
                     base_tags[otag] += 1
                 f.tags[0] += " (%d)" % base_tags[otag]
+
+                # Remove original tag from all stories in the feed
                 for s in f:
                     s.unset(otag)
                     s.set(f.tags[0])
             else:
                 base_tags[f.tags[0]] = 1
+
+        # Now that the tags have all been straightened out, validate the config.
+        # Making sure the tags are unique before validation is important because
+        # part of validation is the actual creation of Tag() objects.
 
         try:
             self.cfg.validate()
@@ -175,7 +214,7 @@ class Main():
             print traceback.format_exc()
             sys.exit(0)
 
-        # Print out a feed list, bail
+        # Print out a feed list
         if flags & FEED_LIST:
             for f in self.cfg.feeds:
                 print f.tags[0].encode(enc, "ignore")
@@ -202,12 +241,15 @@ class Main():
             print """</opml>"""
             sys.exit(0)
 
-        # Handle -a/-n flags (print number of new items)
+        # After this point, we know that all further operation is going to
+        # require tags to be populated, we queue up the latter half of the
+        # work, to actually filter and sort the items.
 
         for f in self.cfg.feeds:
             self.th.update.put((self.cfg, f, [], THREAD_FILTER))
-        self.th.update.join()
 
+        # Handle -a/-n flags (print number of new items)
+        # XXX THIS SHIT IS BROKEN
         if flags & CHECK_NEW:
             if not feed_ct:
                 feed_ct = "*"
@@ -242,6 +284,7 @@ class Main():
                 self.cfg.log("Unable to init curses, bailing")
                 self.done()
 
+        self.sigusr = 0
         self.resize = 0
         self.alarmed = 1
         self.ticks = 1
@@ -269,6 +312,10 @@ class Main():
         self.cfg.log("Signals set.")
         self.estring = None
 
+        # The main loop is wrapped in one huge try...except so that no matter
+        # what exception is thrown, we can clean up curses and exit without
+        # shitting all over the terminal.
+
         try:
             # Initial draw of the screen
             self.refresh()
@@ -279,20 +326,31 @@ class Main():
             self.cfg.log("Beginning main loop.")
 
             while 1:
+                # Clear the key
                 t = None
 
+                # Gui is none if a key returned EXIT
                 if not self.gui:
                     break
+
+                # If we've spawned a text-based process (i.e. elinks), then just
+                # pause and wait to be awakened by SIGCHLD
 
                 if self.cfg.wait_for_pid:
                     signal.pause()
 
                 # Tick when SIGALRM is received.
-
                 if self.alarmed:
                     self.alarmed = 0
                     self.tick()
 
+                # Deferred update from signal
+                if self.sigusr:
+                    self.sigusr = 0
+                    if "signal" in self.cfg.triggers:
+                        self.update()
+
+                # Get the key
                 k = self.cfg.stdscr.getch()
 
                 # KEY_RESIZE is the only key not propagated, to
@@ -306,6 +364,10 @@ class Main():
                 # No input, time to check on the threads.
 
                 if k == -1:
+
+                    # Make sure we don't pin the CPU, so if there's no input and
+                    # no waiting updates, sleep for awhile.
+
                     if self.th.updated.empty():
                         time.sleep(0.01)
                     else:
@@ -327,7 +389,12 @@ class Main():
                 else:
                     t = (k, 0)
 
+                # Key resolves a keypress tuple into a list of actions
                 actions = self.gui.key(t)
+
+                # Actions are executed in order, and each return code 
+                # is handled in order.
+
                 for a in actions:
                     r = self.gui.action(a)
                     if r == REFRESH_ALL:
@@ -338,10 +405,18 @@ class Main():
                         self.th.flush()
                         self.update(1)
                     elif r == TFILTER:
+                        # Tag filters shouldn't perform a full update, so we map
+                        # the relevant tag to all of the feeds that include that
+                        # tag and update them.
                         t = self.gui.sel["tag"]
                         ufds = [ f for f in self.cfg.feeds\
                                 if t.tag in f.tags]
                         t.clear()
+
+                        # Perform the update on necessary feeds, we give them
+                        # top priority so that even if the interface isn't fully
+                        # updated, a tag filter change results in a noticeable
+                        # change ASAP.
                         self.update(1, ufds, 1)
                     elif r == REDRAW_ALL:
                         self.gui.draw_elements()
@@ -370,6 +445,7 @@ class Main():
 
         self.cfg.log("Curses done.")
 
+        # If there was an exception, nicely print it out.
         if self.estring:
             self.cfg.log("\nEXCEPTION:")
             self.cfg.log(self.estring)
@@ -378,7 +454,9 @@ class Main():
             print "Please report this bug. Send your logfile " +\
                 "(%s) to jack@codezen.org" % self.cfg.log_file
 
+        # Flush the work thread to make sure no updates are going on.
         self.th.flush(0)
+
         # Make sure we leave the on-disk presence constant
         for feed in self.cfg.feeds:
             while feed.changed():
@@ -387,34 +465,46 @@ class Main():
         self.cfg.log("Flushed to disk.")
         sys.exit(0)
 
+    # For the most part, it's smart to avoid doing anything but set a flag in an
+    # signal handler. CHLD is an exception because the only case in which we do
+    # anymore work than just acknowledging the process is dead is when
+    # wait_for_pid is set and, in this case the main loop is paused anyway.
+
     def chld(self, a=None, b=None):
+        # I'm not sure why, but SIGCHLD gets called and occasionally, os.wait()
+        # then complains about there being no waiting processes.
         try:
             pid,none = os.wait()
         except:
             return
+
+        # If the interface is waiting on this pid to be done,
+        # reset the signal and simulate a resize to make sure the window
+        # information is still fresh.
+
         if self.cfg.wait_for_pid == pid:
             self.cfg.wait_for_pid = 0
             signal.signal(signal.SIGALRM, self.alarm)
             signal.signal(signal.SIGWINCH, self.winch)
             self.resize = 1
 
-    # The reason KEY_RESIZE is used is that it's unsafe to 
-    # do much of anything but set a flag in a signal handler,
-    # because data structures could be in half-built states,
-    # etc. I'm not sure if Python works around that, but the
-    # C programmer in me won't allow me to do it and OpenBSD
-    # doesn't even support SIGWINCH, so I won't even count
-    # on it.
+    # Back to better practices. =)
 
     def winch(self, a=None, b=None):
         self.resize = 1
 
-    # Similarly, alarm is called every minute, and just sets a flag.
-
     def alarm(self, a=None, b=None):
         self.alarmed = 1
 
+    def sigusr(self, a, b):
+        self.sigusr = 1
+
+    # Tick decrements two timers. One for a possible update (if "interval" is a
+    # valid update trigger), and one for the message box at the bottom of the
+    # interface so that messages don't persist for very long.
+
     def tick(self, refilter=0):
+        # Possible update tick
         self.ticks -= 1
         if self.ticks <= 0:
             if "interval" in self.cfg.triggers:
@@ -423,38 +513,50 @@ class Main():
                 self.update(0, [f for f in self.cfg.feeds if f.time < 0])
             self.ticks = 60
 
+        # Message tick
         self.cfg.msg_tick -= 1
         if self.cfg.msg_tick == 0:
             self.cfg.message(self.cfg.status(self.cfg), 1)
 
         signal.alarm(1)
 
+    # Update is where the work is queued up for the work thread.
     def update(self, refilter = 0, iter = None, priority = 0):
         old = []
+
+        # Default to updating all feeds
         if not iter:
             iter = self.cfg.feeds
+
         for f in iter:
+
+            # If we're not refiltering, compare against the current state of the
+            # feed, otherwise we count on the tags being empty.
+
             if not refilter:
                 old = f[:]
+
+            # Priority items, like tag refilter updates are moved to the front
+            # of the queue, others are queued as normal.
+
             if priority:
                 self.th.update.put_next((self.cfg, f, old, THREAD_BOTH))
             else:
                 self.th.update.put((self.cfg, f, old, THREAD_BOTH))
 
-    # Refresh should only be called initially, if we have a 
-    # resize event, or if it's possible that the terminal has
-    # been resized in our absence (eg. we've just gotten
-    # control back from a text browser).
-
-    # Refresh generally causes gui objects to rebuild window
-    # objects and redraw the screen, causing flicker.
+    # Refresh should only be called when it's possible that the screen has
+    # changed shape. 
 
     def refresh(self):
+        # Get new self.cfg.{height, width}
         curses.endwin()
         self.cfg.stdscr.touchwin()
         self.cfg.stdscr.refresh()
+        self.cfg.stdscr.keypad(1)
+
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
+        # If there's a resize hook, execute it.
         if self.cfg.resize_hook:
             self.cfg.resize_hook(self.cfg)
 
@@ -462,10 +564,15 @@ class Main():
         self.cfg.columns = max(self.cfg.columns, 1)
         self.cfg.reader_lines = max(self.cfg.reader_lines, 3)
 
+        # Adjust gui_height to compensate for the message at the bottom.
         self.cfg.gui_height = self.cfg.height - self.cfg.msg_height
         self.cfg.gui_width = self.cfg.width
 
-        # This logic could be cleaned up...
+        # Now we interpret the reader_orientation setting from the config to
+        # shape the reader area, and adjust other height / width settings
+        # accordingly.
+
+        # XXX This logic could be cleaned up...
 
         if self.cfg.reader_orientation == "top":
             self.cfg.gui_height -= self.cfg.reader_lines
@@ -477,21 +584,23 @@ class Main():
             self.cfg.gui_right = self.cfg.reader_lines
         elif self.cfg.reader_orientation == "right":
             self.cfg.gui_width -= self.cfg.reader_lines
-            
+
+        # Create the message window. This could arguably be crammed into the cfg
+        # class itself, however, for logging and messaging, the cfg class is
+        # basically just a glorified way to do away with globals =P
+
         self.cfg.msg = curses.newwin(self.cfg.msg_height,\
                 self.cfg.width, self.cfg.height - self.cfg.msg_height, 0)
         self.cfg.msg.bkgdset(curses.color_pair(1))
         self.cfg.msg.erase()
         self.cfg.msg.refresh()
 
-        self.cfg.stdscr.keypad(1)
+        # Perform the main update update.
         self.gui.refresh()
         self.gui.draw_elements()
 
-    def sigusr(self, a, b):
-        if "signal" in self.cfg.triggers:
-            self.cfg.log("Update from signal")
-            self.update()
+    # This also doesn't follow good signal practices, but it's an exception
+    # because the backtrace is important.
 
     def debug_out(self, a, b):
         f = open("canto_debug_out", "w")

@@ -30,9 +30,6 @@ def main(enc):
             "hvVfdbi:", ["help","version","verbose","force","daemon",\
                     "background", "interval="], "canto-fetch")
 
-    if not log_file:
-        log_file = conf_dir + "fetchlog"
-
     try :
         cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
         cfg.parse()

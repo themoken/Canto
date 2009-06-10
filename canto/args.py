@@ -67,7 +67,11 @@ def parse_common_args(enc, extra_short, extra_long, iam="canto"):
     if conf_dir[-1] != '/' :
         conf_dir += '/'
 
-    log_file = None
+    if iam == "canto":
+        log_file = conf_dir + "log"
+    else:
+        log_file = conf_dir + "fetchlog"
+
     conf_file = conf_dir + "conf"
     feed_dir = conf_dir + "feeds/"
     script_dir = conf_dir + "scripts/"
