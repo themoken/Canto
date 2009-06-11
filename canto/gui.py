@@ -240,8 +240,12 @@ class Gui(BaseGui) :
         d = { "story" : story, "tag" : tag, "row" : row, "cfg" : self.cfg,
                 "width" : self.cfg.width / self.cfg.columns,
                 "window_list" : self.window_list }
-        return tag.renderer.story(d)
+        r = tag.renderer.story(d)
 
+        # Dereference anything that was fetched from disk
+        story.free()
+
+        return r
 
     # Print all stories in self.map. Ignores all off screen items.
     def draw_elements(self):

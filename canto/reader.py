@@ -85,6 +85,10 @@ class Reader(BaseGui):
         self.height = d["height"]
 
         self.lines, self.links = self.tag.renderer.reader(d)
+
+        # Dereference anything fetched from disk to render.
+        self.story.free()
+
         self.draw_elements()
 
     def draw_elements(self):

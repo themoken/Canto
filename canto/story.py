@@ -22,6 +22,7 @@ class Story():
     def __init__(self, d, get_ufp):
         self.updated = 0
         self.get_ufp = get_ufp
+        self.ondisk = None
         self.d = d
         self.sel = 0
     
@@ -54,8 +55,8 @@ class Story():
             if ondisk["id"] == self["id"]:
                 break
         else:
-            return None
-        return ondisk
+            self.ondisk = None
+        self.ondisk = ondisk
 
     def __getitem__(self, key):
         if key in self.d:
@@ -63,11 +64,12 @@ class Story():
 
         # If the key isn't stored by default, get it from disk.
         else:
-            ondisk = self.get_ufp_entry()
-            if not ondisk:
+            if not self.ondisk:
+                self.get_ufp_entry()
+            if not self.ondisk:
                 return ""
-            if key in ondisk:
-                return ondisk[key]
+            if key in self.ondisk:
+                return self.ondisk[key]
             return ""
 
     def __setitem__(self, key, item):
@@ -77,8 +79,11 @@ class Story():
         if key in self.d:
             return True
         else:
-            ondisk = self.get_ufp_entry()
-            return key in ondisk
+            if not self.ondisk:
+                self.get_ufp_entry()
+            if not self.ondisk:
+                return False
+            return key in self.ondisk
 
     def was(self, tag):
         return tag in self.d["canto_state"]
@@ -112,3 +117,11 @@ class Story():
                     return c["value"]
 
         return self["description"]
+
+    # Free makes the Story() forget all of the uncommon items. Should be called
+    # after anything that could cause Story() to fetch items (ie. in the
+    # Renderer hooks).
+
+    def free(self):
+        if self.ondisk:
+            self.ondisk = None

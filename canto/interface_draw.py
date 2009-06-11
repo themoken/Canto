@@ -73,18 +73,18 @@ def draw_hooks(func):
 
         # Base function to set dict["content"]
         if base:
-            r = base(*args)
+            base(*args)
 
         # Pre hooks
         for f in pre:
-            r = f(*args)
+            f(*args)
 
         # The actual expected call
         r = func(self, *args)
 
         # Post hooks
         for f in post:
-            r = f(*args)
+            f(*args)
 
         return r
 
