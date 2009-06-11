@@ -86,9 +86,6 @@ class Reader(BaseGui):
 
         self.lines, self.links = self.tag.renderer.reader(d)
 
-        # Dereference anything fetched from disk to render.
-        self.story.free()
-
         self.draw_elements()
 
     def draw_elements(self):
@@ -106,22 +103,26 @@ class Reader(BaseGui):
     def scroll_down(self):
         if self.more > 0 :
             self.offset += 1
+        return REDRAW_ALL
 
     def page_down(self):
         if self.more > self.height:
             self.offset += self.height
         else:
             self.offset = self.lines - self.height
+        return REDRAW_ALL
 
     def scroll_up(self):
         if self.offset :
             self.offset -= 1
+        return REDRAW_ALL
     
     def page_up(self):
         if self.offset > self.height:
             self.offset -= self.height
         else:
             self.offset = 0
+        return REDRAW_ALL
 
     def goto(self):
         term = input(self.cfg, "Goto")
@@ -172,6 +173,9 @@ class Reader(BaseGui):
         return 1
 
     def destroy(self):
+        # Dereference anything fetched from disk to render.
+        self.story.free()
+
         self.window.erase()
         self.draw_elements()
         self.dead()
