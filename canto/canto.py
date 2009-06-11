@@ -210,8 +210,8 @@ class Main():
 
         try:
             self.cfg.validate()
-        except:
-            print traceback.format_exc()
+        except Exception, err:
+            print err
             sys.exit(0)
 
         # Print out a feed list
