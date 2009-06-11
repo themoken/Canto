@@ -138,7 +138,7 @@ class Main():
 
         if flags & UPDATE_FIRST:
             self.cfg.log("Pausing to update...")
-            canto_fetch.run(self.cfg, [], True, True)
+            canto_fetch.run(self.cfg, True, True)
 
         # Detect if there are any new feeds by whether their
         # set path exists. If not, run canto-fetch but don't
@@ -147,7 +147,7 @@ class Main():
         for i,f in enumerate(self.cfg.feeds) :
             if not os.path.exists(f.path):
                 self.cfg.log("Detected unfetched feed: %s." % f.URL)
-                canto_fetch.run(self.cfg, [], True, False)
+                canto_fetch.run(self.cfg, True, False)
 
                 #Still no go?
                 if not os.path.exists(f.path):

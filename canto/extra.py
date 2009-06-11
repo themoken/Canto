@@ -141,7 +141,8 @@ class with_tag_in(Filter):
 
 class all_of(Filter):
     def __init__(self, *filters):
-        self.filters = [utility.get_instance(f) for f in filters]
+        # XXX deferred validation
+        self.filters = filters
     def __str__(self):
         return ' & '.join(["(%s)" % f for f in self.filters])
 
@@ -299,7 +300,8 @@ class by_unread(Sort):
 
 class reverse_sort(Sort):
     def __init__(self, other_sort):
-        self.other_sort = utility.get_instance(other_sort)
+        # XXX deferred validation
+        self.other_sort = other_sort
 
     def __str__(self):
         return "Reversed %s" % self.other_sort

@@ -7,7 +7,7 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from canto.utility import Cycle, get_list_of_instances
+from canto.utility import Cycle
 from canto.tag import Tag
 
 def register(c):

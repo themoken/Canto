@@ -54,49 +54,6 @@ class Cycle():
     def cur(self):
         return self.over or self.list[self.idx]
 
-# The get_instance() and get_list_of_instances()
-# functions are to ensure that all objects (usu.
-# in a Cfg()) are actual, instantiated objects and
-# not just references.
-
-def get_instance(l):
-    if not l:
-        return l
-    return (hasattr(l, "__class__") and l) or l()
-
-def get_list_of_instances(l):
-    if not hasattr(l, "__iter__"):
-        l = [l]
-
-    r = []
-    for i in l:
-        if hasattr(i, "__iter__"):
-            r.append(get_list_of_instances(i))
-        else:
-            r.append(get_instance(i))
-    return r
-
-def daemonize():
-    pid = os.fork()
-    if not pid:
-        # New terminal session
-        os.setsid()
-
-        os.chdir("/")
-        os.umask(0)
-        pid = os.fork()
-        if pid:
-            sys.exit(0)
-    else:
-        sys.exit(0)
-
-    # Close all possible terminal output
-    # file descriptors. 
-
-    os.close(0)
-    os.close(1)
-    os.close(2)
-
 def silentfork(path, href, text, fetch):
 
     pid = os.fork()

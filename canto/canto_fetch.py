@@ -5,6 +5,18 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+# Canto-fetch is essentially a stand alone binary, it's only packaged with the
+# canto client source because they share configuration and canto-fetch can
+# conveniently fit into a single file without there being too much confusion.
+
+# There are three parts, roughly.
+# main()        -> arg parsing and (if necessary) runs the daemon loop
+# run()         -> spawns the appropriate threads
+# FetchThread   -> performs the update for one feed
+
+# main is only used when canto-fetch is called from the command line.
+# run is used internally by canto when it needs to invoke an update.
+
 from const import VERSION_TUPLE
 from cfg.base import get_cfg
 import utility
@@ -37,9 +49,12 @@ def main(enc):
         traceback.print_exc()
         sys.exit(-1)
 
+    #Defaults
     updateInterval = 60
     daemon = False
     background = False
+    verbose = False
+    force = False
 
     for opt, arg in optlist :
         if opt in ["-d","--daemon"]:
@@ -49,6 +64,7 @@ def main(enc):
             daemon = True
         if opt in ["-i","--interval"]:
             try:
+                arg = unicode(arg, enc, "ignore")
                 i = int(arg)
                 if i < 60:
                     cfg.log("interval must be >= 60 (one minute)")
@@ -58,56 +74,6 @@ def main(enc):
                 cfg.log("%s isn't a valid interval" % arg)
             else:
                 cfg.log("interval = %d seconds" % updateInterval)
-
-        # Daemonize the process, which is sorta confusing
-        # in this context, because daemonizing is running
-        # in the background (separate from the shell)
-        # Whereas running as a daemon means looping canto-fetch
-        # to avoid the need for a crontab.
-
-        if background:
-            utility.daemonize()
-
-        if daemon:
-            while 1:
-                run(cfg, optlist)
-                time.sleep(updateInterval)
-                oldcfg = cfg
-                try :
-                    cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
-                    self.cfg.parse()
-                except:
-                    cfg = oldcfg
-
-    sys.exit(run(cfg, optlist))
-
-def run(cfg, optlist, verbose=False, force=False):
-
-    socket.setdefaulttimeout(30)
-
-    threads = []
-
-    # Because canto-fetch isn't an ncurses application,
-    # we might actually want to print to the screen!
-
-    def log_func(x):
-        if verbose:
-            print x
-        cfg.log(x)
-
-    def imdone():
-        if threads != []:
-            for thread in threads:
-                thread.join()
-        log_func("Gracefully exiting Canto-fetch.")
-        return 1
-
-    killme = lambda a, b: imdone() and sys.exit(0)
-
-    signal.signal(signal.SIGTERM, killme)
-    signal.signal(signal.SIGINT, killme)
-
-    for opt,arg in optlist:
         if opt in ["-V","--verbose"]:
             verbose = True
         elif opt in ["-f","--force"]:
@@ -133,6 +99,70 @@ def run(cfg, optlist, verbose=False, force=False):
                 os.unlink(cfg.feed_dir + file)
             except:
                 pass
+
+    if background:
+        # This is a pretty canonical way to do backgrounding.
+
+        pid = os.fork()
+        if not pid:
+            # New terminal session
+            os.setsid()
+
+            os.chdir("/")
+            os.umask(0)
+            pid = os.fork()
+            if pid:
+                sys.exit(0)
+        else:
+            sys.exit(0)
+
+        # Close all possible terminal output
+        # file descriptors. 
+
+        os.close(0)
+        os.close(1)
+        os.close(2)
+
+    if daemon:
+        while 1:
+            run(cfg, verbose, force)
+            time.sleep(updateInterval)
+            oldcfg = cfg
+            try :
+                cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
+                self.cfg.parse()
+            except:
+                cfg = oldcfg
+    else:
+        sys.exit(run(cfg, verbose, force))
+
+def run(cfg, verbose=False, force=False):
+
+    # If we don't explicitly set this, feedparser/urllib will take *forever* to
+    # give up on a connection. 30 is a pretty sane default, I think, considering
+    # that 30 seconds is more than enough time to get your average 4-5k feed
+    # even on a really poor connection.
+
+    socket.setdefaulttimeout(30)
+
+    threads = []
+
+    def log_func(x):
+        if verbose:
+            print x
+        cfg.log(x)
+
+    def imdone():
+        if threads != []:
+            for thread in threads:
+                thread.join()
+        log_func("Gracefully exiting Canto-fetch.")
+        return 1
+
+    killme = lambda a, b: imdone() and sys.exit(0)
+
+    signal.signal(signal.SIGTERM, killme)
+    signal.signal(signal.SIGINT, killme)
 
     # The main canto-fetch loop.
     for fd in cfg.feeds:
@@ -165,7 +195,11 @@ class FetchThread(Thread):
         # releases change anything serious in the format.
 
         self.emptyfeed = {"canto_state":[], "entries":[], "canto_update":0,
-                        "canto_version":VERSION_TUPLE}
+                        "canto_version": VERSION_TUPLE }
+
+    # get_curfeed loads the old feed data from disk. It blocks getting the lock,
+    # so it could take awhile, but should never fail if the information isn't
+    # corrupted.
 
     def get_curfeed(self):
         curfeed = self.emptyfeed
@@ -184,8 +218,6 @@ class FetchThread(Thread):
                 f.close()
 
         return curfeed
-
-    # Now we attempt to load the previous feed information.
 
     def run(self):
         curfeed = self.get_curfeed()
@@ -214,17 +246,22 @@ class FetchThread(Thread):
         else:
             self.log_func("Updating %s" % self.fd.tags[0])
 
+        # This block set newfeed to a parsed feed.
+
         try:
+            # Feed from script
             if self.fd.URL.startswith("script:"):
                 script = self.spath + "/" + self.fd.URL[7:]
                 out = commands.getoutput(script)
                 newfeed = feedparser.parse(out)
+            # Feed from URL
             else:
                 request = urllib2.Request(self.fd.URL)
                 request.add_header('User-Agent',\
                     "Canto/%d.%d.%d + http://codezen.org/canto" %\
                     VERSION_TUPLE)
 
+                # Feed from URL w/ password
                 if self.fd.username or self.fd.password:
                     mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
                     domain = urlparse.urlparse(self.fd.URL)[1]
@@ -241,6 +278,7 @@ class FetchThread(Thread):
                         auth = urllib2.HTTPDigestAuthHandler(mgr)
                         opener = urllib2.build_opener(auth)
                         newfeed = feedparser.parse(opener.open(request))
+                # Feed with no password.
                 else:
                     newfeed = feedparser.parse(\
                             feedparser.urllib2.urlopen(request))
@@ -268,6 +306,9 @@ class FetchThread(Thread):
                     (self.fd.URL, newfeed["bozo_exception"]))
                 return
 
+        # For new feeds whose base tag is still not set, attempt to get a title
+        # again.
+
         if not self.fd.base_set:
             if "feed" not in newfeed or "title" not in newfeed["feed"]:
                 self.log_func("Ugh. Defaulting to URL for tag. No guarantees.")
@@ -289,7 +330,12 @@ class FetchThread(Thread):
                         (self.fd.tags[0], newfeed["bozo_exception"]))
             newfeed["bozo_exception"] = None
 
-        # Make state persist between feeds
+        # Make state persist between feeds. Currently, this is completely
+        # unused, as there's no state information that needs to be propagated.
+        # This is a relic from when feeds and tags were the same thing, however
+        # it could be useful when doing integration with another client /
+        # website and thus, hasn't been removed.
+
         newfeed["canto_state"] = curfeed["canto_state"]
         newfeed["canto_update"] = time.time()
 
@@ -299,10 +345,8 @@ class FetchThread(Thread):
 
         newfeed["canto_version"] = VERSION_TUPLE
 
-        # For all content that we would usually use, we convert
-        # it to UTF-8 and escape all %s with \. Feedparser
-        # almost without exception gives us all string in Unicode
-        # so none of these should fail.
+        # For all content that we would usually use, we escape all of the
+        # slashes and other potential escapes.
 
         def escape(s):
             s = s.replace("\\","\\\\")
@@ -360,7 +404,19 @@ class FetchThread(Thread):
                 if "canto_state" not in entry:
                     entry["canto_state"] = self.fd.tags + [u"*"]
 
-            # Tailor the list to the correct number of items.
+            # Tailor the list to the correct number of items. In canto < 0.7.0,
+            # you could specify a keep that was lower than the number of items
+            # in the feed. This was simply done, but ultimately it caused too
+            # much "bounce" for social news feeds. Items get put into the feed,
+            # are upvoted enough to be within the first n items, you change
+            # their state, they move out of the first n items, are forgotten,
+            # then are upvoted again into the first n item and (as far as c-f
+            # knows) are treated like brand new items.
+
+            # This will still be a problem if items get taken out of the feed
+            # and put back into the feed (and the item isn't in the extra kept
+            # items), but then it becomes a site problem, not a reader problem.
+
             if self.fd.keep and len(newfeed["entries"]) < self.fd.keep:
                 newfeed["entries"] += curfeed["entries"]\
                         [:self.fd.keep - len(newfeed["entries"])]
@@ -370,17 +426,25 @@ class FetchThread(Thread):
                     self.cfg.new_hook(newfeed, entry, entry == new[-1])
 
             # Dump the output to the new file.
+
+            # Locking and writing is counter-intuitive using fcntl. If you open
+            # with "w" and fail to get the lock, the data is still deleted. The
+            # solution is to open with "a", get the lock and then truncate the
+            # file.
+
             f = open(self.fpath, "a")
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
             # The feed was modified out from under us.
             if self.prevtime and self.prevtime != os.stat(self.fpath).st_mtime:
+                # Unlock.
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
 
+                # Reread the state from disk.
                 newer_curfeed = self.get_curfeed()
 
-                # There was an actual c-f update done, bail
+                # There was an actual c-f update done, bail.
                 if newer_curfeed["canto_update"] != curfeed["canto_update"]:
                     self.log_func("%s updated already, bailing" %
                             self.fd.tags[0])
@@ -391,16 +455,24 @@ class FetchThread(Thread):
                     curfeed = newer_curfeed
                     continue
 
+            # Truncate the file
             f.seek(0, 0)
             f.truncate()
+
             try:
+                # Dump the feed item. It's important to flush afterwards to
+                # avoid unlocking the file before all the IO is finished.
                 cPickle.dump(newfeed, f)
                 f.flush()
             except:
                 self.log_func("cPickle dump exception on %s" % self.fpath)
             finally:
+                # Unlock.
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
+
+            # If we managed to write to disk, break out of the while loop and
+            # the thread will exit.
 
             break
 
