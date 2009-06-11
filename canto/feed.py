@@ -7,28 +7,32 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+# The Feed() object is the canto client's interface to the files written by
+# canto-fetch. In essence, it's only purpose is to load stories and keep the
+# state synced on disk.
+
+# The Feed() object is entirely separate from the Tag() objects that are displayed
+# in the interface, despite the fact that (by default) there is a single tag per
+# feed.
+
+# The only entry points of feed (other than __init__ when it's created) are
+# update() for updating from disk and todisk() to commit the current state when
+# Canto shuts down.
+
 import story
 
 import cPickle
 import fcntl
 
-# Feed() controls a single feed and implements all of the update functionality
-# on top of Tag() (which is the generic class for lists of items). Feed() is
-# also the lowest granule for custom renderers because the renderers are
-# most likely using information specific to the XML, rather than information
-# specific to an arbitrary list.
-
-# Each feed has a self.ufp item that contains a verbatim copy of the data
-# returned by the feedparser.
-
-# Each feed will also only write its status back to disk on tick() and only if
-# has_changed() has been called by one of the Story() items Feed() contains.
-
 class Feed(list):
     def __init__(self, cfg, dirpath, URL, tags, rate, keep, \
             filter, username, password):
 
-        # Configuration set settings
+        # We pay attention to whether the base was set at creation time (i.e.
+        # via the config) so that setting tags=["sometag"] on two feeds merges
+        # them whereas tags=[None, ...] resolving to the same base tag can have
+        # their base tags resolved to "Base" and "Base (2)" (see canto.py)
+
         self.tags = tags
         if self.tags[0] == None:
             self.base_set = 0
@@ -47,7 +51,6 @@ class Feed(list):
         # Hard filter
         self.filter = filter
 
-        # Other necessities
         self.path = dirpath
         self.cfg = cfg
 
@@ -78,11 +81,10 @@ class Feed(list):
         if not ufp:
             return 0
 
-        # If this data pre-dates 0.6.0 (the last disk format update)
-        # toss a key error.
-        if "canto_version" not in ufp or\
-                ufp["canto_version"][1] < 6:
-            raise KeyError
+        # If the base hasn't been set, attempt to set it from the data we just
+        # picked up. get_ufp() blocks if base isn't set so it's impossible that
+        # we'll just bail out unless there's a cPickle.load exception, but at
+        # that point we're totally fucked anyway.
 
         if not self.base_set:
             self.base_set = 1
@@ -97,9 +99,15 @@ class Feed(list):
         self.todisk(ufp)
         return 1
 
+    # Extend's job is to take items from disk, strip them down to the items that
+    # we want to keep in memory (i.e. stuff that's used often) and add them to
+    # the feed, applying the hard filter if necessary.
+
     def extend(self, entries):
         newlist = []
         for entry in entries:
+
+            # nentry is the new, stripped down version of the item
             nentry = {}
             nentry["id"] = entry["id"]
             nentry["feed"] = self.URL
@@ -122,37 +130,60 @@ class Feed(list):
             if (nentry not in self) and (nentry not in newlist):
                 newlist.append(story.Story(nentry, self.get_ufp))
 
+        # Eliminate entries that aren't in the feed. This is possible since c-f
+        # enforces the number of kept items, so items not in entries are ready
+        # to be eliminated, even if keep is a high number.
+
         for centry in self:
             if centry not in entries:
                 self.remove(centry)
 
         list.extend(self, filter(self.filter, newlist))
 
+    # todisk is the complement to get_ufp, however, since the state may have
+    # changed on any of the items, it has to intelligently merge the changes
+    # before writing to disk.
+
     def todisk(self, ufp=None):
         if ufp == None:
             ufp = self.get_ufp()
         if not ufp:
             return
+
         changed = self.changed()
         if not changed :
             return
 
         for entry in changed:
+            # We've stopped caring about this item
             if entry not in ufp["entries"]:
                 continue
+
             old = ufp["entries"][ufp["entries"].index(entry)]
             if old["canto_state"] != entry["canto_state"]:
-               if entry.updated:
-                   if self.cfg.state_change_hook:
-                       add = [t for t in entry["canto_state"] if\
-                               t not in old["canto_state"]]
-                       rem = [t for t in old["canto_state"] if\
-                               t not in entry["canto_state"]]
-                       self.cfg.state_change_hook(self, entry, add, rem)
-                   old["canto_state"] = entry["canto_state"]
-               else:
-                   entry["canto_state"] = old["canto_state"]
+                # States differ, and we've recorded an update, that means we
+                # probably have the newer information, so we handle the
+                # state_change_hook in a batch and overwrite the old data
 
+                if entry.updated:
+                    if self.cfg.state_change_hook:
+                        add = [t for t in entry["canto_state"] if\
+                               t not in old["canto_state"]]
+                        rem = [t for t in old["canto_state"] if\
+                               t not in entry["canto_state"]]
+                        self.cfg.state_change_hook(self, entry, add, rem)
+                    old["canto_state"] = entry["canto_state"]
+
+
+                # States differ, but we have no change, most likely the on disk
+                # info is newer (i.e. changed by another running canto
+                # instance). We count on the other canto instance handling the
+                # state_change_hook.
+
+                else:
+                    entry["canto_state"] = old["canto_state"]
+
+        # Dump the feed to disk.
         f = open(self.path, "r+")
         try:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
