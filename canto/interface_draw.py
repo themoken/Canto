@@ -42,14 +42,15 @@ class BaseRenderer :
 
 class Renderer(BaseRenderer):
     def __init__(self):
+        self.htmlrenderer = canto_html.CantoHTML()
         self.prefcode = locale.getpreferredencoding()
 
         self.story_rgx = [
             # Eliminate extraneous HTML
             (re.compile(u"<.*?>"), u""),
-            (re.compile(u"&(\w{1,8});"), canto_html.ent_wrapper),
+            (re.compile(u"&(\w{1,8});"), self.htmlrenderer.ent_wrapper),
             (re.compile(u"&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"),
-                canto_html.char_wrapper)
+                self.htmlrenderer.char_wrapper)
             ]
 
         self.pre_story = [
@@ -269,7 +270,8 @@ class Renderer(BaseRenderer):
         dict["content"] = dict["story"].get_text()
 
     def reader_convert_html(self, dict):
-        dict["content"], dict["links"] = canto_html.convert(dict["content"])
+        dict["content"], dict["links"] = \
+                self.htmlrenderer.convert(dict["content"])
 
     def reader_add_main_link(self, dict):
         dict["links"] = [(u"main link", dict["story"]["link"], "link")]\

@@ -140,26 +140,23 @@ class CantoHTML(HTMLParser):
             else:
                 self.result += u"%b"
 
-instance = CantoHTML()
-def ent_wrapper(match):
-    return CantoHTML.convert_entityref(instance,\
-         match.groups()[0])
+    def ent_wrapper(self, match):
+        return self.convert_entityref(match.groups()[0])
 
-def char_wrapper(match):
-    return CantoHTML.convert_charref(instance,\
-        match.groups()[0])
+    def char_wrapper(self, match):
+        return self.convert_charref(match.groups()[0])
 
-def convert(s):
-    # We have this try except because under no circumstances
-    # should the HTML parser crash the application. Better
-    # handling is done per case in the handler itself so that
-    # bad HTML doesn't necessarily lead to garbage output.
+    def convert(self, s):
+        # We have this try except because under no circumstances
+        # should the HTML parser crash the application. Better
+        # handling is done per case in the handler itself so that
+        # bad HTML doesn't necessarily lead to garbage output.
 
-    try:
-        instance.feed(s)
-    except:
-        pass
-    r = instance.result
-    l = instance.links
-    instance.reset()
-    return (r,l)
+        try:
+            self.feed(s)
+        except:
+            pass
+        r = self.result
+        l = self.links
+        self.reset()
+        return (r,l)
