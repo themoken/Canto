@@ -63,11 +63,17 @@ def add_slash_dept(dict):
 		dict["content"] = "%1from the " + dict["story"]["slash_department"]\
 			+ " department%0<br /><br />" + dict["content"]
 
-# Adds a "tablist" to the default Canto config.
+def add_info(r, item):
+    realitem = item.lower()
+    if realitem == "by":
+        realitem = u"author"
 
-def tabbed_status(cfg):
-    return u"%8%BCanto » %b%2" + \
-            " ".join([unicode(x) for x in cfg.key_handlers]) + u"%1"
+    def hook(dict):
+        if realitem in dict["story"]:
+            dict["content"] = "%s : %s\n" %\
+                    (item, dict["story"][realitem]) + dict["content"]
+
+    add_hook_pre_reader(r, hook, after="reader_convert_html")
 
 # Filter for filtering out all read stories.
 #
