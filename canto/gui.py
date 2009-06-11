@@ -199,9 +199,13 @@ class Gui(BaseGui) :
         #   A - are first in a collapsed feed or not in one at all.
         #   B - that actually manage to print something to the screen.
         
-        # We keep track of the virtual row to keep offsets in line.
-        # It doesn't actually map to the row it's printed to on the
-        # screen.
+        # We keep track of the "virtual row"
+
+        # Essentially, map pretends that we're drawing onto an infinitely long
+        # single window, and it's up to draw_elements to determine what range in
+        # the map is actually visible and then it's up to the Renderer()
+        # (particularly Renderer.__window()) to convert that into a real window
+        # and row to draw to.
 
         self.map = []
         self.empty = 1
@@ -233,7 +237,7 @@ class Gui(BaseGui) :
 
     # Print a single item to the screen.
     def print_item(self, tag, story, row):
-        d = { "story" : story, "tag" : tag, "row" : row,\
+        d = { "story" : story, "tag" : tag, "row" : row, "cfg" : self.cfg,
                 "width" : self.cfg.width / self.cfg.columns,
                 "window_list" : self.window_list }
         return tag.renderer.story(d)

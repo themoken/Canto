@@ -42,6 +42,7 @@ class Reader(BaseGui):
         # it would enhance the performance more than one iota.
 
         d = { "story" : self.story,
+              "tag" : self.tag,
               "cfg" : self.cfg,
               "show_links" : self.show_links,
               "window" : None }
