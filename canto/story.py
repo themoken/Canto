@@ -7,6 +7,17 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+# Story is a slick little class. It's main purpose is to hold all of the data
+# for each story, both content and state. To save memory, 0.7.0 will attempt to
+# fetch data from disk if it's not held by default. A good example is
+# description information which can take up kilobytes or megabytes of memory but
+# are rarely used.
+
+# Story doesn't care which feed or tag it's associated with. If you really want
+# to get the feed, story["feed"] contains the unique URL, but you'd have to use
+# the config to get the Feed() object. The only thing that the Story() gets from
+# the feed is the get_ufp function that gets the feedparser dict from disk.
+
 class Story():
     def __init__(self, d, get_ufp):
         self.updated = 0
@@ -32,6 +43,9 @@ class Story():
     def __str__(self):
         return self.d["title"] + " " + str(id(self))
 
+    # Where get_ufp reads the ufp from disk, this narrows that down to a
+    # particular feed entry.
+
     def get_ufp_entry(self):
         ufp = self.get_ufp()
         if not ufp:
@@ -46,6 +60,8 @@ class Story():
     def __getitem__(self, key):
         if key in self.d:
             return self.d[key]
+
+        # If the key isn't stored by default, get it from disk.
         else:
             ondisk = self.get_ufp_entry()
             if not ondisk:
@@ -76,6 +92,9 @@ class Story():
         if tag in self.d["canto_state"]:
             self.d["canto_state"].remove(tag)
             self.updated = 1
+
+    # These are separate from the was/set/unset since the selected status isn't
+    # stored in the ufp.
 
     def selected(self):
         return self.sel
