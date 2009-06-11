@@ -7,6 +7,13 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
+# This is probably the most straightforward file in the code base. It handles
+# all of the argument parsing and interprets all of the common arguments between
+# canto and canto-fetch.
+
+# The one thing to note is that every option that is parsed with an actual
+# argument must have that argument converted to unicode right off the bat.
+
 import getopt
 import sys
 import os
