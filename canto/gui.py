@@ -461,8 +461,8 @@ class Gui(BaseGui) :
     @change_selected
     def next_filtered(self, f) :
         cursor = self.sel["next"]
-        while cursor != self.sel[-1]:
-            if f(self.map[cursor]["tag"],self.map[cursor]["item"]):
+        while cursor != self.map[-1]:
+            if f(cursor["tag"], cursor["item"]):
                 self.sel = cursor
                 break
             cursor = cursor["next"]
@@ -471,8 +471,8 @@ class Gui(BaseGui) :
     @change_selected
     def prev_filtered(self, f) :
         cursor = self.sel["prev"]
-        while cursor != self.sel[0]:
-            if f(self.map[cursor]["tag"],self.map[cursor]["item"]):
+        while cursor != self.map[0]:
+            if f(cursor["tag"], cursor["item"]):
                 self.sel = cursor
                 break
             cursor = cursor["prev"]
