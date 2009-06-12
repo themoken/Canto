@@ -43,7 +43,7 @@ setup(name='Canto',
         download_url='http://codezen.org/static/canto-' + ".".join(version) + ".tar.gz",
         platforms=["linux"],
         license='GPLv2',
-        scripts=['bin/canto','bin/canto-fetch'],
+        scripts=['bin/canto','bin/canto-fetch', 'bin/canto-inspect'],
         packages=['canto', 'canto.cfg'],
         ext_modules=[Extension('canto.widecurse',\
                 sources = ['canto/widecurse.c'], libraries = ['ncursesw'],
