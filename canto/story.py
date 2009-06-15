@@ -18,10 +18,13 @@
 # the config to get the Feed() object. The only thing that the Story() gets from
 # the feed is the get_ufp function that gets the feedparser dict from disk.
 
+import cPickle
+import fcntl
+
 class Story():
-    def __init__(self, d, get_ufp):
+    def __init__(self, d, ufp_path):
         self.updated = 0
-        self.get_ufp = get_ufp
+        self.ufp_path = ufp_path
         self.ondisk = None
         self.d = d
         self.sel = 0
@@ -48,9 +51,19 @@ class Story():
     # particular feed entry.
 
     def get_ufp_entry(self):
-        ufp = self.get_ufp()
-        if not ufp:
-            return ufp
+        try:
+            f = open(self.ufp_path, "r")
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+                ufp = cPickle.load(f)
+            except:
+                return {}
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
+        except:
+            return {}
+
         for ondisk in ufp["entries"]:
             if ondisk["id"] == self["id"]:
                 break

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import canto.canto
+import canto.main
 
 if __name__ == "__main__" : 
-    canto.canto.Main()
+    canto.main.Main()

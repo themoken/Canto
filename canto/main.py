@@ -27,7 +27,7 @@
 #            if input, pass to Gui and interpret return
 #                if return implies update, queue up work for thread
 
-from thread import ThreadHandler
+from process import ProcessHandler
 from utility import Cycle
 from cfg.base import get_cfg
 from const import *
@@ -162,47 +162,24 @@ class Main():
 
         self.new = []
         self.old = []
-        self.th = ThreadHandler()
+        self.ph = ProcessHandler(self.cfg)
 
         # Force an update from disk by queueing a work item for each thread.
         # At this point, we just want to do the portion of the update where the
-        # disk is read, so THREAD_UPDATE is used.
+        # disk is read, so PROC_UPDATE is used.
 
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
-            self.th.update.put((self.cfg, f, [], THREAD_UPDATE))
+            self.ph.tpw.send((PROC_UPDATE, f.URL, []))
+            self.ph.fpr.poll(None)
+            f.merge(self.ph.fpr.recv()[1])
+        self.ph.tpw.send((PROC_GETTAGS, ))
 
-        # Wait for all of the disk updates to be done.
-        self.th.update.join()
-
-        # This chunk of code takes any base tags that inadvertantly conflict
-        # (i.e. weren't explicitly set by the user) and resolves them into
-        # Tag, Tag (2), Tag (3), etc.
-
-        # This may seem like paranoia, but half-assed feed generators that use
-        # default feed titles shouldn't break Canto.
-
-        base_tags = {}
-        for f in [x for x in self.cfg.feeds if \
-                x.base_set and not x.base_explicit]:
-            otag = f.tags[0]
-            if f.tags[0] in base_tags:
-                base_tags[otag] += 1
-
-                # We check each tag is unique, even if we're generating a new
-                # one so that if a user defines "Tag, Tag, Tag (2)", it resolves
-                # to "Tag, Tag (3), Tag (2)"
-
-                while f.tags[0] + (" (%d)" % base_tags[otag]) in base_tags:
-                    base_tags[otag] += 1
-                f.tags[0] += " (%d)" % base_tags[otag]
-
-                # Remove original tag from all stories in the feed
-                for s in f:
-                    s.unset(otag)
-                    s.set(f.tags[0])
-            else:
-                base_tags[f.tags[0]] = 1
+        self.ph.fpr.poll(None)
+        fixedtags = self.ph.fpr.recv()
+        self.ph.kill_process()
+        for i, f in enumerate(self.cfg.feeds):
+            self.cfg.feeds[i].tags = fixedtags[i]
 
         # Now that the tags have all been straightened out, validate the config.
         # Making sure the tags are unique before validation is important because
@@ -213,6 +190,8 @@ class Main():
         except Exception, err:
             print err
             sys.exit(0)
+
+        self.ph.start_process(self.cfg)
 
         # Print out a feed list
         if flags & FEED_LIST:
@@ -246,7 +225,13 @@ class Main():
         # work, to actually filter and sort the items.
 
         for f in self.cfg.feeds:
-            self.th.update.put((self.cfg, f, [], THREAD_FILTER))
+            self.ph.defer.append((PROC_FILTER, f.URL, f[:],
+                    self.cfg.all_filters.index(self.cfg.filters.cur()),
+                    [(t.tag,\
+                      self.cfg.all_filters.index(t.filters.cur()),\
+                      self.cfg.all_sorts.index(t.sorts.cur()))\
+                      for t in self.cfg.tags.cur()],\
+                      True))
 
         # Handle -a/-n flags (print number of new items)
         # XXX THIS SHIT IS BROKEN
@@ -368,13 +353,29 @@ class Main():
                     # Make sure we don't pin the CPU, so if there's no input and
                     # no waiting updates, sleep for awhile.
 
-                    if self.th.updated.empty():
-                        time.sleep(0.01)
+                    r = None
+                    try:
+                        if self.ph.fpr.poll():
+                            r = self.ph.fpr.recv()
+                    except:
+                        continue
+
+                    if r:
+                        feed = [ f for f in self.cfg.feeds if f.URL == r[0]][0]
+                        f.time = f.rate
+                        feed.merge(r[1])
+                        self.gui.alarm(r[2], r[3])
+                        self.gui.draw_elements()
                     else:
-                        r = self.th.updated.get()
-                        if r:
-                            self.gui.alarm(r[0], r[1])
-                            self.gui.draw_elements()
+                        time.sleep(0.01)
+
+                    if self.ph.defer:
+                        while 1:
+                            try:
+                                self.ph.tpw.send(self.ph.defer.pop(0))
+                            except:
+                                continue
+                            break
                     continue
 
                 # Handle Meta pairs
@@ -402,7 +403,7 @@ class Main():
                     elif r == UPDATE:
                         self.update()
                     elif r in [REFILTER, RETAG]:
-                        self.th.flush()
+                        self.ph.flush()
                         self.update(1)
                     elif r == TFILTER:
                         # Tag filters shouldn't perform a full update, so we map
@@ -412,12 +413,7 @@ class Main():
                         ufds = [ f for f in self.cfg.feeds\
                                 if t.tag in f.tags]
                         t.clear()
-
-                        # Perform the update on necessary feeds, we give them
-                        # top priority so that even if the interface isn't fully
-                        # updated, a tag filter change results in a noticeable
-                        # change ASAP.
-                        self.update(1, ufds, 1)
+                        self.update(1, ufds)
                     elif r == REDRAW_ALL:
                         self.gui.draw_elements()
                     elif r == EXIT:
@@ -455,14 +451,11 @@ class Main():
                 "(%s) to jack@codezen.org" % self.cfg.log_file
 
         # Flush the work thread to make sure no updates are going on.
-        self.th.flush(0)
-
-        # Make sure we leave the on-disk presence constant
-        for feed in self.cfg.feeds:
-            while feed.changed():
-                feed.todisk()
-
+        self.ph.flush()
+        self.ph.sync()
         self.cfg.log("Flushed to disk.")
+
+        self.ph.kill_process()
         sys.exit(0)
 
     # For the most part, it's smart to avoid doing anything but set a flag in an
@@ -521,28 +514,24 @@ class Main():
         signal.alarm(1)
 
     # Update is where the work is queued up for the work thread.
-    def update(self, refilter = 0, iter = None, priority = 0):
-        old = []
+    def update(self, refilter = 0, iter = None):
 
         # Default to updating all feeds
-        if not iter:
+        if iter == None:
             iter = self.cfg.feeds
 
         for f in iter:
 
             # If we're not refiltering, compare against the current state of the
             # feed, otherwise we count on the tags being empty.
-
-            if not refilter:
-                old = f[:]
-
-            # Priority items, like tag refilter updates are moved to the front
-            # of the queue, others are queued as normal.
-
-            if priority:
-                self.th.update.put_next((self.cfg, f, old, THREAD_BOTH))
-            else:
-                self.th.update.put((self.cfg, f, old, THREAD_BOTH))
+            self.ph.defer.append(
+                    (PROC_BOTH, f.URL, f[:],\
+                    self.cfg.all_filters.index(self.cfg.filters.cur()),
+                    [(t.tag,\
+                      self.cfg.all_filters.index(t.filters.cur()),\
+                      self.cfg.all_sorts.index(t.sorts.cur()))\
+                      for t in self.cfg.tags.cur()],\
+                      refilter))
 
     # Refresh should only be called when it's possible that the screen has
     # changed shape. 
@@ -602,7 +591,7 @@ class Main():
     # This also doesn't follow good signal practices, but it's an exception
     # because the backtrace is important.
 
-    def debug_out(self, a, b):
+    def debug_out(self, a=None, b=None):
         f = open("canto_debug_out", "w")
         for l in traceback.format_stack():
             f.write(l)

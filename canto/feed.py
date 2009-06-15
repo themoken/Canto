@@ -43,7 +43,7 @@ class Feed(list):
 
         self.URL = URL
         self.rate = rate
-        self.time = 1
+        self.time = rate
         self.keep = keep
         self.username = username
         self.password = password
@@ -128,7 +128,7 @@ class Feed(list):
                     nentry["canto_state"].append(tag)
 
             if (nentry not in self) and (nentry not in newlist):
-                newlist.append(story.Story(nentry, self.get_ufp))
+                newlist.append(story.Story(nentry, self.path))
 
         # Eliminate entries that aren't in the feed. This is possible since c-f
         # enforces the number of kept items, so items not in entries are ready
@@ -139,6 +139,19 @@ class Feed(list):
                 self.remove(centry)
 
         list.extend(self, filter(self.filter, newlist))
+
+    # Merging items means that they're unvalidated and unfiltered. This is
+    # used when story objects are read in from a pipe.
+
+    def merge(self, iter):
+        for item in iter:
+            if item in self:
+                cur = self[self.index(item)]
+                if cur.updated:
+                    item["canto_state"] = cur["canto_state"]
+                    item.updated = 1
+        del self[:]
+        list.extend(self, iter)
 
     # todisk is the complement to get_ufp, however, since the state may have
     # changed on any of the items, it has to intelligently merge the changes

@@ -332,10 +332,14 @@ class Gui(BaseGui) :
 
                     # Check that the diff was created with the same filters and
                     # sorts that are still in play
+
+                    gf = self.cfg.all_filters[gf]
+                    tf = self.cfg.all_filters[tf]
+                    s = self.cfg.all_sorts[s]
+
                     if l and self.tags[i].sorts.cur() == s and\
                         self.tags[i].filters.cur() == tf and\
                         self.cfg.filters.cur() == gf:
-
                         # Add or remove them as necessary
                         if lst == old:
                             self.tags[i].retract(l)
