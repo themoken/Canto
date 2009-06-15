@@ -50,7 +50,7 @@ def register(c):
         "tag_sorts" : c.tag_sorts })
 
 def post_parse(c):
-    pass
+    c.all_sorts = []
 
 def validate_sort(c, s):
     if not s:
@@ -69,9 +69,10 @@ def validate(c):
     for tag in c.cfgtags:
         if type(tag.sorts) != list:
             raise Exception, "Tag sorts for %s must be a list" % tag.tag
-        newsorts = []
-        for s in tag.sorts:
-            newsorts.append(validate_sort(c, s))
+        newsorts = [ validate_sort(c, s) for s in tag.sorts ]
+        for s in newsorts:
+            if s not in c.all_sorts:
+                c.all_sorts.append(s)
         tag.sorts = Cycle(newsorts)
         
 def test(c):

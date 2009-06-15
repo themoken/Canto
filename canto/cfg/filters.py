@@ -51,6 +51,7 @@ def register(c):
         "filters" : c.filters })
 
 def post_parse(c):
+    c.all_filters = []
     c.filters = c.locals["filters"]
 
     # This has to be done before the validate stage
@@ -78,11 +79,20 @@ def validate_filter(c, f):
 def validate(c):
     if type(c.filters) != list:
         raise Exception, "filters must be a list %s" % c.filters
-    c.filters = Cycle([ validate_filter(c, f) for f in c.filters ])
+    c.filters = [ validate_filter(c, f) for f in c.filters ]
+    for filt in c.filters:
+        if filt not in c.all_filters:
+            c.all_filters.append(filt)
+    c.filters = Cycle(c.filters)
+
     for tag in c.cfgtags:
         if type(tag.filters) != list:
             raise Exception, "tag filters must be a list %s" % tag.filters
-        tag.filters = Cycle([validate_filter(c, f) for f in tag.filters])
+        tag.filters = [validate_filter(c, f) for f in tag.filters]
+        for filt in tag.filters:
+            if filt not in c.all_filters:
+                c.all_filters.append(filt)
+        tag.filters = Cycle(tag.filters)
 
 def test(c):
     pass
