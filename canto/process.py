@@ -103,13 +103,21 @@
 # minimum because every second spent updating is a second spent unresponsive to
 # the user.
 
-from processing import Pipe
-
 from const import *
 
 import time
 import sys
 import os
+
+try:
+    from multiprocessing import Pipe
+except Exception, e:
+    try:
+        from processing import Pipe
+    except:
+        print "Canto 0.7.x requires the python-processing module"+\
+              " to run on Python 2.5"
+        sys.exit(-1)
 
 def scan_tags(feeds):
     
