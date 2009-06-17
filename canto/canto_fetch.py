@@ -49,6 +49,11 @@ def main(enc):
         traceback.print_exc()
         sys.exit(-1)
 
+    def log_func(x):
+        if verbose:
+            print x
+        cfg.log(x)
+
     #Defaults
     updateInterval = 60
     daemon = False
