@@ -202,14 +202,13 @@ class ProcessHandler():
                 if action <= PROC_UPDATE:
                     self.fpw.send((action, feed[:]))
                 else:
+                    prev = args[1]
                     filter = args[2]
                     taginfo = args[3]
                     refilter = args[4]
 
                     if refilter:
                         prev = []
-                    else:
-                        prev = feed[:]
 
                     # Step 1: Global Filters
 
