@@ -168,17 +168,31 @@ class ProcessHandler():
             self.tpw.close()
             self.fpr.close()
 
+            def send(obj):
+                while 1:
+                    try:
+                        self.fpw.send(obj)
+                    except:
+                        continue
+                    break
+
             while True:
-                self.tpr.poll(None)
-                r = self.tpr.recv()
+                while True:
+                    try:
+                        self.tpr.poll(None)
+                        r = self.tpr.recv()
+                    except:
+                        continue
+                    break
+
                 action, args = r[0],r[1:]
 
                 if action == PROC_GETTAGS:
-                    self.fpw.send([ f.tags for f in feeds ])
+                    send([ f.tags for f in feeds ])
                     continue
                 if action in [PROC_FLUSH, PROC_KILL]:
                     # Make sure we leave the on-disk presence constant
-                    self.fpw.send((action, ))
+                    send((action, ))
                     if action == PROC_KILL:
                         sys.exit(0)
                     continue
@@ -187,7 +201,7 @@ class ProcessHandler():
                     feed.merge(args[1])
                     while feed.changed():
                         feed.todisk()
-                    self.fpw.send((PROC_SYNC,))
+                    send((PROC_SYNC,))
                     continue
 
                 # PROC_UPDATE, just load the data from disk.
@@ -200,7 +214,7 @@ class ProcessHandler():
                         scan_tags(feeds)
 
                 if action <= PROC_UPDATE:
-                    self.fpw.send((action, feed[:]))
+                    send((action, feed[:]))
                 else:
                     prev = args[1]
                     filter = args[2]
@@ -259,7 +273,7 @@ class ProcessHandler():
                             odiff[i] = (filter, tf, ts, odiff[i])
 
                     # Step 4: Queue up the results for the interface process.
-                    self.fpw.send((feed.URL, feed[:], ndiff, odiff))
+                    send((feed.URL, feed[:], ndiff, odiff))
 
                 if all_filters:
                     del feed[:]
@@ -267,8 +281,25 @@ class ProcessHandler():
                 self.tpr.close()
                 self.fpw.close()
 
+    def send(self, obj):
+        while 1:
+            try:
+                return self.tpw.send(obj)
+            except:
+                continue
+
+    def poll(self, arg=0.0):
+        return self.fpr.poll(arg)
+
+    def recv(self):
+        while 1:
+            try:
+                return self.fpr.recv()
+            except:
+                continue
+
     def send_and_wait(self, symbol):
-        self.tpw.send((symbol, ))
+        self.send((symbol, ))
         while 1:
             try:
                 while self.fpr.poll(None):

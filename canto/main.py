@@ -170,13 +170,13 @@ class Main():
 
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
-            self.ph.tpw.send((PROC_UPDATE, f.URL, []))
-            self.ph.fpr.poll(None)
-            f.merge(self.ph.fpr.recv()[1])
-        self.ph.tpw.send((PROC_GETTAGS, ))
+            self.ph.send((PROC_UPDATE, f.URL, []))
+            self.ph.poll(None)
+            f.merge(self.ph.recv()[1])
+        self.ph.send((PROC_GETTAGS, ))
 
-        self.ph.fpr.poll(None)
-        fixedtags = self.ph.fpr.recv()
+        self.ph.poll(None)
+        fixedtags = self.ph.recv()
         self.ph.kill_process()
         for i, f in enumerate(self.cfg.feeds):
             self.cfg.feeds[i].tags = fixedtags[i]
@@ -354,11 +354,8 @@ class Main():
                     # no waiting updates, sleep for awhile.
 
                     r = None
-                    try:
-                        if self.ph.fpr.poll():
-                            r = self.ph.fpr.recv()
-                    except:
-                        continue
+                    if self.ph.poll():
+                        r = self.ph.recv()
 
                     if r:
                         feed = [ f for f in self.cfg.feeds if f.URL == r[0]][0]
@@ -370,12 +367,7 @@ class Main():
                         time.sleep(0.01)
 
                     if self.ph.defer:
-                        while 1:
-                            try:
-                                self.ph.tpw.send(self.ph.defer.pop(0))
-                            except:
-                                continue
-                            break
+                        self.ph.send(self.ph.defer.pop(0))
                     continue
 
                 # Handle Meta pairs
