@@ -43,6 +43,7 @@
 
 # The rest of the functions are keybinds or helpers for said keybinds.
 
+from cfg.filters import validate_filter
 from cfg.sorts import validate_sort
 
 from input import input, search, num_input
@@ -530,6 +531,7 @@ class Gui(BaseGui) :
 
     @change_filter
     def set_filter(self, filt):
+        filt = validate_filter(self.cfg, filt)
         return (self.cfg.filters.override(filt), self.cfg.filters.cur())
 
     @change_filter

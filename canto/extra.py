@@ -7,8 +7,8 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from cfg.filters import Filter
-from cfg.sorts import Sort
+from cfg.filters import Filter, all_filters
+from cfg.sorts import Sort, all_sorts
 
 import canto_html
 import utility
@@ -155,13 +155,24 @@ class all_of(Filter):
     def __call__(self, tag, item):
         return all([f(tag, item) for f in self.filters])
 
+def register_filter(filt):
+    if filt not in all_filters:
+        all_filters.append(filt)
+
+def register_sort(s):
+    if s not in all_sorts:
+        all_sorts.append(s)
+
 def set_filter(filter):
+    register_filter(filter)
     return lambda x : x.set_filter(filter)
 
 def set_tag_filter(filter):
+    register_filter(filter)
     return lambda x : x.set_tag_filter(filter)
 
 def set_tag_sort(sort):
+    register_sort(sort)
     return lambda x : x.set_tag_sort(sort)
 
 def set_tags(tags):

@@ -11,6 +11,8 @@ from canto.utility import Cycle
 import traceback
 import types
 
+all_sorts = []
+
 class Sort:
     def __str__(self):
         return "Unnamed Sort."
@@ -27,6 +29,11 @@ def sort_dec(c, s):
             self.instance = instance
             self.log = log
 
+        def __eq__(self, other):
+            if not other:
+                return False
+            return str(self) == str(other)
+
         def __str__(self):
             return self.instance.__str__()
 
@@ -42,6 +49,7 @@ def register(c):
     def set_default_tag_sorts(sorts):
         c.tag_sorts = sorts
 
+    c.all_sorts = []
     c.tag_sorts = [None]
 
     c.locals.update({
@@ -50,12 +58,12 @@ def register(c):
         "tag_sorts" : c.tag_sorts })
 
 def post_parse(c):
-    c.all_sorts = []
+    c.all_sorts = all_sorts
 
 def validate_sort(c, s):
     if not s:
         return None
-    if type(s) != types.ClassType:
+    if type(s) not in [types.ClassType, types.InstanceType]:
         raise Exception, \
             "All sorts must be classes that subclass Sort (%s)" % s
     if not isinstance(s, Sort):
@@ -66,6 +74,7 @@ def validate_sort(c, s):
     return sort_dec(c, s)
 
 def validate(c):
+    c.all_sorts = [ validate_sort(c, s) for s in c.all_sorts ]
     for tag in c.cfgtags:
         if type(tag.sorts) != list:
             raise Exception, "Tag sorts for %s must be a list" % tag.tag

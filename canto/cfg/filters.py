@@ -10,6 +10,8 @@
 from canto.utility import Cycle
 import types
 
+all_filters = []
+
 class Filter:
     def __str__(self):
         return "Unnamed Filter."
@@ -26,6 +28,11 @@ def filter_dec(c, f):
             self.instance = instance
             self.log = log
 
+        def __eq__(self, other):
+            if not other:
+                return False
+            return str(self) == str(other)
+
         def __str__(self):
             return self.instance.__str__()
 
@@ -40,9 +47,9 @@ def filter_dec(c, f):
 def register(c):
     def set_default_tag_filters(filters):
         c.tag_filters = filters
-
     c.tag_filters = [None]
     c.filters = [None]
+    c.all_filters = []
 
     c.locals.update({
         "Filter" : Filter,
@@ -51,11 +58,15 @@ def register(c):
         "filters" : c.filters })
 
 def post_parse(c):
-    c.all_filters = []
-    c.filters = c.locals["filters"]
 
     # This has to be done before the validate stage
     # because it has to be done before the update
+
+    # Note that tag_filters isn't moved in because at this point, the tags have
+    # all had their filters set explicitly.
+
+    c.all_filters = all_filters
+    c.filters = c.locals["filters"]
 
     for feed in c.feeds:
         if not feed.filter:
@@ -66,7 +77,7 @@ def post_parse(c):
 def validate_filter(c, f):
     if not f:
         return None
-    if type(f) != types.ClassType:
+    if type(f) not in [types.ClassType, types.InstanceType]:
         raise Exception, \
             "All filters must be classes that subclass Filter (%s)" % f
     if not isinstance(f, Filter):
@@ -77,6 +88,7 @@ def validate_filter(c, f):
     return filter_dec(c, f)
 
 def validate(c):
+    c.all_filters = [ validate_filter(c, f) for f in c.all_filters ]
     if type(c.filters) != list:
         raise Exception, "filters must be a list %s" % c.filters
     c.filters = [ validate_filter(c, f) for f in c.filters ]
