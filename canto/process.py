@@ -171,9 +171,11 @@ class ProcessHandler():
             def send(obj):
                 while 1:
                     try:
-                        return self.fpw.send(obj)
+                        r = self.fpw.send(obj)
                     except:
                         continue
+                    break
+                return r
 
             while True:
                 while True:
@@ -283,23 +285,29 @@ class ProcessHandler():
     def send(self, obj):
         while 1:
             try:
-                return self.tpw.send(obj)
+                r = self.tpw.send(obj)
             except:
                 continue
+            break
+        return r
 
     def poll(self, arg=0.0):
         while 1:
             try:
-                return self.fpr.poll(arg)
+                r = self.fpr.poll(arg)
             except:
                 continue
+            break
+        return r
 
     def recv(self):
         while 1:
             try:
-                return self.fpr.recv()
+                r = self.fpr.recv()
             except:
                 continue
+            break
+        return r
 
     def send_and_wait(self, symbol):
         self.send((symbol, ))

@@ -161,6 +161,7 @@ def run(cfg, verbose=False, force=False):
         if threads != []:
             for thread in threads:
                 thread.join()
+        socket.setdefaulttimeout(None)
         log_func("Gracefully exiting Canto-fetch.")
         return 1
 

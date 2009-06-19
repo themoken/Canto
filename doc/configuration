@@ -29,7 +29,7 @@ line will update a feed every 30 minutes and keep up to a 100 items.
     add("http://someurl", rate=30, keep=100)
 
 > NOTE: "keep" will be silently ignored if it's below the number of items in
-> the feed. In fact, by default `keep = 0`.
+> the feed. In fact, by default `keep = 0`. This behavior differs from 0.6.x.
 
 If the feed is behind browser authentication (i.e. when you try to reach it in a
 browser it brings up a username/password box), you can specify those in the feed
@@ -39,8 +39,10 @@ definition too.
     add("http://someprotectedurl", username="myuser", password="mypass")
 
 > NOTE: In order to protect sensitive information in your config, it's
-> standard practice to `chmod 600 ~/.canto/conf` so that other users can't
-> read your password even if they can read your home directory. However,
+> standard practice to `chmod 600 ~/.canto/conf` so that other users can't 
+> read your password even if they can read your home directory. However, 
 > Canto will not enforce these permissions as some other programs.
+
+There are a few other options for `add`, but these are more logically covered elsewhere.
 
 </div>
