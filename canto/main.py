@@ -367,7 +367,11 @@ class Main():
                         time.sleep(0.01)
 
                     if self.ph.defer:
-                        self.ph.send(self.ph.defer.pop(0))
+                        send = self.ph.defer.pop(0)
+                        for s in send[2]:
+                            if s.updated:
+                                s.updated = STORY_UPDATE_QD
+                        self.ph.send(send)
                     continue
 
                 # Handle Meta pairs

@@ -18,12 +18,13 @@
 # the config to get the Feed() object. The only thing that the Story() gets from
 # the feed is the get_ufp function that gets the feedparser dict from disk.
 
+from const import STORY_SAVED, STORY_UPDATED
 import cPickle
 import fcntl
 
 class Story():
     def __init__(self, d, ufp_path):
-        self.updated = 0
+        self.updated = STORY_SAVED
         self.ufp_path = ufp_path
         self.ondisk = None
         self.d = d
@@ -104,12 +105,12 @@ class Story():
     def set(self, tag):
         if not tag in self.d["canto_state"]:
             self.d["canto_state"].append(tag)
-            self.updated = 1
+            self.updated = STORY_UPDATED
     
     def unset(self,tag):
         if tag in self.d["canto_state"]:
             self.d["canto_state"].remove(tag)
-            self.updated = 1
+            self.updated = STORY_UPDATED
 
     # These are separate from the was/set/unset since the selected status isn't
     # stored in the ufp.
