@@ -148,12 +148,13 @@ class Feed(list):
     # that at merge time they're already on disk).
 
     def merge(self, iter):
-        for item in iter:
+        for i, item in enumerate(iter):
             if item in self:
                 cur = self[self.index(item)]
-                if cur.updated == STORY_UPDATED:
-                    item["canto_state"] = cur["canto_state"]
-                    item.updated = 1
+                if cur.updated != STORY_UPDATED:
+                    cur.updated = 0
+                iter[i] = cur
+
         del self[:]
         list.extend(self, iter)
 

@@ -75,7 +75,8 @@
 # Where both diffs are arrays that match up with all of the currently used tags.
 # For each tag, the diff contains
 #
-#       (global filter index, tag filter index, tag sort index, new/old items)
+#       (global filter index, tag filter index, tag sort index, new/old item
+#           indices)
 #
 # This diff includes information to keep everything in sync. While the thread
 # works the filters and sorts can change so when the interface thread receives
@@ -189,6 +190,7 @@ class ProcessHandler():
                 action, args = r[0],r[1:]
 
                 if action == PROC_GETTAGS:
+                    scan_tags(feeds)
                     send([ f.tags for f in feeds ])
                     continue
                 if action in [PROC_FLUSH, PROC_KILL]:
@@ -211,10 +213,8 @@ class ProcessHandler():
                     feed.merge(args[1])
                     if not feed.update():
                         continue
-                    if not all_filters and feed == feeds[-1]:
-                        scan_tags(feeds)
 
-                if action <= PROC_UPDATE:
+                if action == PROC_UPDATE:
                     send((action, feed[:]))
                 else:
                     prev = args[1]
@@ -263,20 +263,36 @@ class ProcessHandler():
                                 else:
                                     odiff[i].append(item)
 
-                    # Step 3: Tag sorts, include parity information
+                    # Step 3: Tag sorts
                     for i, (t, tf, ts) in enumerate(taginfo):
                         sort = all_sorts[ts]
                         if ndiff[i]:
                             ndiff[i].sort(sort)
-                            ndiff[i] = (filter, tf, ts, ndiff[i])
                         if odiff[i]:
                             odiff[i].sort(sort)
-                            odiff[i] = (filter, tf, ts, odiff[i])
 
-                    # Step 4: Queue up the results for the interface process.
+                    # Step 4: Convert items into indices
+                    for newdiff in ndiff:
+                        if not newdiff:
+                            continue
+                        for i, item in enumerate(newdiff):
+                            newdiff[i] = feed.index(newdiff[i])
+
+                    for olddiff in odiff:
+                        if not olddiff:
+                            continue
+                        for i, item in enumerate(olddiff):
+                            olddiff[i] = prev.index(olddiff[i])
+
+                    # Step 5: Add parity information
+                    for i, (t, tf, ts) in enumerate(taginfo):
+                        ndiff[i] = (filter, tf, ts, ndiff[i])
+                        odiff[i] = (filter, tf, ts, odiff[i])
+
+                    # Step 6: Queue up the results for the interface process.
                     send((feed.URL, feed[:], ndiff, odiff))
 
-                if all_filters:
+                if action > PROC_UPDATE:
                     del feed[:]
             else:
                 self.tpr.close()

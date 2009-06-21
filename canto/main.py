@@ -360,8 +360,28 @@ class Main():
                     if r:
                         feed = [ f for f in self.cfg.feeds if f.URL == r[0]][0]
                         f.time = f.rate
+
+                        old = []
+                        for gf, tf, s, l in r[3]:
+                            if not l:
+                                old.append((gf, tf, s, l))
+                                continue
+                            for i, oldidx in enumerate(l):
+                                l[i] = feed[oldidx]
+                            old.append((gf, tf, s, l))
+
                         feed.merge(r[1])
-                        self.gui.alarm(r[2], r[3])
+
+                        new = []
+                        for gf, tf, s, l in r[2]:
+                            if not l:
+                                new.append((gf, tf, s, None))
+                                continue
+                            for i, newidx in enumerate(l):
+                                l[i] = feed[newidx]
+                            new.append((gf, tf, s, l))
+
+                        self.gui.alarm(new, old)
                         self.gui.draw_elements()
                     else:
                         time.sleep(0.01)
