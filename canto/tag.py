@@ -91,7 +91,7 @@ class Tag(list):
         if self.filters.cur() and not len(self):
             d = { "title" : "No unfiltered items.",
                   "description" : "You've filtered out everything!",
-                  "canto_state" : [self.tag, "unread"],
+                  "canto_state" : [self.tag, "*"],
                   "id" : "canto-internal"
                 }
 

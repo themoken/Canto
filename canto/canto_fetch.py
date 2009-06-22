@@ -209,16 +209,42 @@ class FetchThread(Thread):
 
     def get_curfeed(self):
         curfeed = self.emptyfeed
-        if os.path.exists(self.fpath) and os.path.isfile(self.fpath):
-            f = open(self.fpath, "r")
-            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+        if os.path.exists(self.fpath):
+            if os.path.isfile(self.fpath):
+                f = open(self.fpath, "r")
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
 
-            self.prevtime = os.stat(self.fpath).st_mtime
+                self.prevtime = os.stat(self.fpath).st_mtime
 
+                try:
+                    curfeed = cPickle.load(f)
+                except:
+                    self.log_func("cPickle load exception on %s" % self.fpath)
+                finally:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                    f.close()
+        else:
+
+            # The file doesn't exist yet, so we write a stub so that Canto
+            # detects presence and doesn't endlessly try to refetch error'd
+            # feeds if later on an error occurs.
+
+            d = { u"title" : u"No content.",
+                    u"description" : u"There's no content in this feed. It's" +
+                    " possible that it hasn't been fetched yet or an error was" +
+                    " encountered. Check your fetchlog.",
+                    u"canto_state" : ["*"],
+                    u"id" : u"canto-internal"
+                }
+
+            curfeed["entries"].append(d)
+            f = open(self.fpath, "w")
             try:
-                curfeed = cPickle.load(f)
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                cPickle.dump(curfeed, f)
+                f.flush()
             except:
-                self.log_func("cPickle load exception on %s" % self.fpath)
+                pass
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
@@ -295,6 +321,7 @@ class FetchThread(Thread):
 
             self.log_func("Exception trying to get feed %s : %s" % \
                     (self.fd.tags[0], sys.exc_info()[1]))
+
             return
 
         # I don't know why feedparser doesn't actually throw this
