@@ -191,8 +191,6 @@ class Main():
             print err
             sys.exit(0)
 
-        self.ph.start_process(self.cfg)
-
         # Print out a feed list
         if flags & FEED_LIST:
             for f in self.cfg.feeds:
@@ -252,6 +250,8 @@ class Main():
                       self.cfg.all_sorts.index(t.sorts.cur()))\
                       for t in self.cfg.tags.cur()],\
                       True))
+            
+        self.ph.start_process(self.cfg)
 
         # At this point we know that we're going to actually launch
         # the client, so we fire up ncurses and add the screen
