@@ -177,6 +177,8 @@ class Main():
 
         self.ph.poll(None)
         fixedtags = self.ph.recv()
+        
+        signal.signal(signal.SIGCHLD, self.chld)
         self.ph.kill_process()
         for i, f in enumerate(self.cfg.feeds):
             self.cfg.feeds[i].tags = fixedtags[i]
@@ -297,7 +299,6 @@ class Main():
         # Signal handling
         signal.signal(signal.SIGWINCH, self.winch)
         signal.signal(signal.SIGALRM, self.alarm)
-        signal.signal(signal.SIGCHLD, self.chld)
         signal.signal(signal.SIGINT, self.done)
         signal.signal(signal.SIGUSR1, self.sigusr)
 
