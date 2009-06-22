@@ -155,6 +155,7 @@ class ProcessHandler():
     def __init__(self, cfg):
         self.cfg = cfg
         self.defer = []
+        self.qd = 0
         self.start_process(cfg)
 
     def start_process(self, cfg):
@@ -341,6 +342,7 @@ class ProcessHandler():
 
     def flush(self):
         self.defer = []
+        self.qd = 0
         self.send_and_wait(PROC_FLUSH)
 
     def sync(self):

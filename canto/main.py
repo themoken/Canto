@@ -364,6 +364,7 @@ class Main():
                     r = None
                     if self.ph.poll():
                         r = self.ph.recv()
+                        self.ph.qd -= 1
 
                     if r:
                         feed = [ f for f in self.cfg.feeds if f.URL == r[0]][0]
@@ -391,15 +392,16 @@ class Main():
 
                         self.gui.alarm(new, old)
                         self.gui.draw_elements()
-                    else:
-                        time.sleep(0.01)
-
-                    if self.ph.defer:
+                    elif self.ph.qd < 1 and self.ph.defer:
                         send = self.ph.defer.pop(0)
                         for s in send[2]:
                             if s.updated:
                                 s.updated = STORY_UPDATE_QD
+                        self.ph.qd += 1
                         self.ph.send(send)
+                    else:
+                        time.sleep(0.01)
+
                     continue
 
                 # Handle Meta pairs
