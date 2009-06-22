@@ -14,6 +14,7 @@
 # The one thing to note is that every option that is parsed with an actual
 # argument must have that argument converted to unicode right off the bat.
 
+from const import *
 import getopt
 import sys
 import os
