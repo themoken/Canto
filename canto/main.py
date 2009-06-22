@@ -117,11 +117,11 @@ class Main():
         # XXX THIS SHIT IS BROKEN
 
         if flags & IN_OPML:
-            self.cfg.source_opml(opml_file, append=True)
+            self.cfg.locals['source_opml'](opml_file, append=True)
             print "OPML imported."
 
         if flags & IN_URL:
-            self.cfg.source_url(url, append=True, tag=newtag)
+            self.cfg.locals['source_url'](url, append=True, tag=newtag)
             print "URL added."
 
         # All import options should terminate.

@@ -9,6 +9,7 @@
 #   published by the Free Software Foundation.
 
 import xml.parsers.expat
+import codecs
 
 def register(c):
     def source(fn):
@@ -48,14 +49,24 @@ def register(c):
 
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = start
-        d = c.read_decode(filename)
+
+        try:
+            d = c.read_decode(filename)
+        except:
+            raise Exception, "Unable to open %s" % filename
+
         p.Parse(d.encode("UTF-8"), 1)
         return l
 
     @source
     def source_urls(filename, **kwargs):
         l = []
-        d = c.read_decode(filename).split('\n')[:-1]
+
+        try:
+            d = c.read_decode(filename).split('\n')[:-1]
+        except:
+            raise Exception, "Unable to open %s" % filename
+
         for feed in d:
             l.append((feed, None))
         return l

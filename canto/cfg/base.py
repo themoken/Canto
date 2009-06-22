@@ -103,8 +103,9 @@ class Cfg:
 
     def read_decode(self, filename, top_encode=0):
         enc = "utf-8"
+
+        f = open(filename, "r")
         try:
-            f = open(filename, "r")
             data = f.read()
 
             try:

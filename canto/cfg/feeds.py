@@ -61,6 +61,7 @@ def register(c):
                     kwargs["filter"],
                     kwargs["username"],
                     kwargs["password"]))
+        return True
 
     def change_feed(URL, **kwargs):
         for f in c.feeds:
