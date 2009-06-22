@@ -208,7 +208,8 @@ class Main():
             print """<opml version="1.0">"""
             print """<body>"""
             for feed in self.cfg.feeds:
-                if "atom" in feed.ufp["version"]:
+                ufp = feed.get_ufp()
+                if "atom" in ufp["version"]:
                     t = "pie"
                 else:
                     t = "rss"
