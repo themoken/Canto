@@ -221,9 +221,28 @@ class Main():
             print """</opml>"""
             sys.exit(0)
 
+        # Handle -a/-n flags (print number of new items)
+
+        if flags & CHECK_NEW:
+            if not feed_ct:
+                unread = 0
+                for f in self.cfg.feeds:
+                    for s in f:
+                        if "read" not in s["canto_state"]:
+                            unread += 1
+                print unread
+            else:
+                t = [ f for f in self.cfg.feeds if f.tags[0] == feed_ct ]
+                if not t:
+                    print "Unknown Feed"
+                else:
+                    print len([ x for x in t[0] if "read"\
+                            not in x["canto_state"]])
+            sys.exit(0)
+
         # After this point, we know that all further operation is going to
-        # require tags to be populated, we queue up the latter half of the
-        # work, to actually filter and sort the items.
+        # require all tags to be populated, we queue up the latter 
+        # half of the work, to actually filter and sort the items.
 
         for f in self.cfg.feeds:
             self.ph.defer.append((PROC_FILTER, f.URL, f[:],
@@ -233,19 +252,6 @@ class Main():
                       self.cfg.all_sorts.index(t.sorts.cur()))\
                       for t in self.cfg.tags.cur()],\
                       True))
-
-        # Handle -a/-n flags (print number of new items)
-        # XXX THIS SHIT IS BROKEN
-        if flags & CHECK_NEW:
-            if not feed_ct:
-                feed_ct = "*"
-
-            # We get counts by using the Tag() class directly.
-            check_tag = tag.Tag(self.cfg, Cycle([[None]]),\
-                    Cycle([None]), feed_ct)
-            check_tag.extend(self.stories)
-            print check_tag.unread
-            sys.exit(0)
 
         # At this point we know that we're going to actually launch
         # the client, so we fire up ncurses and add the screen
