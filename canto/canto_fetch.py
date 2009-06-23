@@ -339,6 +339,11 @@ class FetchThread(Thread):
                     (self.fd.URL, newfeed["bozo_exception"]))
                 return
 
+        # Filter out "No Content" message since we apparently have real content
+
+        curfeed["entries"] = [ x for x in curfeed["entries"] if x["id"] !=\
+                "canto-internal"]
+
         # For new feeds whose base tag is still not set, attempt to get a title
         # again.
 
