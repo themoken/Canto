@@ -170,11 +170,9 @@ class Main():
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
             self.ph.send((PROC_UPDATE, f.URL, []))
-            self.ph.poll(None)
             f.merge(self.ph.recv()[1])
         self.ph.send((PROC_GETTAGS, ))
 
-        self.ph.poll(None)
         fixedtags = self.ph.recv()
         
         signal.signal(signal.SIGCHLD, self.chld)
@@ -243,8 +241,10 @@ class Main():
         # require all tags to be populated, we queue up the latter 
         # half of the work, to actually filter and sort the items.
 
+        self.ph.start_process(self.cfg)
+
         for f in self.cfg.feeds:
-            self.ph.defer.append((PROC_FILTER, f.URL, f[:],
+            self.ph.send((PROC_FILTER, f.URL, f[:],
                     self.cfg.all_filters.index(self.cfg.filters.cur()),
                     [(t.tag,\
                       self.cfg.all_filters.index(t.filters.cur()),\
@@ -252,8 +252,6 @@ class Main():
                       for t in self.cfg.tags.cur()],\
                       True))
             
-        self.ph.start_process(self.cfg)
-
         # At this point we know that we're going to actually launch
         # the client, so we fire up ncurses and add the screen
         # information to our Cfg().
@@ -360,11 +358,7 @@ class Main():
                     # Make sure we don't pin the CPU, so if there's no input and
                     # no waiting updates, sleep for awhile.
 
-                    r = None
-                    if self.ph.poll():
-                        r = self.ph.recv()
-                        self.ph.qd -= 1
-
+                    r = self.ph.recv(True, 0.01)
                     if r:
                         feed = [ f for f in self.cfg.feeds if f.URL == r[0]][0]
                         f.time = f.rate
@@ -391,16 +385,6 @@ class Main():
 
                         self.gui.alarm(new, old)
                         self.gui.draw_elements()
-                    elif self.ph.qd < 1 and self.ph.defer:
-                        send = self.ph.defer.pop(0)
-                        for s in send[2]:
-                            if s.updated:
-                                s.updated = STORY_UPDATE_QD
-                        self.ph.qd += 1
-                        self.ph.send(send)
-                    else:
-                        time.sleep(0.01)
-
                     continue
 
                 # Handle Meta pairs
@@ -549,7 +533,7 @@ class Main():
 
             # If we're not refiltering, compare against the current state of the
             # feed, otherwise we count on the tags being empty.
-            self.ph.defer.append(
+            self.ph.send(
                     (PROC_BOTH, f.URL, f[:],\
                     self.cfg.all_filters.index(self.cfg.filters.cur()),
                     [(t.tag,\

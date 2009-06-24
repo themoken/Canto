@@ -111,10 +111,10 @@ import sys
 import os
 
 try:
-    from multiprocessing import Pipe
+    from multiprocessing import Queue
 except Exception, e:
     try:
-        from processing import Pipe
+        from processing import Queue
     except:
         print "Canto 0.7.x requires the python-processing module"+\
               " to run on Python 2.5"
@@ -154,36 +154,24 @@ def scan_tags(feeds):
 class ProcessHandler():
     def __init__(self, cfg):
         self.cfg = cfg
-        self.defer = []
-        self.qd = 0
         self.start_process(cfg)
 
     def start_process(self, cfg):
         self.run(cfg.all_filters, cfg.all_sorts, cfg.feeds)
 
     def run(self, all_filters, all_sorts, feeds):
-        self.tpw, self.tpr = Pipe() # To-Process-Write To-Process-Read
-        self.fpw, self.fpr = Pipe() # From-Process...
+        self.update = Queue()
+        self.updated = Queue()
 
         pid = os.fork()
         if not pid:
-            self.tpw.close()
-            self.fpr.close()
-
             def send(obj):
-                while 1:
-                    try:
-                        r = self.fpw.send(obj)
-                    except:
-                        continue
-                    break
-                return r
+                return self.updated.put(obj)
 
             while True:
                 while True:
                     try:
-                        self.tpr.poll(None)
-                        r = self.tpr.recv()
+                        r = self.update.get()
                     except:
                         continue
                     break
@@ -295,58 +283,32 @@ class ProcessHandler():
 
                 if action > PROC_UPDATE:
                     del feed[:]
-            else:
-                self.tpr.close()
-                self.fpw.close()
 
     def send(self, obj):
-        while 1:
-            try:
-                r = self.tpw.send(obj)
-            except:
-                continue
-            break
-        return r
+        return self.update.put(obj)
 
-    def poll(self, arg=0.0):
-        while 1:
-            try:
-                r = self.fpr.poll(arg)
-            except:
-                continue
-            break
-        return r
-
-    def recv(self):
-        while 1:
-            try:
-                r = self.fpr.recv()
-            except:
-                continue
-            break
+    def recv(self, block=True, timeout=None):
+        r = None
+        try:
+            r = self.updated.get(block, timeout)
+        except:
+            pass
         return r
 
     def send_and_wait(self, symbol):
         self.send((symbol, ))
-        while 1:
-            try:
-                while self.fpr.poll(None):
-                    got = self.fpr.recv()
-                    if got == (symbol, ):
-                        return
-            except:
-                pass
+        while True:
+            got = self.recv()
+            if got == (symbol, ):
+                return
 
     def kill_process(self):
         self.send_and_wait(PROC_KILL)
 
     def flush(self):
-        self.defer = []
-        self.qd = 0
         self.send_and_wait(PROC_FLUSH)
 
     def sync(self):
         for f in self.cfg.feeds:
-            self.tpw.send((PROC_SYNC, f.URL, f[:]))
-            self.fpr.poll(None)
-            self.fpr.recv()
+            self.send((PROC_SYNC, f.URL, f[:]))
+            self.recv()
