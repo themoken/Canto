@@ -242,16 +242,8 @@ class Main():
         # half of the work, to actually filter and sort the items.
 
         self.ph.start_process(self.cfg)
+        self.update(1, self.cfg.feeds, PROC_FILTER)
 
-        for f in self.cfg.feeds:
-            self.ph.send((PROC_FILTER, f.URL, f[:],
-                    self.cfg.all_filters.index(self.cfg.filters.cur()),
-                    [(t.tag,\
-                      self.cfg.all_filters.index(t.filters.cur()),\
-                      self.cfg.all_sorts.index(t.sorts.cur()))\
-                      for t in self.cfg.tags.cur()],\
-                      True))
-            
         # At this point we know that we're going to actually launch
         # the client, so we fire up ncurses and add the screen
         # information to our Cfg().
@@ -523,18 +515,23 @@ class Main():
         signal.alarm(1)
 
     # Update is where the work is queued up for the work thread.
-    def update(self, refilter = 0, iter = None):
+    def update(self, refilter = 0, iter = None, action=PROC_BOTH):
 
-        # Default to updating all feeds
+        # Default to updating all feeds that match the gui's current tags
         if iter == None:
-            iter = self.cfg.feeds
+            iter = []
+            for f in self.cfg.feeds:
+                for t in self.gui.tags:
+                    if t.tag in f.tags:
+                        iter.append(f)
+                        break
 
         for f in iter:
 
             # If we're not refiltering, compare against the current state of the
             # feed, otherwise we count on the tags being empty.
             self.ph.send(
-                    (PROC_BOTH, f.URL, f[:],\
+                    (action, f.URL, f[:],\
                     self.cfg.all_filters.index(self.cfg.filters.cur()),
                     [(t.tag,\
                       self.cfg.all_filters.index(t.filters.cur()),\
