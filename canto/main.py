@@ -114,7 +114,6 @@ class Main():
 
         # Import flags harness the same functions as their config
         # based counterparts, source_opml and source_url.
-        # XXX THIS SHIT IS BROKEN
 
         if flags & IN_OPML:
             self.cfg.locals['source_opml'](opml_file, append=True)
