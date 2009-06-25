@@ -463,7 +463,7 @@ class Gui(BaseGui) :
             return
 
         idx = self.tags.index(self.sel["tag"])
-        idx = max(min(len(self.tags), idx + num), 0)
+        idx = max(min(len(self.tags) - 1, idx + num), 0)
         target = self.tags[idx]
         for item in self.map:
             if item["tag"] == target:
