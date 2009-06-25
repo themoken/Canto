@@ -14,6 +14,9 @@ import types
 all_sorts = []
 
 class Sort:
+    def __init__(self):
+        self.precache = []
+
     def __str__(self):
         return "Unnamed Sort."
 
@@ -27,6 +30,7 @@ def sort_dec(c, s):
     class sdec():
         def __init__(self, instance, log):
             self.instance = instance
+            self.precache = self.instance.precache
             self.log = log
 
         def __eq__(self, other):

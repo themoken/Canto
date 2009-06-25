@@ -35,6 +35,7 @@ import os
 
 class Cfg:
     def __init__(self, conf, log_file, feed_dir, script_dir):
+        self.precache = []
         self.locals = {}
         self.wait_for_pid = 0
         self.log_file = log_file
@@ -150,6 +151,15 @@ class Cfg:
     def validate(self):
         for h in handlers:
             h.validate(self)
+
+        for l in [self.all_sorts, self.all_filters]:
+            for e in l:
+                if not e:
+                    continue
+                for pc in e.precache:
+                    if pc not in self.precache:
+                        self.precache.append(pc)
+        self.log("Precaching: %s" % self.precache)
 
 def get_cfg(conf, log_file, feed_dir, script_dir):
     c = Cfg(conf, log_file, feed_dir, script_dir)

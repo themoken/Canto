@@ -8,11 +8,15 @@
 #   published by the Free Software Foundation.
 
 from canto.utility import Cycle
+import traceback
 import types
 
 all_filters = []
 
 class Filter:
+    def __init__(self):
+        self.precache = []
+
     def __str__(self):
         return "Unnamed Filter."
 
@@ -26,6 +30,7 @@ def filter_dec(c, f):
     class fdec():
         def __init__(self, instance, log):
             self.instance = instance
+            self.precache = self.instance.precache
             self.log = log
 
         def __eq__(self, other):

@@ -108,6 +108,7 @@ class show_marked(Filter):
 
 class only_with(Filter):
     def __init__(self, keyword, **kwargs):
+        self.precache = []
         self.keyword = keyword
         if "regex" in kwargs and kwargs["regex"]:
             self.match = re.compile(keyword)
@@ -134,6 +135,8 @@ class only_without(only_with):
 class with_tag_in(Filter):
     def __init__(self, *tags):
         self.tags = set(tags)
+        self.precache = []
+
     def __str__(self):
         return "With Tags: %s" % '/'.join(self.tags)
 
@@ -149,6 +152,15 @@ class all_of(Filter):
     def __init__(self, *filters):
         # XXX deferred validation
         self.filters = filters
+
+        self.precache = []
+        for f in filters:
+            if not f:
+                continue
+            for pc in f.precache:
+                if pc not in self.precache:
+                    self.precache.append(pc)
+
     def __str__(self):
         return ' & '.join(["(%s)" % f for f in self.filters])
 
@@ -259,6 +271,9 @@ def clear_xterm_title(*args):
 # SORTS
 
 class by_date(Sort):
+    def __init__(self):
+        self.precache = ["updated_parsed"]
+
     def __str__(self):
         return "By Date"
 
@@ -319,6 +334,7 @@ class reverse_sort(Sort):
     def __init__(self, other_sort):
         # XXX deferred validation
         self.other_sort = other_sort
+        self.precache = other_sort.precache
 
     def __str__(self):
         return "Reversed %s" % self.other_sort

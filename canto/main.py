@@ -241,8 +241,17 @@ class Main():
         # require all tags to be populated, we queue up the latter 
         # half of the work, to actually filter and sort the items.
 
+        # The reason we clear the feeds first is that only after validation do
+        # we know what keys are going to have to be precached, and canto tries
+        # hard to conserve items (see feed.merge), so we need to replace all of
+        # them with corrected, fresh items from the process that knows about the
+        # precache
+
+        for f in self.cfg.feeds:
+            del f[:]
+
         self.ph.start_process(self.cfg)
-        self.update(1, self.cfg.feeds, PROC_FILTER)
+        self.update(1, self.cfg.feeds, PROC_BOTH)
 
         # At this point we know that we're going to actually launch
         # the client, so we fire up ncurses and add the screen

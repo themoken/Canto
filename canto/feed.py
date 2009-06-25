@@ -115,6 +115,12 @@ class Feed(list):
             nentry["canto_state"] = entry["canto_state"]
             nentry["title"] = entry["title"]
 
+            for pc in self.cfg.precache:
+                if pc in entry:
+                    nentry[pc] = entry[pc]
+                else:
+                    nentry[pc] = None
+
             if "link" in entry:
                 nentry["link"] = entry["link"]
             elif "href" in entry:
