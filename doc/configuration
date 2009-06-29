@@ -1,12 +1,12 @@
-Basic configuration of Canto.
 
 [TOC]
 
-# Basic configuration
+# Configuration
 
-This is the section covering the most basic features of Canto. These are the
-features that you expect of any feed reader and provide little true
-customization.
+This is the section covering most features of Canto and how to use them. This
+only covers the basics and how to use pre-written goodies (filters, sorts,
+etc.) from `canto.extra`. Actually writing custom content is covered
+elsewhere.
 
 ## Adding feeds
 
@@ -32,6 +32,8 @@ line will update a feed every 30 minutes and keep up to a 100 items.
 > in the feed. In fact, by default `keep = 0`. This behavior differs from 
 > 0.6.x.
 
+> The default `rate` is 5 for fetching from the server every five minutes.
+
 ### Password protected feeds
 
 If the feed is behind browser authentication (i.e. when you try to reach it in a
@@ -46,6 +48,294 @@ definition too.
 > read your password even if they can read your home directory. However, 
 > Canto will not enforce these permissions as some other programs.
 
-There are a few other options for `add`, but these are more logically covered elsewhere.
+There are a few other options for `add`, but these are more logically covered
+elsewhere.
+
+### "Sourcing" other files
+
+Canto supports adding feeds from other file formats. This can be useful when
+trying to keep URLs synced between readers. Canto can source OPML files at
+runtime simply by giving a path to the OPML file.
+
+    :::python
+    source_opml("/home/myuser/feeds.opml")
+
+Canto can also source plain lists of URLs, delimited by newlines.
+
+    :::python
+    source_urls("/home/myuser/urls")
+
+Feeds that are sourced are added with the equivalent of a basic `add` call
+with a URL. If you want to add other attributes to feeds that have been added
+this way, then you can use `change_feed` that takes the same arguments as 
+`add` does.
+
+### Tweaking defaults
+
+Sometimes you want to change the `rate` and `keep` for a lot of feeds at once.
+Using `default_rate` and `default_keep` you can set those parameters for 
+**every feed following the call**. Because it's every feed added after the
+call, it can be used to set it for batches of feeds, rather than all feeds.
+If you want the all feed behavior, set the defaults before you define any
+feeds.
+
+> **NOTE**: To reiterate from above, `rate` is in minutes and `keep` will 
+> ignore any number lower than the number of items in the feed's source.
+
+The following is a good application of using the default calls:
+
+    :::python
+
+    default_rate(30)    # News feeds
+    add("http://news1")
+    add("http://news2")
+    ...
+
+    default_rate(120)   # Slow blog feeds
+    add("http://blog1")
+    add("http://blog2")
+    ...
+
+    default_rate(1)     # Quick feed
+    default_keep(100)   # Lots of items could be missed
+    add("http://quick1")
+    add("http://quick2")
+    ...
+
+Without setting anything, rate is set to five minutes (5) and keep is set to 
+0, which indicates that all the items in the feed source should be kept and no
+more than that.
+
+</div>
+
+## Browsing
+
+<div class="section">
+
+Canto supports using external programs to open any content found in an item.
+Typically, you just want to set a `link_handler` to your favorite browser.
+
+    :::python
+    link_handler("firefox \"%u\"")
+
+This will use firefox as your browser. The `\"%u\"` will be replaced with the
+URL. Users that want to use a text based browser like
+[elinks](http://elink.or.cz), have to tell Canto to relinquish the terminal
+while you use it, like so:
+
+    :::python
+    link_handler("elinks \"%u\"", text=True)
+
+If you find yourself bouncing between the Linux console and an X terminal,
+you can use a bit of logic to automatically set the browser based on the
+`TERM` environmental variable.
+
+    :::python
+    import os
+    if os.getenv("TERM") == "linux":
+        link_handler("elinks \"%u\"", text=True)    # Text-only
+    else:
+        link_handler("firefox \"%u\"")              # X terminal
+
+### Non-HTML content
+
+Links to PDFs and other content you'd rather view in a program other than
+your browser (like enclosures) can be setup by using `link_handler` with an
+extension. For example, to open and .mp3 in a podcast:
+
+    :::python
+    link_handler("mplayer -someoptions \"%u\"", ext="mp3")
+
+Fortunately, mplayer can stream from the web by default. Some applications
+require the content to be fetched before hand. This can be dealt with using
+the `fetch` parameter. For example, to open a .pdf in evince, which doesn't
+support opening from the internet directly:
+
+    :::python
+    link_handler("evince \"%u\"", ext="pdf", fetch=True)
+
+Canto will then fetch the content into `/tmp` and run the associated program.
+
+### Images
+
+Images are handled similarly to links with the `image_handler` call. It takes
+the same arguments as `link_handler`. A good example:
+
+    :::python
+    image_handler("fbv \"%u\"", text=True, fetch=True)
+
+This will use `fbv` to view an image in a text console.
+
+> NOTE: Image links are denoted by the color blue in the reader
+
+</div>
+
+# Using Advanced Features
+
+Canto is extremely powerful due to its internal use of the Python
+interpreter for all of its configuration. The details of writing extension
+content is covered elsewhere, but there is a lot of good stuff included
+with the source.
+
+## Importing canto.extra
+
+<div class="section">
+
+The first step before you use any extra content is to import it. In fact,
+the very first line in any config that has any customization to it at all
+is going to be:
+
+    :::python
+    from canto.extra import *
+
+This will make all of the goodies packaged with Canto available to your
+config.
+
+</div>
+
+## Filters
+
+<div class="section">
+
+The most useful extra feature Canto provides is its powerful filter system.
+`canto.extra` provides a number of filters to use
+
+<table>
+<tr>
+<td><pre>None</pre></td>
+<td>Filter no items.</td>
+</tr>
+<tr>
+<td><pre>show_unread</pre></td>
+<td>Ignore all items that have been marked read</td>
+</tr>
+<tr>
+<td><pre>show_marked</pre></td>
+<td>Ignore all items that are unmarked</td>
+</tr>
+<tr>
+<td><pre>only_with("string")</pre></td>
+<td>Show only items that have "string" in the title</td>
+</tr>
+<tr>
+<td><pre>only_without("string")</pre></td>
+<td>Show only items that **don't** have "string" in the title</td>
+</tr>
+<tr>
+<td><pre>all_of(filter1, filter2, ...)</pre></td>
+<td>Show only items that pass all listed filters (binary and)</td>
+</tr>
+<tr>
+<td><pre>any_of(filter1, filter2, ...)</pre></td>
+<td> Show items that pass any of the listed filters (binary or).</td>
+</tr>
+</table>
+
+There's also `with_tag_in`, which is covered in the tag section, specifically.
+
+There are three ways to apply filters.
+
+- **Global filters**. These apply regardless. Any items that you see in the
+interface had to pass this filter. These are useful for filters based on state
+like `show_unread`.
+
+- **Tag filters**. These filters only apply to specific tags (covered in the 
+tag section).
+
+- **Feed filters**. These are filters applied when loading content from disk.
+Items that don't pass this filter will never appear in the interface. These
+are useful when you want to ignore a whole set of items entirely. Like news
+posts in webcomic feeds.
+
+### Using Global Filters
+
+Global filters are arguably the most useful, and invariably the first use
+that users think for it is filtering out items that they've read.
+Accomplishing that is simple:
+
+    :::python
+    filters=[show_unread]
+
+That will filter all read items out by default when you open Canto. If you
+still want to have access to all items, you can add the `None` filter to the
+list:
+
+    :::python
+    filters=[show_unread, None]
+
+Then you can switch between `show_unread` and `None` using `[` and `]` to
+cycle through the list.
+
+If you're more comfortable using a keybind to choose your global filters,
+then you can use `set_filter`. This allows you to set the global filter
+regardless of whether it's in the `filters` list:
+
+    :::python
+    keys['1'] = set_filter(show_unread)
+    keys['2'] = set_filter(show_marked)
+    keys['3'] = set_filter(None)
+
+This lets you use the 1, 2, and 3 keys to set your filters directly, without
+needing to cycle through the list.
+
+### Using Feed Filters
+
+Most of the time, feed filters are only useful if you want to completely
+ignore some easily filtered content in a feed. My favorite example is
+ignoring all non-comic items in a webcomic feed. Take
+[penny-arcade](http://penny-arcade.com)'s feed for example. Each item's
+title is clearly marked with "Comic:" or "News:".
+
+If I wanted just completely ignore non-comic items, I could modify the `add`
+call for Penny Arcade to use the `only_with` filter:
+
+    :::python
+    add("http://feeds.penny-arcade.com/pa-mainsite", filter=only_with("Comic:"))
+
+That will eliminate all items that don't have "Comic:" in the title. Other
+examples would be watching distro package feeds for only a certain type
+of package (i.e. Gentoo, `only_with("sys-devel")`), or filtering porn torrents
+out of torrent site feeds (`only_without("XXX")`, provided they're clearly
+marked).
+
+</div>
+
+## Tags (WIP)
+
+<div class="section">
+
+The most basic building block of Canto is the "tag".
+
+> TAG: The internal representation of a group of items. Represented by a box
+> in the interface.
+
+By default, canto automatically defines one tag per feed, and that tag has
+the same title as the feed specifies in its source. Tags **are not 
+necessarily** feeds though and can be combinations of feeds as well.
+
+### Manipulating default tags
+
+As mentioned above, by default there is one tag per feed using the feed's
+self-specified title. You can change the name of this tag by overriding the
+first tag in the `add` call. So, if you wanted to change the title of a feed
+from "reddit.com: what's new online!" to "Reddit", you could change the `add`
+call like this:
+
+    :::python
+    add("http://reddit.com/.rss", tags=["Reddit"])
+
+And the default interface would show "Reddit" instead of the overly long
+built-in title.
+
+### Tag collisions
+
+Sometimes, when you have feeds generated by a generator or multiple URLs for
+one feed, default tags can be identical. In this case, the tag of the second
+definition is changed to "Colliding Tag (2)". This behavior scales up to
+however many colliding tags there are.
+
+### Adding tags
+
+You can add arbitrary string tags to feeds
 
 </div>
