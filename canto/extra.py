@@ -141,7 +141,8 @@ class with_tag_in(Filter):
         return "With Tags: %s" % '/'.join(self.tags)
 
     def __call__(self, tag, item):
-        tags=set(item.feed.tags)
+        feed = [f for f in tag.cfg.feeds if f.path == item.ufp_path][0]
+        tags=set(feed.tags)
         return bool(self.tags.intersection(tags))
 
 # Display when all filters match
