@@ -8,6 +8,11 @@
 #include <Python.h>
 #include <py_curses.h>
 
+#define IGNORE_COLOR 1
+#define IGNORE_STYLE 2
+
+static int ignore = 0;
+
 char *lstrip(char *s)
 {
     int i = 0;
@@ -69,6 +74,37 @@ static void style_box(WINDOW *win, char code)
     static int colors[COLOR_MEMORY] = {0};
     static int color_idx = 0;
     static char attrs[6] = {0,0,0,0,0,0};
+
+    /* >=2 == even ignore color */
+
+    if (!(ignore & IGNORE_COLOR)) {
+
+        if (code == '0') {
+            if ((color_idx != COLOR_MEMORY - 1)||(!colors[color_idx]))
+                color_idx = (color_idx > 1) ? color_idx - 1: 1;
+            colors[color_idx] = 0;
+            wattron(win, COLOR_PAIR(colors[color_idx - 1]));
+        }
+        else if ((code >= '1') && (code <= '8')) {
+            if (color_idx == COLOR_MEMORY - 1) {
+                if (colors[color_idx]) {
+                    int i = 0;
+                    for (i = 0; i < color_idx; i++)
+                        colors[i] = colors[i + 1];
+                }
+                colors[color_idx] = code - '0';
+                wattron(win, COLOR_PAIR(colors[color_idx]));
+            }
+            else {
+                colors[color_idx] = code - '0';
+                wattron(win, COLOR_PAIR(colors[color_idx]));
+                color_idx++;
+            }
+        }
+    }
+
+    if (ignore & IGNORE_STYLE)
+        return;
 
     if (code == 'B') {
         attrs[0]++;
@@ -147,28 +183,6 @@ static void style_box(WINDOW *win, char code)
             attrs[j] = 0;
         if (win)
             wattrset(win, 0);
-    }
-    else if (code == '0') {
-        if ((color_idx != COLOR_MEMORY - 1)||(!colors[color_idx]))
-            color_idx = (color_idx > 1) ? color_idx - 1: 1;
-        colors[color_idx] = 0;
-        wattron(win, COLOR_PAIR(colors[color_idx - 1]));
-    }
-    else if ((code >= '1') && (code <= '8')) {
-        if (color_idx == COLOR_MEMORY - 1) {
-            if (colors[color_idx]) {
-                int i = 0;
-                for (i = 0; i < color_idx; i++)
-                    colors[i] = colors[i + 1];
-            }
-            colors[color_idx] = code - '0';
-            wattron(win, COLOR_PAIR(colors[color_idx]));
-        } 
-        else {
-            colors[color_idx] = code - '0';
-            wattron(win, COLOR_PAIR(colors[color_idx]));
-            color_idx++;
-        }
     }
 }
 
@@ -285,9 +299,37 @@ static PyObject * mvw(PyObject *self, PyObject *args)
     }
 }
 
+static PyObject *disable_color(PyObject *self, PyObject *args)
+{
+    ignore |= IGNORE_COLOR;
+    return Py_None;
+}
+
+static PyObject *enable_color(PyObject *self, PyObject *args)
+{
+    ignore &= ~IGNORE_COLOR;
+    return Py_None;
+}
+
+static PyObject *disable_style(PyObject *self, PyObject *args)
+{
+    ignore |= IGNORE_STYLE;
+    return Py_None;
+}
+
+static PyObject *enable_style(PyObject *self, PyObject *args)
+{
+    ignore &= ~IGNORE_COLOR;
+    return Py_None;
+}
+
 
 static PyMethodDef MvWMethods[] = {
     {"core", mvw, METH_VARARGS, "Wide char print."},
+    {"disable_color", disable_color, METH_VARARGS, "Disable color codes."},
+    {"enable_color", enable_color, METH_VARARGS, "Enable color codes."},
+    {"disable_style", disable_style, METH_VARARGS, "Disable style codes."},
+    {"enable_style", enable_style, METH_VARARGS, "Enable style codes."},
     {"tlen", tlen, METH_VARARGS, "Len ignoring theme escapes, and accounting for Unicode character width."},
     {NULL, NULL, 0, NULL}
 };

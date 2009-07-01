@@ -8,6 +8,8 @@
 #   published by the Free Software Foundation.
 
 from canto.interface_draw import BaseRenderer, Renderer
+from canto.widecurse import enable_color, enable_style,\
+        disable_color, disable_style
 
 MAX_COLORS = 255
 INVALID_COLOR = -2
@@ -52,6 +54,10 @@ def register(c):
     c.locals.update({
         "colors" : c.colors,
         "renderer" : Renderer,
+        "disable_style" : disable_style,
+        "disable_color" : disable_color,
+        "enable_style" : enable_style,
+        "enable_color" : enable_color,
         "default_renderer" : set_default_renderer,
         "get_default_renderer" : get_default_renderer})
 
