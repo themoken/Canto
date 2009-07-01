@@ -468,6 +468,8 @@ class Main():
         self.ph.kill_process()
         self.ph.update.close()
         self.ph.updated.close()
+        self.ph.update.jointhread()
+        self.ph.updated.jointhread()
         sys.exit(0)
 
     # For the most part, it's smart to avoid doing anything but set a flag in an
