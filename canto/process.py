@@ -186,6 +186,8 @@ class ProcessHandler():
                     # Make sure we leave the on-disk presence constant
                     send((action, ))
                     if action == PROC_KILL:
+                        self.update.close()
+                        self.updated.close()
                         sys.exit(0)
                     continue
                 if action == PROC_SYNC:
