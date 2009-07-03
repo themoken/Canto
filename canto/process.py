@@ -306,6 +306,10 @@ class ProcessHandler():
 
     def kill_process(self):
         self.send_and_wait(PROC_KILL)
+        self.update.close()
+        self.updated.close()
+        self.update.jointhread()
+        self.updated.jointhread()
 
     def flush(self):
         self.send_and_wait(PROC_FLUSH)
