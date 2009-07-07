@@ -453,5 +453,75 @@ This keybind will set the current tag's filter to `show_unread`.
 disappear since there would be no easy way to change the tag filter back to one
 with items in it.
 
+### Sorts
+
+Another benefit of making explicit tags is using sorts. `canto.extra` defines
+some default sorts to use.
+
+<table>
+<tr>
+<td><pre>None</pre></td>
+<td>Use the ordering specified in the feed.</td>
+</tr>
+<tr>
+<td><pre>by_date</pre></td>
+<td>Order by the time the items are parsed.</td>
+</tr>
+<tr>
+<td><pre>by_len</pre></td>
+<td>Order by length of title.</td>
+</tr>
+<tr>
+<td><pre>by_content</pre></td>
+<td>Order by length of content.</td>
+</tr>
+<tr>
+<td><pre>by_alpha</pre></td>
+<td>Sort alphabetically.</td>
+</tr>
+<tr>
+<td><pre>by_unread</pre></td>
+<td>Order by read status.</td>
+</tr>
+<tr>
+<td><pre>reverse_sort(sort)</pre></td>
+<td>Reverse the given sort.</td>
+</tr>
+</table>
+
+> **NOTE**: Sorts based on strings are done on unparsed strings. This means that
+the strings could still have HTML built into them and untranslated entities.
+This effects the sort because the length or the first character may not be
+what's displayed. A title "&lt;strong&gt;Zoo&lt;/strong&gt;" will sort 
+alphabetically before "Aardvark Sighting" because "<" is before "A", despite
+the fact that the HTML will not be displayed.
+
+> This was done to speed sorts so that interpretable HTML wouldn't have to be
+stripped before and replaced after the sorting it done.
+
+The simplest way to use a sort is when you define a tag
+
+    :::python
+    add_tag("Tag", sorts=[by_unread])
+
+Which will sort the given tag with unread stories first.
+
+Similarly to filters and sorts you can set defaults and use keybinds to set
+sorts.
+
+    :::python
+    default_tag_sorts([show_unread])
+    keys['s'] = set_tag_sort(show_unread)
+
+And, once again, like `default_tag_filters`, explicit tags inherit the tag
+filters from the previous call to default_tag_sorts, while implicit tags
+inherit the sorts from the final call to default_tag_sorts.
+
+Sorts like `by_date` are most useful when combining two feeds into a single tag
+
+    :::python
+    add("http://news1", tags=["News"])
+    add("http://news2", tags=["News"])
+    add_tag("News", sorts=[by_date])
 
 </div>
