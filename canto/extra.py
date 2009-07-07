@@ -149,7 +149,7 @@ class with_tag_in(Filter):
 #
 # Usage : filters=[all_of(with_tag_in('news'), show_unread)]
 
-class all_of(Filter):
+class aggregate_filter(Filter):
     def __init__(self, *filters):
         # XXX deferred validation
         self.filters = filters
@@ -162,11 +162,19 @@ class all_of(Filter):
                 if pc not in self.precache:
                     self.precache.append(pc)
 
+class all_of(aggregate_filter):
     def __str__(self):
         return ' & '.join(["(%s)" % f for f in self.filters])
 
     def __call__(self, tag, item):
         return all([f(tag, item) for f in self.filters])
+
+class any_of(aggregate_filter):
+    def __str__(self):
+        return ' | '.join(["(%s)" % f for f in self.filters])
+
+    def __call__(self, tag, item):
+        return any([f(tag, item) for f in self.filters])
 
 def register_filter(filt):
     if filt not in all_filters:
