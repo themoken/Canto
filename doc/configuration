@@ -406,8 +406,52 @@ globally.
 
 Let's return to the webcomic example from the [feed filter](#using-feed-filters)
 section. In that example, we wanted to entirely discard posts that were news
-and only see comics.
+and only see comics. Using a tag filter, however, it's possible to keep all
+items, but merely hide (rather than entirely discard) the other stories. This is
+useful if you want to prioritize one set of stories over another. In this case,
+we want to prioritize the comics, but make the news items available on request.
 
-...
-   
+    :::python
+    add("http://feeds.penny-arcade.com/pa-mainsite")    # Implicitly creates "Penny Arcade" tag
+    add_tag("Penny Arcade", filters=[only_with("Comic:"), only_with("News:")])
+
+This example makes the "Penny Arcade" tag explicit and sets up two tag filters.
+Now when you've selected the Penny Arcade feed, you can use { and } to switch
+between the tag filters and show comics or news. Alternatively, a similar effect
+could be achieved by using `only_without("Comic:")` as the second filter, which
+would allow all items not shown in the first filter, not necessarily just items
+with "News:" in them.
+
+Using these tag filters, you can essentially turn one tag or feed into multiple
+overlapping tags and cycle through them.
+
+> **NOTE**: Tag filters are always overridden by global filters. If your global
+filter is `show_unread`, even if your tag filter is `None`, you won't see any
+read items.
+
+Like global filters, tag filters can be set by default.
+
+    :::python
+    default_tag_filters([show_unread])
+
+Similar to `default_rate` and `default_keep`, these defaults are applied as
+**explicit** tags are created. Any tags created with `add_tag` will inherit the
+default tag filters from the call immediately before
+the `add_tag` (or `[None]` if it hasn't been called at all). Implicit tags
+(i.e. not created with `add_tag`) are made explicit after the rest of the
+configuration is done, so they will inherit the defaults from the last call to
+`default_tag_filters` made in the config.
+
+Also like global filters, tag filters can be set directly via keybind
+
+    :::python
+    keys['u'] = set_tag_filter(show_unread)
+
+This keybind will set the current tag's filter to `show_unread`.
+
+> **NOTE** : Unlike global filters, tag filters will *never* make a tag fully
+disappear since there would be no easy way to change the tag filter back to one
+with items in it.
+
+
 </div>
