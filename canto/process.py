@@ -188,6 +188,8 @@ class ProcessHandler():
                     if action == PROC_KILL:
                         self.update.close()
                         self.updated.close()
+                        self.update.jointhread()
+                        self.updated.jointhread()
                         sys.exit(0)
                     continue
                 if action == PROC_SYNC:
