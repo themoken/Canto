@@ -8,6 +8,10 @@ only covers the basics and how to use pre-written goodies (filters, sorts,
 etc.) from `canto.extra`. Actually writing custom content is covered
 elsewhere.
 
+### Test
+
+Blah
+
 ## Adding feeds
 
 <div class="section">
@@ -193,6 +197,395 @@ config.
 
 </div>
 
+## Keybinds
+
+<div class="section">
+
+### Specifying keys
+
+The first step to define your own keybinds is to learn how to specify which key
+you're binding to. Typically, it's very simple.
+
+    :::python
+    keys['a'] = ...
+    reader_keys['a'] = ...
+
+Any visible non-newline character can be used directly. Whitespace characters
+(including newline) can be embedded with their typical escape (i.e. \t for tab,
+\n for newline, etc.).
+
+    :::python
+    keys['\n'] = ...    # Enter
+    keys['\t'] = ...    # Tab
+    keys[' '] = ...     # Space
+    keys['  '] = ...    # Tab
+
+Any invisible characters, like function keys, arrow keys, etc. can be used by
+their ncurses name. On the man page for `getch()`, they list all the possible
+names. Here's an [online copy](http://www.mkssoftware.com/docs/man3/curs_getch.3.asp).
+Typically definitions using these keys look like this:
+
+    :::python
+    keys['KEY_F1'] = ...
+    keys['KEY_LEFT'] = ...
+
+To specify Control or Alt key combinations, you can use "C-" for control and
+"M-" (meta) for Alt.
+
+    :::python
+    keys['C-a'] = ...   # Ctrl+A
+    keys['M-a'] = ...   # Alt+A
+    keys['C-M-a'] = ... # Ctrl+Alt+A
+
+### Default binds
+
+These bindings are keybinds that are typically made available to the user. These
+will be used in the examples following.
+
+#### Main view
+
+<table>
+<tr>
+<td>Name</td>
+<td>Function</td>
+<td>Default Binding</td>
+</tr>
+<tr>
+<td><pre>help</pre></td>
+<td>Shows the man page (has all of these bindings listed).</td>
+<td><pre>h</pre></td>
+</tr>
+<tr>
+<td><pre>next_item</pre></td>
+<td>Move to the next item.</td>
+<td><pre>KEY_DOWN / j</pre></td>
+</tr>
+<tr>
+<td><pre>prev_item</pre></td>
+<td>Move to the previous item.</td>
+<td><pre>KEY_UP / k</pre></td>
+</tr>
+<tr>
+<td><pre>next_tag</pre></td>
+<td>Move to the next feed/group of items</td>
+<td><pre>KEY_NPAGE</pre></td>
+</tr>
+<tr>
+<td><pre>prev_tag</pre></td>
+<td>Move to the previous feed/group of items.</td>
+<td><pre>KEY_PPAGE</pre></td>
+</tr>
+<tr>
+<td><pre>just_read</pre></td>
+<td>Mark current story read and nothing else.</td>
+<td><pre>KEY_RIGHT</pre></td>
+</tr>
+<tr>
+<td><pre>just_unread</pre></td>
+<td>Mark current story unread and nothing else.</td>
+<td><pre>KEY_LEFT</pre></td>
+</tr>
+<tr>
+<td><pre>goto</pre></td>
+<td>Open the current story in your browser.</td>
+<td><pre>g</pre></td>
+</tr>
+<tr>
+<td><pre>inline_search</pre></td>
+<td>Mark all stories matching a search.</td>
+<td><pre>f</pre></td>
+</tr>
+<tr>
+<td><pre>next_mark</pre></td>
+<td>Go to the next marked story.</td>
+<td><pre>n</pre></td>
+</tr>
+<tr>
+<td><pre>prev_mark</pre></td>
+<td>Go to the previous marked story.</td>
+<td><pre>p</pre></td>
+</tr>
+<tr>
+<td><pre>next_unread</pre></td>
+<td>Go to the next unread story.</td>
+<td><pre>.</pre></td>
+</tr>
+<tr>
+<td><pre>prev_unread</pre></td>
+<td>Go to the previous unread story.</td>
+<td><pre>,</pre></td>
+</tr>
+<tr>
+<td><pre>reader</pre></td>
+<td>Open the reader.</td>
+<td><pre>Space</pre></td>
+</tr>
+<tr>
+<td><pre>toggle_collapse_tag</pre></td>
+<td>Collapse/Show a feed/group of items.</td>
+<td><pre>c</pre></td>
+</tr>
+<tr>
+<td><pre>set_collapse_all</pre></td>
+<td>Collapse on all feeds/groups.</td>
+<td><pre>C</pre></td>
+</tr>
+<tr>
+<td><pre>unset_collapse_all</pre></td>
+<td>Uncollapse all feeds/groups.</td>
+<td><pre>V</pre></td>
+</tr>
+<tr>
+<td><pre>toggle_mark</pre></td>
+<td>Mark/unmark an item.</td>
+<td><pre>m</pre></td>
+</tr>
+<tr>
+<td><pre>all_unmarked</pre></td>
+<td>Unmark all items</td>
+<td><pre>M</pre></td>
+</tr>
+<tr>
+<td><pre>tag_read</pre></td>
+<td>Set all stories in a feed/group read.</td>
+<td><pre>r</pre></td>
+</tr>
+<tr>
+<td><pre>all_read</pre></td>
+<td>Set all stories read.</td>
+<td><pre>R</pre></td>
+</tr>
+<tr>
+<td><pre>tag_unread</pre></td>
+<td>Set all stories in a feed/group unread.</td>
+<td><pre>u</pre></td>
+</tr>
+<tr>
+<td><pre>all_unread</pre></td>
+<td>Set all stories unread.</td>
+<td><pre>U</pre></td>
+</tr>
+<tr>
+<td><pre>force_update</pre></td>
+<td>Reread stories from disk.</td>
+<td><pre>C-r</pre></td>
+</tr>
+<tr>
+<td><pre>refresh</pre></td>
+<td>Redraw the screen.</td>
+<td><pre>C-l</pre></td>
+</tr>
+<tr>
+<td><pre>quit</pre></td>
+<td>Quit Canto.</td>
+<td><pre>q</pre></td>
+</tr>
+<tr>
+<td><pre>next_filter</pre></td>
+<td>Apply next global filter.</td>
+<td><pre>]</pre></td>
+</tr>
+<tr>
+<td><pre>prev_filter</pre></td>
+<td>Apply previous global filter</td>
+<td><pre>]</pre></td>
+</tr>
+<tr>
+<td><pre>next_tag_filter</pre></td>
+<td>Apply next tag filter (from filters)</td>
+<td><pre>}</pre></td>
+</tr>
+<tr>
+<td><pre>prev_tag_filter</pre></td>
+<td>Apply previous feed filter</td>
+<td><pre>{</pre></td>
+</tr>
+<tr>
+<td><pre>prev_tagset</pre></td>
+<td>Show previous set of tags</td>
+<td><pre>&lt;</pre></td>
+</tr>
+<tr>
+<td><pre>next_tagset</pre></td>
+<td>Show next set of tags</td>
+<td><pre>&gt;</pre></td>
+<tr>
+<td><pre>goto_reltag</pre></td>
+<td>Goto the <code>nth</code> visible tag (filter aware)</td>
+<td><pre>;</pre></td>
+</tr>
+<tr>
+<td><pre>goto_tag</pre></td>
+<td>Goto the <code>nth</code> tag (filter unaware)</td>
+<td><pre>:</pre></td>
+</tr>
+</table>
+
+#### Reader view
+
+<table>
+<tr>
+<td>Name</td>
+<td>Function</td>
+<td>Default Binding</td>
+</tr>
+<tr>
+<td><pre>scroll_down</pre></td>
+<td>Scrolls, if there's more text.</td>
+<td><pre>KEY_DOWN / j</pre></td>
+</tr>
+<tr>
+<td><pre>scroll_up</pre></td>
+<td>Scroll up, if not at the top.</td>
+<td><pre>KEY_UP / k</pre></td>
+</tr>
+<tr>
+<td><pre>page_down</pre></td>
+<td>Page down.</td>
+<td><pre>KEY_NPAGE</pre></td>
+</tr>
+<tr>
+<td><pre>page_up</pre></td>
+<td>Page Up.</td>
+<td><pre>KEY_PPAGE</pre></td>
+</tr>
+<tr>
+<td><pre>["destroy","next_item","reader"]</pre></td>
+<td>Goto the next story without closing the reader.</td>
+<td><pre>n</pre></td>
+</tr>
+<tr>
+<td><pre>["destroy","prev_item","reader"]</pre></td>
+<td>Goto the previous story without closing the reader.</td>
+<td><pre>p</pre></td>
+</tr>
+<tr>
+<td><pre>goto</pre></td>
+<td>Go to a specific link listed inside the item text.</td>
+<td><pre>g</pre></td>
+</tr>
+<tr>
+<td><pre>toggle_show_links</pre></td>
+<td>Show/hide the list of links at the bottom of the reader.</td>
+<td><pre>l</pre></td>
+</tr>
+<tr>
+<td><pre>quit</pre></td>
+<td>Quit</td>
+<td><pre>space</pre></td>
+</tr>
+</table>
+
+### Using default binds
+
+Setting a new key for pre-existing functionality is easily done using strings.
+As you can see in the above table, the bind "help" brings up the help page. To
+rebind this to F1 (a typical DOS binding), you could just do
+
+    :::python
+    keys["KEY_F1"] = "help"
+
+You can also override existing keys as you would expect
+
+    :::python
+    keys[' '] = "next_item" # Overrides the default "reader" command
+
+And you can unset a key all together
+
+    :::python
+    keys['q'] = None    # Unsets 'q'
+
+### Macros
+
+Canto allows you to queue up more than one action with a keybind. A simple list
+can get the job done. For example, to create a keybind that will set an item as
+read and move to the next item (rather than using the right arrow followed by
+the down arrow) we could set a macro like this
+
+    :::python
+    keys['j'] = ["just_read", "next_item"]
+
+"just_read" sets the item as read and "next_item" moves to the next item.
+
+More complicated macros can cover both main view and reader view keybinds. Take
+for example the default binding of "n" in reader view.
+
+    :::python
+    reader_keys = [ "destroy", "next_item", "reader" ]
+
+The effect is that you go to the next item without leaving the reader. What's
+really happening is "destroy" kills the reader, "next_item" makes the main
+interface go to the next item, and "reader" makes the main interface open the
+reader again all in one keystroke. 
+
+Another common task is to open the reader and automatically open the link list.
+This also can be achieved with a simple macro
+
+    :::python
+    keys[' '] = ["reader", "toggle_show_links" ]
+
+In this way it's possible to bind anything that's possible with any number of 
+keystrokes to a single keystroke.
+
+### Keybind goodies.
+
+Usually a user only wants to rebind existing functionality to different keys or
+make simple macros to make their lives easier. Canto supports much more powerful
+keybinds though.
+
+Up until now, we've only used strings in the keybinds and macros. These strings
+are shorthand for builtin functionality. However, in place of these strings, you
+can use functions.
+
+Later in the document we'll cover `set_filter`, `set_tag_filter`, and
+`set_tag_sort` which are all defined in `canto.extra`. For now, we'll cover some
+more interesting and useful additions.
+
+#### Searching
+
+You can setup a keybind to search for your favorite terms using the `search`
+keybind, which takes a keyword argument or a regex. This uses the internal
+`inline_search` behavior and marks all items matching the search.
+
+    :::python
+    keys['1'] = search("Linux")
+    keys['2'] = search(".*[Uu]buntu.*", regex=True)
+
+You can also use `search_filter` which will prompt you interactively for a
+keyword (or a regex if you prefix the string with "rgx:") and filter out all
+unmatching items.
+
+    :::python
+    keys['/'] = search_filter
+
+Once again, note that `search_filter` is **not** in quotes, it is not a string
+because it's not a builtin keybind. `search_filter` is defined in `canto.extra`
+and therefore is used as a function.
+
+#### Copying (Yanking)
+
+A neat function for putting a link on the X clipboard (for use in pasting into a
+chat, a browser, etc.) can be used
+
+    :::python
+    keys['y'] = yank
+
+> **NOTE**: Yank requires `xclip` to be installed an visible in your `PATH`. On
+Debian based distros it's the `xclip` package, but on some it might be included
+with a generic X11 application meta-package. If in doubt, do `which xclip` from
+your shell.
+
+#### Saving
+
+The last neat little utility is `save` which writes a file (~/canto_out) with a
+title and a link when called. This is designed as a template example for writing
+a keybind, rather than a fully functional bind but it can be useful.
+
+    :::python
+    keys['s'] = save
+
+</div>
+
 ## Filters
 
 <div class="section">
@@ -300,7 +693,7 @@ marked).
 
 </div>
 
-## Tags (WIP)
+## Tags
 
 <div class="section">
 
@@ -499,6 +892,15 @@ the fact that the HTML will not be displayed.
 > This was done to speed sorts so that interpretable HTML wouldn't have to be
 stripped before and replaced after the sorting it done.
 
+> **ALSO NOTE**: Sorts can possibly make Canto's memory footprint increase
+marginally if they require access to data that isn't usually kept in memory.
+Sorts that function on the title (`by_length`, `by_alpha`, etc.) have no effect
+because the title is *always* in memory. Sorts like `by_date` require a date
+field to be kept in memory so it adds a couple of bytes per story.
+
+> This was also a speed tweak to avoid stories hitting the disk every time it's
+sorted which makes the program grind to a halt.
+
 The simplest way to use a sort is when you define a tag
 
     :::python
@@ -523,5 +925,95 @@ Sorts like `by_date` are most useful when combining two feeds into a single tag
     add("http://news1", tags=["News"])
     add("http://news2", tags=["News"])
     add_tag("News", sorts=[by_date])
+
+
+### Sort Order
+
+Anywhere that a sort can be used, you can use multiple sorts with the
+`sort_order` function from `canto.extra`. This takes any number of sorts in
+order of priority.
+
+    :::python
+    default_tag_sorts([sort_order(by_unread, by_alpha)])
+
+This snippet will make tags sort by unread status and then items that have the
+same read/unread status will in turn be sorted alphabetically.
+
+</div>
+
+## Hooks
+
+<div class="section">
+
+Canto includes a number of hooks for outside extensibility. These are most
+useful when you author them yourself, but `canto.extra` includes some basic
+hooks to use.
+
+The possible hooks:
+
+<table>
+<tr>
+<td><pre>start_hook</pre></td>
+<td>Run once, on startup</td>
+</tr>
+<tr>
+<td><pre>resize_hook</pre></td>
+<td>Run when the window is resized (including on start)</td>
+</tr>>
+<tr>
+<td><pre>new_hook</pre></td>
+<td>Run once for every new item.</td>
+</tr>>
+<tr>
+<td><pre>select_hook</pre></td>
+<td>Run when a new item is selected</td>
+</tr>
+<tr>
+<td><pre>unselect_hook</pre></td>
+<td>Run when an item is unselected</td>
+</tr>
+<tr>
+<td><pre>state_change_hook</pre></td>
+<td>Run whenever an item's state (read/marked) changes</td>
+</tr>
+<tr>
+<td><pre>update_hook</pre></td>
+<td>Run when the interface updates</td>
+</tr>
+<tr>
+<td><pre>end_hook</pre></td>
+<td>Run when the interface closes</td>
+</tr>
+</table>
+
+> **NOTE**: All hooks are enforced by the interface **except new_hook**.
+`new_hook` is intended to be used as a notification method. All other hooks
+don't function unless Canto is running.
+
+### Using hooks
+
+There are only two hooks included in `canto.extra` by default. These are for
+manipulating the titles of an xterm (or another compatible X terminal).
+
+    :::python
+    select_hook = set_xterm_title
+    end_hook = clear_xterm_title
+
+This will set the xterm's title to "Tag - Title" when you select an item and
+clear it when Canto closes.
+
+Because this hook doesn't work everywhere and where it doesn't work it
+essentially clobbers ncurses by printing to the screen (you set an xterm
+title by writing to stdout with a special code), it's usually preferable to
+check the environment's `TERM` before employing the hooks.
+
+    :::python
+    import os
+    if os.getenv("TERM") == "xterm":  # Or other compatible term
+        select_hook = set_xterm_title
+        end_hook = clear_xterm_title
+
+This ensures that when you switch to the Linux console or another terminal,
+Canto won't start spewing uninterpreted content to the screen.
 
 </div>
