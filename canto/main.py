@@ -352,7 +352,7 @@ class Main():
                     self.refresh()
                     continue
 
-                # No input, time to check on the threads.
+                # No input, time to check on the worker.
 
                 if k == -1:
 
@@ -535,10 +535,35 @@ class Main():
                         iter.append(f)
                         break
 
-        for f in iter:
+        # This will restart the worker process if an unknown filter has made it
+        # into the global or tag filters. This should *never* happen unless the
+        # user has on-the-fly defined a filter (i.e. with search_filter). This
+        # makes on-the-fly filters rather expensive. Also note that this should
+        # *always* be accompanied by a REFILTER return code from the gui as the
+        # kill_process will ignore any further returned data.
 
+        restart = 0
+        for t in self.cfg.tags.cur():
+            tf = t.filters.cur()
+            if tf not in self.cfg.all_filters:
+                self.cfg.all_filters.append(tf)
+                restart = 1
+
+        gf = self.cfg.filters.cur()
+        if gf not in self.cfg.all_filters:
+            self.cfg.all_filters.append(gf)
+            restart = 1
+
+        if restart:
+            self.ph.kill_process()
+            self.ph.start_process(self.cfg)
+
+        # Queue up the appropriate items.
+
+        for f in iter:
             # If we're not refiltering, compare against the current state of the
             # feed, otherwise we count on the tags being empty.
+
             self.ph.send(
                     (action, f.URL, f[:],\
                     self.cfg.all_filters.index(self.cfg.filters.cur()),
