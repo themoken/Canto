@@ -7,8 +7,8 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from cfg.filters import Filter, all_filters
-from cfg.sorts import Sort, all_sorts
+from cfg.filters import Filter, all_filters, validate_filter
+from cfg.sorts import Sort, all_sorts, validate_sort
 
 import canto_html
 import utility
@@ -151,8 +151,7 @@ class with_tag_in(Filter):
 
 class aggregate_filter(Filter):
     def __init__(self, *filters):
-        # XXX deferred validation
-        self.filters = filters
+        self.filters = [ validate_filter(None, f) for f in filters ]
 
         self.precache = []
         for f in filters:
@@ -341,8 +340,7 @@ class by_unread(Sort):
 
 class reverse_sort(Sort):
     def __init__(self, other_sort):
-        # XXX deferred validation
-        self.other_sort = other_sort
+        self.other_sort = validate_sort(None, other_sort)
         self.precache = other_sort.precache
 
     def __str__(self):
@@ -353,10 +351,10 @@ class reverse_sort(Sort):
 
 class sort_order(Sort):
     def __init__(self, *sorts):
-        self.sorts = sorts
+        self.sorts = [ validate_sort(None, s) for s in sorts ]
 
         self.precache = []
-        for s in sorts:
+        for s in self.sorts:
             if not s:
                 continue
             for pc in s.precache:

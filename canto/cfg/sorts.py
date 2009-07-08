@@ -75,7 +75,11 @@ def validate_sort(c, s):
     if not issubclass(s.__class__, Sort):
         raise Exception, "All sorts must subclass Sort class ("\
                 + s.__class__.__name__ + ")"
-    return sort_dec(c, s)
+
+    if c:
+        return sort_dec(c, s)
+    else:
+        return s
 
 def validate(c):
     c.all_sorts = [ validate_sort(c, s) for s in c.all_sorts ]

@@ -47,7 +47,11 @@ def filter_dec(c, f):
             except:
                 self.log("\nException in filter:")
                 self.log("%s" % traceback.format_exc())
-    return fdec(f, c.log)
+
+    if c:
+        return fdec(f, c.log)
+    else:
+        return f
 
 def register(c):
     def set_default_tag_filters(filters):
