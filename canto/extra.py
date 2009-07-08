@@ -350,3 +350,25 @@ class reverse_sort(Sort):
 
     def __call__(self, x, y):
         return -1 * self.other_sort(x,y)
+
+class sort_order(Sort):
+    def __init__(self, *sorts):
+        self.sorts = sorts
+
+        self.precache = []
+        for s in sorts:
+            if not s:
+                continue
+            for pc in s.precache:
+                if pc not in self.precache:
+                    self.precache.append(pc)
+
+    def __str__(self):
+        return ", ".join(["%s" % s for s in self.sorts ])
+
+    def __call__(self, x, y):
+        for s in self.sorts:
+            r = s(x, y)
+            if r:
+                return r
+        return 0
