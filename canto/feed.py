@@ -108,6 +108,13 @@ class Feed(list):
         newlist = []
         for entry in entries:
 
+            if entry in self:
+                centry = self[self.index(entry)]
+                if (not centry.updated) and\
+                    (centry["canto_state"] != entry["canto_state"]):
+                    centry["canto_state"] = entry["canto_state"]
+                continue
+
             # nentry is the new, stripped down version of the item
             nentry = {}
             nentry["id"] = entry["id"]
@@ -158,6 +165,7 @@ class Feed(list):
             if item in self:
                 cur = self[self.index(item)]
                 if cur.updated != STORY_UPDATED:
+                    cur["canto_state"] = item["canto_state"]
                     cur.updated = 0
                 iter[i] = cur
 
