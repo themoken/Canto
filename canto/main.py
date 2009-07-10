@@ -465,8 +465,6 @@ class Main():
         self.ph.sync()
         self.cfg.log("Flushed to disk.")
 
-        self.ph.kill_process()
-        
         # This is a shitty workaround. The processing module for 2.5
         # insists on occasionally writing a TypeError exception to
         # stderr which is harmless but messy. To avoid, pipe
@@ -477,6 +475,7 @@ class Main():
         fd = os.open("/dev/null", os.O_RDWR)
         os.dup2(fd, sys.stderr.fileno())
 
+        self.ph.kill_process()
         sys.exit(0)
 
     # For the most part, it's smart to avoid doing anything but set a flag in an

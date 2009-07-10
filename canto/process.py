@@ -111,45 +111,14 @@ import sys
 import os
 
 try:
-    from multiprocessing import Queue
+    from multiprocessing import Process, Queue
 except Exception, e:
     try:
-        from processing import Queue
+        from processing import Process, Queue
     except:
         print "Canto 0.7.x requires the python-processing module"+\
               " to run on Python 2.5"
         sys.exit(-1)
-
-def scan_tags(feeds):
-    
-    # This chunk of code takes any base tags that inadvertantly conflict
-    # (i.e. weren't explicitly set by the user) and resolves them into 
-    # Tag, Tag (2), Tag (3), etc.
-
-    # This may seem like paranoia, but half-assed feed generators that 
-    # use default feed titles shouldn't break Canto.
-
-    base_tags = {}
-    for f in [x for x in feeds if x.base_set and\
-            not x.base_explicit]:
-        otag = f.tags[0]
-        if f.tags[0] in base_tags:
-            base_tags[otag] += 1
-
-            # We check each tag is unique, even if we're generating a new one
-            # so that if a user defines "Tag, Tag, Tag (2)", it resolves to 
-            # "Tag, Tag (3), Tag (2)"
-
-            while f.tags[0] + (" (%d)" % base_tags[otag]) in base_tags:
-                base_tags[otag] += 1
-            f.tags[0] += " (%d)" % base_tags[otag]
-
-            # Remove original tag from all stories in the feed
-            for s in f:
-                s.unset(otag)
-                s.set(f.tags[0])
-        else:
-            base_tags[f.tags[0]] = 1
 
 class ProcessHandler():
     def __init__(self, cfg):
@@ -157,136 +126,170 @@ class ProcessHandler():
         self.start_process(cfg)
 
     def start_process(self, cfg):
-        self.run(cfg.all_filters, cfg.all_sorts, cfg.feeds)
-
-    def run(self, all_filters, all_sorts, feeds):
-        self.update = Queue()
         self.updated = Queue()
+        self.update = Queue()
+        self.process = \
+                Process(target = self.run,
+                        args = (self.update, self.updated,
+                            cfg.all_filters, cfg.all_sorts, cfg.feeds))
+        self.process.start()
 
-        pid = os.fork()
-        if not pid:
-            def send(obj):
-                return self.updated.put(obj)
+    def run(self, update, updated, all_filters, all_sorts, feeds):
+        def scan_tags(feeds):
 
-            while True:
-                while True:
-                    try:
-                        r = self.update.get()
-                    except:
-                        continue
-                    break
+            # This chunk of code takes any base tags that inadvertantly conflict
+            # (i.e. weren't explicitly set by the user) and resolves them into 
+            # Tag, Tag (2), Tag (3), etc.
 
-                action, args = r[0],r[1:]
+            # This may seem like paranoia, but half-assed feed generators that 
+            # use default feed titles shouldn't break Canto.
 
-                if action == PROC_GETTAGS:
-                    scan_tags(feeds)
-                    send([ f.tags for f in feeds ])
-                    continue
-                if action in [PROC_FLUSH, PROC_KILL]:
-                    # Make sure we leave the on-disk presence constant
-                    send((action, ))
-                    if action == PROC_KILL:
-                        self.update.close()
-                        self.updated.close()
-                        self.update.jointhread()
-                        self.updated.jointhread()
-                        sys.exit(0)
-                    continue
-                if action == PROC_SYNC:
-                    feed = [ f for f in feeds if f.URL == args[0] ][0]
-                    feed.merge(args[1])
-                    while feed.changed():
-                        feed.todisk()
-                    send((PROC_SYNC,))
-                    continue
+            base_tags = {}
+            for f in [x for x in feeds if x.base_set and\
+                    not x.base_explicit]:
+                otag = f.tags[0]
+                if f.tags[0] in base_tags:
+                    base_tags[otag] += 1
 
-                # PROC_UPDATE, just load the data from disk.
-                if action >= PROC_UPDATE:
-                    feed = [ f for f in feeds if f.URL == args[0] ][0]
-                    feed.merge(args[1])
-                    if not feed.update():
-                        continue
+                    # We check each tag is unique, even if we're
+                    # generating a new one so that if a user defines
+                    # "Tag, Tag, Tag (2)", it resolves to
+                    # "Tag, Tag (3), Tag (2)"
 
-                if action == PROC_UPDATE:
-                    send((action, feed[:]))
+                    while f.tags[0] + (" (%d)" % base_tags[otag]) in base_tags:
+                        base_tags[otag] += 1
+                    f.tags[0] += " (%d)" % base_tags[otag]
+
+                    # Remove original tag from all stories in the feed
+                    for s in f:
+                        s.unset(otag)
+                        s.set(f.tags[0])
                 else:
-                    prev = args[1]
-                    filter = args[2]
-                    taginfo = args[3]
-                    refilter = args[4]
+                    base_tags[f.tags[0]] = 1
 
-                    if refilter:
-                        prev = []
 
-                    # Step 1: Global Filters
+        def send(obj):
+            return updated.put(obj)
 
-                    gf = all_filters[filter]
-                    new = []
-                    for item in feed:
-                        if item in prev or (gf and not gf(feed, item)):
-                            continue
-                        new.append(item)
+        while True:
+            while True:
+                try:
+                    r = update.get()
+                except:
+                    continue
+                break
 
-                    old = []
-                    for item in prev:
-                        if item in feed and (not gf or gf(feed, item)):
-                            continue
-                        old.append(item)
+            action, args = r[0],r[1:]
 
-                    # Step 2: Tag filters, initial diff
-                    ndiff = [None] * len(taginfo)
-                    for item in new:
-                        for i, (t, tf, ts) in enumerate(taginfo):
-                            tagf = all_filters[tf]
-                            if t in item["canto_state"] and\
-                                    ((not tagf) or tagf(t,item)):
-                                if not ndiff[i]:
-                                    ndiff[i] = [item]
-                                else:
-                                    ndiff[i].append(item)
+            if action == PROC_GETTAGS:
+                scan_tags(feeds)
+                send([ f.tags for f in feeds ])
+                continue
+            if action in [PROC_FLUSH, PROC_KILL]:
+                # Make sure we leave the on-disk presence constant
+                send((action, ))
+                if action == PROC_KILL:
+                    self.update.close()
+                    self.updated.close()
+                    self.update.jointhread()
+                    self.updated.jointhread()
+                    sys.exit(0)
+                continue
+            if action == PROC_SYNC:
+                feed = [ f for f in feeds if f.URL == args[0] ][0]
+                feed.merge(args[1])
+                while feed.changed():
+                    feed.todisk()
+                send((PROC_SYNC,))
+                continue
 
-                    odiff = [None] * len(taginfo)
-                    for item in old:
-                        for i, (t, tf, ts) in enumerate(taginfo):
-                            tagf = all_filters[tf]
-                            if t in item["canto_state"] and\
-                                    ((not tagf) or tagf(t, item)):
-                                if not odiff[i]:
-                                    odiff[i] = [item]
-                                else:
-                                    odiff[i].append(item)
+            # PROC_UPDATE, just load the data from disk.
+            if action >= PROC_UPDATE:
+                feed = [ f for f in feeds if f.URL == args[0] ][0]
+                feed.merge(args[1])
+                if not feed.update():
+                    continue
 
-                    # Step 3: Tag sorts
+            if action == PROC_UPDATE:
+                send((action, feed[:]))
+            else:
+                prev = args[1]
+                filter = args[2]
+                taginfo = args[3]
+                refilter = args[4]
+
+                if refilter:
+                    prev = []
+
+                # Step 1: Global Filters
+
+                gf = all_filters[filter]
+                new = []
+                for item in feed:
+                    if (item in prev) or (gf and (not gf(feed, item))):
+                        continue
+                    new.append(item)
+
+                old = []
+                for item in prev:
+                    if (item in feed) and ((not gf) or gf(feed, item)):
+                        continue
+                    old.append(item)
+
+                # Step 2: Tag filters, initial diff
+                ndiff = [None] * len(taginfo)
+                for item in new:
                     for i, (t, tf, ts) in enumerate(taginfo):
-                        sort = all_sorts[ts]
-                        if ndiff[i]:
-                            ndiff[i].sort(sort)
-                        if odiff[i]:
-                            odiff[i].sort(sort)
+                        tagf = all_filters[tf]
+                        if t in item["canto_state"] and\
+                                ((not tagf) or tagf(t,item)):
+                            if not ndiff[i]:
+                                ndiff[i] = [item]
+                            else:
+                                ndiff[i].append(item)
 
-                    # Step 4: Convert items into indices
-                    for newdiff in ndiff:
-                        if not newdiff:
-                            continue
-                        for i, item in enumerate(newdiff):
-                            newdiff[i] = feed.index(newdiff[i])
-
-                    for olddiff in odiff:
-                        if not olddiff:
-                            continue
-                        for i, item in enumerate(olddiff):
-                            olddiff[i] = prev.index(olddiff[i])
-
-                    # Step 5: Add parity information
+                odiff = [None] * len(taginfo)
+                for item in old:
                     for i, (t, tf, ts) in enumerate(taginfo):
-                        ndiff[i] = (filter, tf, ts, ndiff[i])
-                        odiff[i] = (filter, tf, ts, odiff[i])
+                        tagf = all_filters[tf]
+                        if t in item["canto_state"] and\
+                                ((not tagf) or tagf(t, item)):
+                            if not odiff[i]:
+                                odiff[i] = [item]
+                            else:
+                                odiff[i].append(item)
 
-                    # Step 6: Queue up the results for the interface process.
-                    send((feed.URL, feed[:], ndiff, odiff))
+                # Step 3: Tag sorts
+                for i, (t, tf, ts) in enumerate(taginfo):
+                    sort = all_sorts[ts]
+                    if ndiff[i]:
+                        ndiff[i].sort(sort)
+                    if odiff[i]:
+                        odiff[i].sort(sort)
 
-                if action > PROC_UPDATE:
-                    del feed[:]
+                # Step 4: Convert items into indices
+                for newdiff in ndiff:
+                    if not newdiff:
+                        continue
+                    for i, item in enumerate(newdiff):
+                        newdiff[i] = feed.index(newdiff[i])
+
+                for olddiff in odiff:
+                    if not olddiff:
+                        continue
+                    for i, item in enumerate(olddiff):
+                        olddiff[i] = prev.index(olddiff[i])
+
+                # Step 5: Add parity information
+                for i, (t, tf, ts) in enumerate(taginfo):
+                    ndiff[i] = (filter, tf, ts, ndiff[i])
+                    odiff[i] = (filter, tf, ts, odiff[i])
+
+                # Step 6: Queue up the results for the interface process.
+                send((feed.URL, feed[:], ndiff, odiff))
+
+            if action > PROC_UPDATE:
+                del feed[:]
 
     def send(self, obj):
         return self.update.put(obj)
@@ -312,6 +315,7 @@ class ProcessHandler():
         self.updated.close()
         self.update.jointhread()
         self.updated.jointhread()
+        self.process.join()
 
     def flush(self):
         self.send_and_wait(PROC_FLUSH)
