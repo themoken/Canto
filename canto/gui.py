@@ -288,13 +288,11 @@ class Gui(BaseGui) :
     # implementation would be suitable.
 
     def key(self, k):
-        self.cfg.log("Key: %s" % (k,))
         if self.reader_obj:
             return self.reader_obj.key(k)
         return BaseGui.key(self, k)
 
     def action(self, a):
-        self.cfg.log("Action: %s" % (a,))
         if self.reader_obj:
             return self.reader_obj.action(a)
         r = BaseGui.action(self, a)
