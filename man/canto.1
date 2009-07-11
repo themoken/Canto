@@ -194,110 +194,15 @@ g
 Choose a link to goto (goto)
 
 .SH CONFIGURATION
-The ~/.canto/conf file is where all of the configuration is. You can start by using the example config below.
-
-.SH EXAMPLE CONFIG
-.sp 1
-.nf
-
-from canto.extra import *
-import os
-
-if os.getenv("TERM") == "linux":
-    link_handler("elinks \"%u\"", text=True)
-else:
-    link_handler("iceweasel \"%u\"")
-
-    # A dedicated image handler, that requires content
-    # to be fetched for it.
-    image_handler("xli \"%u\"", fetch=True)
-
-    # A dedicated PDF handler (great for LtU)
-    link_handler("evince \"%u\"", fetch=True, ext="pdf")
-
-    # If we're in X, update xterm title
-    # (Should work with most graphical terms)   
-    select_hook = set_xterm_title
-    end_hook = clear_xterm_title
-
-def my_resize_hook(cfg):
-    cfg.columns = cfg.width / 70
-
-resize_hook = my_resize_hook
-
-# Global filters, switch with '[' and ']'
-filters=[None, show_unread]
-
-# You can also setup keybinds to set the global filter
-keys['a'] = set_filter(show_unread) 
-
-# Similarly you can set tag filters and keybinds
-# switch with '{' and '}'
-
-default_tag_filters([None, show_unread])
-keys['b'] = set_tag_filter(show_unread)
-
-# Tag sorts can also be set with a keybind
-keys['s'] = set_tag_sort(by_alpha)
-keys['d'] = set_tag_sort(reverse_sort(by_len))
-
-# Keys can be single or lists of actions
-# These keys kill the current reader, go to the next
-# or prev unread item and start another reader
-
-reader_keys["."] = ["destroy","next_unread","reader"]
-reader_keys[","] = ["destroy","prev_unread","reader"]
-
-# This sets the current item as read and automatically
-# continues to the next item.
-
-keys['x'] = ["just_read","next_item"]
-
-# Searches can be bound to keybinds as well
-keys['1'] = search(".*[Ll]inux.*", regex=True)
-keys['2'] = search("Obama")
-
-# And, of course keys can be unset.
-keys['Q'] = None
-
-# This makes the reader show links by default, rather
-# than the default, toggling with 'l'
-keys[' '] = ["reader","toggle_show_links"]
-
-# A whole mess of feeds with tags, and without.
-# A 'None' tag will be replaced with the feeds title
-# The first tag is what is show at the top of each feed by default
-
-add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
-add("http://osnews.com/files/recent.xml", tags=[None, "news"])
-add("http://www.damninteresting.com/?feed=rss2")
-add("http://reddit.com/.rss", tags=["Reddit","news"])
-add("http://programming.reddit.com/.rss", tags=["Proggit", "news"])
-
-# Username / Passwords are supported for feeds protected by
-# Basic or Digest passwords
-
-add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
-        password="digest")
-
-# Tags can work without configuration, or can be customized.
-# This makes the "news" tag default to showing only unread stories
-# and sorting by date.
-
-add_tag("news", filters=[show_unread], sorts=[[by_date]])
-
-# Finally, you can set the tags shown with the tags list,
-# and rotate with '<' and '>' by default.
-
-tags = [ None, ["news"], ["Reddit", "Proggit"]]
-
-# None will be interpreted as the default set of tags, i.e. one
-# per feed.
+The ~/.canto/conf.py file is where all of the configuration is. You can start by
+reading http://codezen.org/canto/config . If you're updating from <= 0.6.x then you
+should read http://codezen.org/canto/upgrade .
 
 .SH FILES
 .TP
-.I ~/.canto/conf
-Main configuration file. For advanced usage, see the online configuration documentation: http://codezen.org/canto/config
+.I ~/.canto/conf.py
+Main configuration file. ~/.canto/conf (without the extension) is also checked
+for compatibility.
 
 .TP
 .I ~/.canto/log
@@ -312,7 +217,10 @@ Canto-fetch log file.
 This is the directory where the stories are recorded.
 
 .SH BUGS
-None known, but it's not outside of the realm of possibility =P.  
+I'm sure there are some. If you run into a bug (a crash or bad behavior), then
+send please report it. Any of the methods described in
+http://codezen.org/canto/contact are acceptable. Also, please include your
+configuration and log files with the report.
 
 .SH HOMEPAGE
 http://codezen.org/canto
