@@ -24,7 +24,7 @@ def __add_hook_meta(list):
     def add_hook(r, func, **kwargs):
         l = getattr(r, list, None)
         def get_index(s):
-            if type(kwargs[s] == str):
+            if type(kwargs[s]) == str:
                 f = getattr(r, kwargs[s], None)
             else:
                 f = kwargs[s]
@@ -41,7 +41,6 @@ def __add_hook_meta(list):
             idx = get_index("before")
         else:
             idx = len(l)
-
         if idx > -1:
             l.insert(idx, func)
     return add_hook
@@ -51,29 +50,45 @@ add_hook_post_reader = __add_hook_meta("post_reader")
 add_hook_pre_story = __add_hook_meta("pre_story")
 add_hook_post_story = __add_hook_meta("post_story")
 
-# Adds Slashdot department information to reader
-#
-# Usage :
-#   r = get_default_renderer()
-#   add_hook_pre_reader(r, add_slash_dept, before="reader_convert_html")
-#
+add_info_holster = "reader_highlight_quotes"
 
-def add_slash_dept(dict):
-	if "slash_department" in dict["story"]:
-		dict["content"] = "%1from the " + dict["story"]["slash_department"]\
-			+ " department%0<br /><br />" + dict["content"]
+def add_info(r, item, **kwargs):
+    global add_info_holster
 
-def add_info(r, item):
+    if type(item) not in [str, unicode]:
+        raise Exception, "Item must be a string"
+
     realitem = item.lower()
-    if realitem == "by":
-        realitem = u"author"
+
+    if "format" not in kwargs:
+        kwargs["format"] = "%s%s\n"
+    elif type(kwargs["format"]) not in [str, unicode]:
+        raise Exception, "Format must be a string"
+
+    if "caption" not in kwargs:
+        kwargs["caption"] = item + ": "
+    elif type(kwargs["caption"]) not in [str, unicode]:
+        raise Exception, "Caption must be a string"
+
+    if "tags" not in kwargs:
+        kwargs["tags"] = ["*"]
+    elif type(kwargs["tags"]) != list:
+        kwargs["tags"] = [kwargs["tags"]]
 
     def hook(dict):
-        if realitem in dict["story"]:
-            dict["content"] = "%s : %s\n" %\
-                    (item, dict["story"][realitem]) + dict["content"]
+        mt = [ s for s in kwargs["tags"] if s in dict["story"]["canto_state"]]
+        if realitem == "maintag":
+            dict["content"] = (kwargs["format"] %\
+                    (kwargs["caption"], dict["story"]["canto_state"][0]))\
+                    + dict["content"]
+        elif realitem in dict["story"] and mt:
+            dict["content"] = (kwargs["format"] %\
+                    (kwargs["caption"], dict["story"][realitem]))\
+                    + dict["content"]
 
-    add_hook_pre_reader(r, hook, after="reader_convert_html")
+    add_hook_pre_reader(r, hook, before=add_info_holster)
+    add_info_holster = hook
+    return hook
 
 # Filter for filtering out all read stories.
 #
