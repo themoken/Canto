@@ -262,6 +262,8 @@ class ProcessHandler():
                 # Step 3: Tag sorts
                 for i, (t, tf, ts) in enumerate(taginfo):
                     sort = all_sorts[ts]
+                    if not sort:
+                        break
                     if ndiff[i]:
                         ndiff[i].sort(sort)
                     if odiff[i]:

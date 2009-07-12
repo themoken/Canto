@@ -19,7 +19,7 @@
 # update() for updating from disk and todisk() to commit the current state when
 # Canto shuts down.
 
-from const import STORY_UPDATED, STORY_SAVED
+from const import STORY_UPDATED, STORY_SAVED, STORY_UPDATE_QD
 import story
 
 import cPickle
@@ -164,8 +164,9 @@ class Feed(list):
         for i, item in enumerate(iter):
             if item in self:
                 cur = self[self.index(item)]
-                if cur.updated != STORY_UPDATED:
+                if not cur.updated:
                     cur["canto_state"] = item["canto_state"]
+                elif cur.updated == STORY_UPDATE_QD:
                     cur.updated = 0
                 iter[i] = cur
 
