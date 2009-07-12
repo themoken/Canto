@@ -261,13 +261,13 @@ def yank(gui):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             stdin=subprocess.PIPE)
     try:
-        xclip.stdin.write(gui.sel["link"])
+        xclip.stdin.write(gui.sel["item"]["link"])
         xclip.stdin.close()
         assert xclip.wait() == 0
     except (IOError, AssertionError):
         gui.cfg.log("xclip must be installed for yank to work!")
     else:
-        gui.cfg.log("Yanked: %s" % gui.sel["title"])
+        gui.cfg.log("Yanked: %s" % gui.sel["item"]["title"])
 
 # Note: the following two hacks are for xterm and compatible
 # terminal emulators ([u]rxvt, eterm, aterm, etc.). These should
