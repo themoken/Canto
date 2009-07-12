@@ -466,7 +466,7 @@ class Main():
         self.cfg.log("Flushed to disk.")
 
         # This is a shitty workaround. The processing module for 2.5
-        # insists on occasionally writing a TypeError exception to
+        # insists on occasionally writing an exception to
         # stderr which is harmless but messy. To avoid, pipe
         # stderr to /dev/null. I hope that this has been resolved in
         # 2.6's builtin multiprocessing module, because it's really poor
