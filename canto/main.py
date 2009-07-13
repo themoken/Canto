@@ -386,6 +386,7 @@ class Main():
 
                         self.gui.alarm(new, old)
                         self.gui.draw_elements()
+                        feed.qd = False
                     continue
 
                 # Handle Meta pairs
@@ -571,8 +572,9 @@ class Main():
         # Queue up the appropriate items.
 
         for f in iter:
-            # If we're not refiltering, compare against the current state of the
-            # feed, otherwise we count on the tags being empty.
+
+            if f.qd and not refilter:
+                continue
 
             self.ph.send(
                     (action, f.URL, f[:],\
@@ -583,8 +585,7 @@ class Main():
                       for t in self.cfg.tags.cur()],\
                       refilter))
 
-            for s in f.changed():
-                s.updated = STORY_UPDATE_QD
+            f.qd = True
 
     # Refresh should only be called when it's possible that the screen has
     # changed shape. 

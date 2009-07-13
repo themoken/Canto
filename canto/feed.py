@@ -19,7 +19,7 @@
 # update() for updating from disk and todisk() to commit the current state when
 # Canto shuts down.
 
-from const import STORY_UPDATED, STORY_SAVED, STORY_UPDATE_QD
+from const import STORY_UPDATED, STORY_SAVED
 import story
 
 import cPickle
@@ -48,6 +48,9 @@ class Feed(list):
         self.keep = keep
         self.username = username
         self.password = password
+
+        # Queue status
+        self.qd = False
 
         # Hard filter
         self.filter = filter
@@ -155,10 +158,7 @@ class Feed(list):
         list.extend(self, filter(self.filter, newlist))
 
     # Merging items means that they're unvalidated and unfiltered. This is
-    # used when story objects are read in from a pipe. Note that STORY_UPDATED
-    # indicates that this has been updated since the items were queued up for
-    # update (i.e. we want to remember them, versus STORY_UPDATE_QD which means
-    # that at merge time they're already on disk).
+    # used when story objects are read in from a pipe.
 
     def merge(self, iter):
         for i, item in enumerate(iter):
@@ -166,8 +166,7 @@ class Feed(list):
                 cur = self[self.index(item)]
                 if not cur.updated:
                     cur["canto_state"] = item["canto_state"]
-                elif cur.updated == STORY_UPDATE_QD:
-                    cur.updated = 0
+                cur.updated = 0
                 iter[i] = cur
 
         del self[:]
