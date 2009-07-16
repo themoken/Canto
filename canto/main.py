@@ -585,6 +585,8 @@ class Main():
                       for t in self.cfg.tags.cur()],\
                       refilter))
 
+            for s in f.changed():
+                s.updated = STORY_QD
             f.qd = True
 
     # Refresh should only be called when it's possible that the screen has
