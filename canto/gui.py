@@ -67,7 +67,7 @@ import curses
 
 def noitem_unsafe(fn):
     def ns_dec(self, *args):
-        if not self.empty:
+        if self.items:
             return fn(self, *args)
         else:
             self.cfg.log("No Items.")
@@ -209,7 +209,7 @@ class Gui(BaseGui) :
         # and row to draw to.
 
         self.map = []
-        self.empty = 1
+        self.items = 0
         row = 0
         for i, tag in enumerate(self.tags):
             for item in tag:
@@ -221,16 +221,17 @@ class Gui(BaseGui) :
                              "row" : row,
                              "item" : item,
                              "lines" : lines})
-                        if self.empty:
-                            self.map[0]["prev"] = self.map[0]
+                        self.items += 1
+
+                        if self.items == 1:
+                            self.map[0]["prev"] = 0
                         else:
-                            self.map[-2]["next"] = self.map[-1]
-                            self.map[-1]["prev"] = self.map[-2]
-                        self.empty = 0
+                            self.map[-2]["next"] = self.items - 1
+                            self.map[-1]["prev"] = self.items - 2
                         row += lines
 
-        if not self.empty:
-            self.map[-1]["next"] = self.map[-1]
+        if self.items:
+            self.map[-1]["next"] = self.items - 1
 
         # Set max_offset, this is how we know not to recenter the
         # screen when it would leave unused space at the end.
@@ -250,7 +251,7 @@ class Gui(BaseGui) :
 
     # Print all stories in self.map. Ignores all off screen items.
     def draw_elements(self):
-        if not self.empty:
+        if self.items:
             self.__check_scroll()
             row = -1 * self.offset
             for item in self.map:
@@ -354,7 +355,7 @@ class Gui(BaseGui) :
         # running tags, so now we just attempt to maintain our current selection
         # status.
 
-        if not self.empty:
+        if self.items:
             if self.sel:
                 for item in self.map:
                     if item["item"] == self.sel["item"] and\
@@ -397,7 +398,7 @@ class Gui(BaseGui) :
     @noitem_unsafe
     @change_selected
     def next_item(self):
-        self.sel = self.sel["next"]
+        self.sel = self.map[self.sel["next"]]
 
     @noitem_unsafe
     def next_tag(self):
@@ -415,7 +416,7 @@ class Gui(BaseGui) :
     @noitem_unsafe
     @change_selected
     def prev_item(self):
-        self.sel = self.sel["prev"]
+        self.sel = self.map[self.sel["prev"]]
 
     @noitem_unsafe
     def prev_tag(self):
@@ -473,26 +474,26 @@ class Gui(BaseGui) :
     @noitem_unsafe
     @change_selected
     def next_filtered(self, f) :
-        cursor = self.sel["next"]
+        cursor = self.map[self.sel["next"]]
         while True:
             if f(cursor["tag"], cursor["item"]):
                 self.sel = cursor
                 return
             if cursor == self.map[-1]:
                 return
-            cursor = cursor["next"]
+            cursor = self.map[cursor["next"]]
 
     @noitem_unsafe
     @change_selected
     def prev_filtered(self, f) :
-        cursor = self.sel["prev"]
+        cursor = self.map[self.sel["prev"]]
         while True:
             if f(cursor["tag"], cursor["item"]):
                 self.sel = cursor
                 return
             if cursor == self.map[0]:
                 return
-            cursor = cursor["prev"]
+            cursor = self.map[cursor["prev"]]
 
     def next_mark(self):
         self.next_filtered(extra.show_marked())
