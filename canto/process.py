@@ -174,7 +174,7 @@ class ProcessHandler():
         while True:
             while True:
                 try:
-                    r = update.get(False, 0.1)
+                    r = update.get(True, 0.1)
                 except:
                     # If parent canto is dead, kill ourselves
                     if os.getppid() == 1:
