@@ -362,7 +362,6 @@ class Main():
                     r = self.ph.recv(True, 0.01)
                     if r:
                         feed = [ f for f in self.cfg.feeds if f.URL == r[0]][0]
-                        f.time = f.rate
 
                         old = []
                         for gf, tf, s, l in r[3]:
@@ -524,7 +523,7 @@ class Main():
             if "interval" in self.cfg.triggers:
                 for f in self.cfg.feeds:
                     f.time -= 1
-                self.update(0, [f for f in self.cfg.feeds if f.time < 0])
+                self.update(0, self.cfg.feeds)
             self.ticks = 60
 
         # Message tick

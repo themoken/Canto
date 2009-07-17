@@ -44,7 +44,6 @@ class Feed(list):
 
         self.URL = URL
         self.rate = rate
-        self.time = rate
         self.keep = keep
         self.username = username
         self.password = password
