@@ -196,8 +196,6 @@ class ProcessHandler():
                 if action == PROC_KILL:
                     update.close()
                     updated.close()
-                    update.jointhread()
-                    updated.jointhread()
                     sys.exit(0)
                 continue
             if action == PROC_SYNC:
@@ -320,8 +318,6 @@ class ProcessHandler():
         self.send_and_wait(PROC_KILL)
         self.update.close()
         self.updated.close()
-        self.update.jointhread()
-        self.updated.jointhread()
         self.process.join()
 
     def flush(self):
