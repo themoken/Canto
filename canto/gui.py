@@ -550,6 +550,7 @@ class Gui(BaseGui) :
     @noitem_unsafe
     @change_tag_filter
     def set_tag_filter(self, filt):
+        filt = validate_filter(self.cfg, filt)
         return (self.sel["tag"].filters.override(filt),\
                 self.sel["tag"].filters.cur())
 
