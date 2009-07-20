@@ -459,6 +459,20 @@ class FetchThread(Thread):
                 newfeed["entries"] += curfeed["entries"]\
                         [:self.fd.keep - len(newfeed["entries"])]
 
+            # Enforce the "never_discard" setting
+            # We iterate through the stories and then the tag so that
+            # feed order is preserved.
+
+            for e in curfeed["entries"]:
+                for tag in self.cfg.never_discard:
+                    if tag == "unread":
+                        if "read" in e["canto_state"]:
+                            continue
+                    elif tag not in e["canto_state"]:
+                        continue
+                    if e not in newfeed["entries"]:
+                        newfeed["entries"].append(e)
+
             if self.cfg.new_hook:
                 for entry in [e for e in new if e in newfeed["entries"]]:
                     self.cfg.new_hook(newfeed, entry, entry == new[-1])

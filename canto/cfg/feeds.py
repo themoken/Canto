@@ -13,7 +13,8 @@ def register(c):
     c.feeds = []
     c.default_rate = 5
     c.default_keep = 40
-    
+    c.never_discard = []
+
     def add(URL, **kwargs):
         if (not URL) or URL == "" or type(URL) not in [unicode, str]:
             raise Exception, "%s is not a valid URL" % URL
@@ -76,11 +77,15 @@ def register(c):
     def set_default_keep(keep):
         c.default_keep = keep
 
+    def never_discard(tag):
+        c.never_discard.append(tag)
+
     c.locals.update({
         "add" : add,
         "change_feed" : change_feed,
         "default_rate" : set_default_rate,
-        "default_keep" : set_default_keep})
+        "default_keep" : set_default_keep,
+        "never_discard" : never_discard})
 
 def post_parse(c):
     pass
