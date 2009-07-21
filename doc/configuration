@@ -3,10 +3,9 @@
 
 # Configuration
 
-This is the section covering most features of Canto and how to use them. This
-only covers the basics and how to use pre-written goodies (filters, sorts,
-etc.) from `canto.extra`. Actually writing custom content is covered
-elsewhere.
+This section covers Canto's basics features and how to use filters, sorts, tags, 
+and the other pre-written goodies that can be found in `canto.extra`.  The 
+actual writing of custom content is covered in later sections.
 
 ### Test
 
@@ -18,8 +17,9 @@ Blah
 
 ### `add()`
 
-`add` is the basic building block of your config. As the name would suggest, it
-adds a feed to Canto. 99% of the time, a call like this will get the job done:
+`add` is the basic building block of Canto's config. As the name suggests, it
+adds a feed to the config. Ninety-nine percent of the time, a call like this 
+will get the job done:
 
     :::python
     add("http://someurl")
@@ -76,12 +76,13 @@ this way, then you can use `change_feed` that takes the same arguments as
 
 ### Tweaking defaults
 
-Sometimes you want to change the `rate` and `keep` for a lot of feeds at once.
-Using `default_rate` and `default_keep` you can set those parameters for 
-**every feed following the call**. Because it's every feed added after the
-call, it can be used to set it for batches of feeds, rather than all feeds.
-If you want the all feed behavior, set the defaults before you define any
-feeds.
+At some point you may want to change the `rate` and `keep` parameters for a 
+large quantity of feeds and do so simultaneously.  Using `default_rate` and 
+`default_keep` you can set those parameters for **every feed following 
+the call**. Because this change only affects feeds that are added after the 
+call, it can be used to set 'keep' and 'rate' variables for batches of feeds, 
+rather than all feeds.  If you want the 'keep' and 'rate' variables to affect 
+all feed behavior globally, set the defaults before you define your feeds.
 
 > **NOTE**: To reiterate from above, `rate` is in minutes and `keep` will 
 > ignore any number lower than the number of items in the feed's source.
@@ -90,7 +91,7 @@ The following is a good application of using the default calls:
 
     :::python
 
-    default_rate(30)    # News feeds
+    default_rate(30)    # News feeds 
     add("http://news1")
     add("http://news2")
     ...
@@ -106,9 +107,9 @@ The following is a good application of using the default calls:
     add("http://quick2")
     ...
 
-Without setting anything, rate is set to five minutes (5) and keep is set to 
-0, which indicates that all the items in the feed source should be kept and no
-more than that.
+If you choose not to change settings, rate is set to five minutes (5) and keep 
+is set to 0, which indicates that all the items in the feed source should be 
+kept.
 
 </div>
 
@@ -116,7 +117,7 @@ more than that.
 
 <div class="section">
 
-Canto supports using external programs to open any content found in an item.
+Canto supports using external programs to open the content found in a feed item.
 Typically, you just want to set a `link_handler` to your favorite browser.
 
     :::python
@@ -151,9 +152,9 @@ extension. For example, to open and .mp3 in a podcast:
     link_handler("mplayer -someoptions \"%u\"", ext="mp3")
 
 Fortunately, mplayer can stream from the web by default. Some applications
-require the content to be fetched before hand. This can be dealt with using
-the `fetch` parameter. For example, to open a .pdf in evince, which doesn't
-support opening from the internet directly:
+require the content to be fetched before hand. This requirement can be handled
+using the `fetch` parameter. For example, to open a .pdf in evince that doesn't
+support opening from the internet directly you can write:
 
     :::python
     link_handler("evince \"%u\"", ext="pdf", fetch=True)
@@ -177,23 +178,22 @@ This will use `fbv` to view an image in a text console.
 # Using Advanced Features
 
 Canto is extremely powerful due to its internal use of the Python
-interpreter for all of its configuration. The details of writing extension
-content is covered elsewhere, but there is a lot of good stuff included
-with the source.
+interpreter for all of its configuration requirements. The details of writing 
+extension content is covered elsewhere, but there is a lot of good information
+included with the source.
 
 ## Importing canto.extra
 
 <div class="section">
 
-The first step before you use any extra content is to import it. In fact,
-the very first line in any config that has any customization to it at all
-is going to be:
+In order to use extra content it must be imported in the usual pythonic way, as 
+in:
 
     :::python
     from canto.extra import *
 
-This will make all of the goodies packaged with Canto available to your
-config.
+A call to import canto.extra will make all of the goodies packaged with Canto 
+available to your config.
 
 </div>
 
@@ -204,7 +204,7 @@ config.
 ### Specifying keys
 
 The first step to define your own keybinds is to learn how to specify which key
-you're binding to. Typically, it's very simple.
+you're binding to. Typically, it's very easy to rebind keys.
 
     :::python
     keys['a'] = ...
@@ -221,9 +221,10 @@ Any visible non-newline character can be used directly. Whitespace characters
     keys['  '] = ...    # Tab
 
 Any invisible characters, like function keys, arrow keys, etc. can be used by
-their ncurses name. On the man page for `getch()`, they list all the possible
-names. Here's an [online copy](http://www.mkssoftware.com/docs/man3/curs_getch.3.asp).
-Typically definitions using these keys look like this:
+their ncurses name. On the man page for `getch()`, a list of all possible
+names is available. Here's an [online copy]
+(http://www.mkssoftware.com/docs/man3/curs_getch.3.asp).  Typically definitions 
+using these keys look like this:
 
     :::python
     keys['KEY_F1'] = ...
@@ -239,8 +240,9 @@ To specify Control or Alt key combinations, you can use "C-" for control and
 
 ### Default binds
 
-These bindings are keybinds that are typically made available to the user. These
-will be used in the examples following.
+The following keybinds are typically available to the user. They will be used 
+in the examples below.
+
 
 #### Main view
 
@@ -478,14 +480,15 @@ will be used in the examples following.
 
 ### Using default binds
 
-Setting a new key for pre-existing functionality is easily done using strings.
+Setting a new key for pre-existing functionality is easy to do using strings.
 As you can see in the above table, the bind "help" brings up the help page. To
-rebind this to F1 (a typical DOS binding), you could just do
+rebind this functionality to the F1 key (a typical DOS binding), you could 
+simpy do
 
     :::python
     keys["KEY_F1"] = "help"
 
-You can also override existing keys as you would expect
+As you might expect, you can also override existing keys
 
     :::python
     keys[' '] = "next_item" # Overrides the default "reader" command
@@ -499,43 +502,43 @@ And you can unset a key all together
 
 Canto allows you to queue up more than one action with a keybind. A simple list
 can get the job done. For example, to create a keybind that will set an item as
-read and move to the next item (rather than using the right arrow followed by
-the down arrow) we could set a macro like this
+read and move to the next list item (rather than using the right arrow followed
+by the down arrow) we could set a macro like this
 
     :::python
     keys['j'] = ["just_read", "next_item"]
 
 "just_read" sets the item as read and "next_item" moves to the next item.
 
-More complicated macros can cover both main view and reader view keybinds. Take
-for example the default binding of "n" in reader view.
+More complicated macros can be created that can cover both main view and reader 
+view keybinds. Take for example the default binding of "n" in reader view.
 
     :::python
     reader_keys = [ "destroy", "next_item", "reader" ]
 
-The effect is that you go to the next item without leaving the reader. What's
-really happening is "destroy" kills the reader, "next_item" makes the main
-interface go to the next item, and "reader" makes the main interface open the
-reader again all in one keystroke. 
+This macro allows you to go to the next item without leaving the reader. When 
+this macro executes three events happen:  "destroy" kills the reader, 
+"next_item" makes the main interface go to the next item, and "reader" makes the
+main interface re-open the reader.  All this work is done with one keystroke. 
 
-Another common task is to open the reader and automatically open the link list.
-This also can be achieved with a simple macro
+Another common macro task is to open the reader and automatically open the link 
+list.  This also can be achieved with this simple code
 
     :::python
     keys[' '] = ["reader", "toggle_show_links" ]
 
-In this way it's possible to bind anything that's possible with any number of 
-keystrokes to a single keystroke.
+Using macros and keybinds, it's possible to get a maximum amount of work from a 
+minimum number of keystrokes.
 
 ### Keybind goodies.
 
-Usually a user only wants to rebind existing functionality to different keys or
-make simple macros to make their lives easier. Canto supports much more powerful
-keybinds though.
+Rebinding some existing functionality to a different key or creating a simple 
+macro will certainly make most users work faster and easier. 
 
 Up until now, we've only used strings in the keybinds and macros. These strings
-are shorthand for builtin functionality. However, in place of these strings, you
-can use functions.
+are shorthand for built-in functionality. However, in place of these strings, 
+you can bind functions to keystrokes.  Doing so, adds a very powerful feature to 
+Canto's interface.
 
 Later in the document we'll cover `set_filter`, `set_tag_filter`, and
 `set_tag_sort` which are all defined in `canto.extra`. For now, we'll cover some
@@ -570,7 +573,7 @@ chat, a browser, etc.) can be used
     :::python
     keys['y'] = yank
 
-> **NOTE**: Yank requires `xclip` to be installed an visible in your `PATH`. On
+> **NOTE**: Yank requires `xclip` to be installed and visible in your `PATH`. On
 Debian based distros it's the `xclip` package, but on some it might be included
 with a generic X11 application meta-package. If in doubt, do `which xclip` from
 your shell.
@@ -590,8 +593,8 @@ a keybind, rather than a fully functional bind but it can be useful.
 
 <div class="section">
 
-The most useful extra feature Canto provides is its powerful filter system.
-`canto.extra` provides a number of filters to use
+Perhaps the most useful extra feature Canto provides is its powerful filter 
+system. `canto.extra` provides a number of filters to use
 
 <table>
 <tr>
@@ -624,40 +627,42 @@ The most useful extra feature Canto provides is its powerful filter system.
 </tr>
 </table>
 
-There's also `with_tag_in`, which is covered in the tag section, specifically.
+Additionally, there is `with_tag_in`, which is covered in the tag section, 
+specifically.
 
 There are three ways to apply filters.
 
 - **Global filters**. These apply regardless. Any items that you see in the
-interface had to pass this filter. These are useful for filters based on state
-like `show_unread`.
+interface had to pass through this filter. Global filters are useful, for 
+example, to filter items based upon a given state, as in`show_unread`.
 
-- **Tag filters**. These filters only apply to specific tags (covered in the 
+- **Tag filters**. These filters only apply to specific tags (See the
 tag section).
 
-- **Feed filters**. These are filters applied when loading content from disk.
-Items that don't pass this filter will never appear in the interface. These
-are useful when you want to ignore a whole set of items entirely. Like news
-posts in webcomic feeds.
+- **Feed filters**. These filters are applied when loading content from disk.
+Items that don't pass this filter will never appear in the interface. Feed 
+filters are useful when you want to ignore a whole set of items entirely, like 
+news posts in webcomic feeds.
+
 
 ### Using Global Filters
 
-Global filters are arguably the most useful, and invariably the first use
-that users think for it is filtering out items that they've read.
-Accomplishing that is simple:
+Of the the three filters, global filters are arguably the most useful.For 
+example, a global filter can be used to filter out items that have already been 
+read. Accomplishing that is simple:
 
     :::python
     filters=[show_unread]
 
-That will filter all read items out by default when you open Canto. If you
-still want to have access to all items, you can add the `None` filter to the
-list:
+Setting the 'show unread' filter will remove all previously read feed items by 
+default when Canto opens. If you  still want to have access to all items, you 
+can add the `None` filter to the list:
 
     :::python
     filters=[show_unread, None]
 
-Then you can switch between `show_unread` and `None` using `[` and `]` to
-cycle through the list.
+With this filter in place, you can switch between `show_unread` and `None` using
+`[` and `]`to cycle through the list.
 
 If you're more comfortable using a keybind to choose your global filters,
 then you can use `set_filter`. This allows you to set the global filter
@@ -685,11 +690,11 @@ call for Penny Arcade to use the `only_with` filter:
     :::python
     add("http://feeds.penny-arcade.com/pa-mainsite", filter=only_with("Comic:"))
 
-That will eliminate all items that don't have "Comic:" in the title. Other
-examples would be watching distro package feeds for only a certain type
+This filter will eliminate all items that don't have "Comic:" in the title. 
+Other examples include filtering distro package feeds for only a certain type
 of package (i.e. Gentoo, `only_with("sys-devel")`), or filtering porn torrents
-out of torrent site feeds (`only_without("XXX")`, provided they're clearly
-marked).
+from torrent site feeds (`only_without("XXX")`, provided the feed items are 
+clearly marked).
 
 </div>
 
@@ -715,8 +720,8 @@ this to the config:
     :::python
     add("http://reddit.com/.rss", tags=["Reddit"])
 
-This will cause the displayed name to change to "Reddit", rather than the overly
-long built in title.
+This addition will cause the displayed name to change to "Reddit" from the 
+longer "reddit.com: what's new online!".
 
 ### Adding Tags
 
@@ -730,34 +735,36 @@ the tag list.
 > **NOTE**: `None` in the tag is shorthand for using the title included with the
 > feed. If all tags are omitted, `tags=[None]` is implied.
 
-This will define an implicit tag "blogs". After adding that tag, you can use <
-and > to switch between the default set of tags (i.e. one per feed) to the
-"blogs" tag.
+This addition will define an implicit tag "blogs". After adding that tag, you 
+can use < and > to switch between the default set of tags (i.e. one per feed) 
+to the "blogs" tag.
 
-When you switch to the blog tags though, the content will be the stories in the
-first feed followed by the second feed. Not very useful if you're using implicit
-tags, but when you add a sort to mix the two feeds you can achieve some neat
-effects like organizing all of your favorite blog posts from around the internet
-in chronological order.
+Notice that when you switch to the "blogs" tags, the displayed content will be 
+the stories in the first feed followed by the stories in the second feed. This 
+display may not seem very useful if you're using implicit tags, but, when you 
+add a sort to mix, the two feeds you can achieve some neat effects, like 
+organizing all of your favorite blog posts from around the internet in 
+chronological order.
 
 ### Using Tags as Folders
 
-Typically, the above behavior, appending the items together is not what a user
-expects unless they're going to use a sort. Usually, tags are used as folders so
-that switching to "blogs" means showing all the feeds that have "blogs" in the
-tags.
+Typically, the above behavior, appending the items together by using a common 
+tag is not what a user expects unless they're going to use a sort.  Usually, 
+tags are used as folders names so that switching to "blogs" means showing all 
+the feeds that have "blogs" in the tags.
 
-This is accomplished using the `with_tag_in` filter. Following the above
-example, we can emulate folders with global filters:
+This behavior is accomplished using the `with_tag_in` filter. Following the 
+above example, we can emulate folders with global filters:
+
     
     :::python
     add("http://some-blog", tags=[None, "blogs"])
     add("http://some-other-blog", tags=[None, "blogs"])
     filters = [ None, with_tag_in("blogs") ]
 
-With this snippet, using ']' to switch to the next global filter will show only
-the items in the two blog feeds, but still organized by feed rather than
-appended.
+With this snippet, using ']' to switch to the next global filter will cause 
+Canto to display only the items in the two "blogs" feeds, but the items will 
+still be organized by feed rather than displayed as an appended list of items.
 
 You can also list multiple tags and use implicit default tags for use in
 `with_tag_in`
@@ -772,14 +779,14 @@ Lastly, you can combine `with_tag_in` and other filters with `all_of`
     :::python
     filters = [ None, all_of(with_tag_in("blogs"), show_unread) ]
 
-This will make your second global filter show you all of your blog feeds, but
-only their unread items.
+This combination will make your second global filter show you all of your blog 
+feeds, but only their unread items.
 
 ### Adding Explicit Tags
 
 So far we've only dealt with implicit tags that are either created by default or
-by appending a string to the `tags` list. These are only useful for using tags
-with < / > or in filters.
+by appending a string to the `tags` list. Such creations are only useful for 
+using tags with < / > or in filters.
 
 However, tags themselves can have attributes. You can make an explicit tag with
 the `add_tag` function.
@@ -793,9 +800,9 @@ These definitions can come before or after you use them in `add` calls.
 
 ### Tag Filters
 
-Tag filters, as the name would suggest only apply to a specific tag. These are
-useful if a filter would only make sense for a certain set of items rather than
-globally.
+Tag filters, as the name would suggest only apply to a specific tag. These 
+filters  are useful if a filter would only make sense for a certain set of items
+rather than globally.
 
 Let's return to the webcomic example from the [feed filter](#using-feed-filters)
 section. In that example, we wanted to entirely discard posts that were news
@@ -805,7 +812,7 @@ useful if you want to prioritize one set of stories over another. In this case,
 we want to prioritize the comics, but make the news items available on request.
 
     :::python
-    add("http://feeds.penny-arcade.com/pa-mainsite")    # Implicitly creates "Penny Arcade" tag
+    add("http://feeds.penny-arcade.com/pa-mainsite") # Implicitly creates "Penny Arcade" tag
     add_tag("Penny Arcade", filters=[only_with("Comic:"), only_with("News:")])
 
 This example makes the "Penny Arcade" tag explicit and sets up two tag filters.
@@ -835,7 +842,7 @@ the `add_tag` (or `[None]` if it hasn't been called at all). Implicit tags
 configuration is done, so they will inherit the defaults from the last call to
 `default_tag_filters` made in the config.
 
-Also like global filters, tag filters can be set directly via keybind
+Just like global filters, tag filters can be set directly via keybind
 
     :::python
     keys['u'] = set_tag_filter(show_unread)
@@ -848,8 +855,8 @@ with items in it.
 
 ### Sorts
 
-Another benefit of making explicit tags is using sorts. `canto.extra` defines
-some default sorts to use.
+Another benefit of making explicit tags is the ability to sort items in varied 
+ways. `canto.extra` defines some default sorts to use.
 
 <table>
 <tr>
@@ -901,12 +908,12 @@ field to be kept in memory so it adds a couple of bytes per story.
 > This was also a speed tweak to avoid stories hitting the disk every time it's
 sorted which makes the program grind to a halt.
 
-The simplest way to use a sort is when you define a tag
+The simplest way to use a sort is to do so when you define a tag
 
     :::python
     add_tag("Tag", sorts=[by_unread])
 
-Which will sort the given tag with unread stories first.
+The above code will sort the given tag with unread stories first.
 
 Similarly to filters and sorts you can set defaults and use keybinds to set
 sorts.
@@ -936,8 +943,8 @@ order of priority.
     :::python
     default_tag_sorts([sort_order(by_unread, by_alpha)])
 
-This snippet will make tags sort by unread status and then items that have the
-same read/unread status will in turn be sorted alphabetically.
+This snippet will make tags sort items first by unread status and then sort the
+same items alphabetically.
 
 </div>
 
@@ -945,9 +952,9 @@ same read/unread status will in turn be sorted alphabetically.
 
 <div class="section">
 
-Canto includes a number of hooks for outside extensibility. These are most
-useful when you author them yourself, but `canto.extra` includes some basic
-hooks to use.
+Canto includes a number of hooks for outside extensibility. You may find hooks
+to be most useful when you author them yourself.  Even so, but `canto.extra` 
+does include a few basic, but useful, hooks.
 
 The possible hooks:
 
@@ -1013,7 +1020,7 @@ check the environment's `TERM` before employing the hooks.
         select_hook = set_xterm_title
         end_hook = clear_xterm_title
 
-This ensures that when you switch to the Linux console or another terminal,
+This code ensures that when you switch to the Linux console or another terminal,
 Canto won't start spewing uninterpreted content to the screen.
 
 </div>
