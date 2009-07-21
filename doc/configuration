@@ -948,6 +948,106 @@ same items alphabetically.
 
 </div>
 
+## Adding Content
+
+<div class="section">
+
+A common task is to add relevant information to the reader.
+
+### Typical Content
+
+A lot of feeds support typical information about each item. By default, the
+reader displays the title, the description, and the subsequent links. If you
+wanted to add other content, you can use `add_info`. For example, to add the
+author of an item to the reader:
+
+    :::python
+    r = get_default_renderer()
+    add_info(r, "Author")
+
+This will add the following line to the reader, above the content:
+
+    Author: [author]
+
+`add_info` takes other arguments to customize how the line is displayed.
+
+    :::python
+    add_info(r, "Author", caption="by: ")
+
+The resulting line now looks like this:
+
+    by: [author]
+
+If the item being displayed doesn't include any author information, the line
+will be entirely ommitted. It can also be that the information isn't useful and
+should be ignored. Lots of feed generators set author to a default like
+`donotreply@somedomain` which isn't useful info. Other feeds will put author
+information into the content anyway. Because of this, you can specify to only
+add the information to particular tags.
+
+    :::python
+    add_info(r, "Author", tags=["Slashdot"...])
+
+### Less Common Content
+
+It's difficult to know whether your RSS includes any special information. As of
+0.7.x, canto includes a simple wrapper script called `canto-inspect`. You call
+it like so:
+
+    canto-inspect [URL] > output
+
+It's essentially a custom pretty printer for the XML, nothing very advanced.
+However, using this you can detect interesting content. Like this partial output
+from `canto-inspect http://rss.slashdot.org/slashdot/Slashdot`:
+
+    :::text
+    [entries]
+        [0]
+            [summary_detail]
+                [base]: http://rss.slashdot.org/slashdot/Slashdot
+                [type]: text/html
+                [value]: ...
+                [language]
+            [updated_parsed]: ...
+            [links]
+                [0]
+                    [href]: http://rss.slashdot.org/~r/Slashdot/slashdot/...
+                    [type]: text/html
+                    [rel]: alternate
+            [title]: Doctors Fight Patent On Medical Knowledge
+            [slash_department]: no-not-patent-medicine
+            [feedburner_origlink]: http://yro.slashdot.org/story/09/07/...
+            [author]: kdawson
+            [updated]: 2009-07-21T18:20:00+00:00
+            [summary]: ...
+            [title_detail]
+                [base]: http://rss.slashdot.org/slashdot/Slashdot
+                [type]: text/plain
+                [value]: Doctors Fight Patent On Medical Knowledge
+                [language]
+            [slash_section]: yro
+            [link]: http://rss.slashdot.org/~r/Slashdot/slashdot/~3/...
+            [slash_hit_parade]: 0,0,0,0,0,0,0
+            [id]: http://yro.slashdot.org/story/09/07/21/1646216/...
+            [tags]
+                [0]
+                    [term]: patents
+                    [scheme]
+                    [label]
+
+In this mess of information, we can see some interesting content, like 
+`slash_department` and `slash_section` which might be of interest. Armed with
+this knowledge, we can add the content:
+
+    :::python
+    r = get_default_renderer()
+    add_info(r, "slash_department", caption="Dept: ", tags=["Slashdot"])
+
+> **NOTE**: The first argument to `add_info` corresponds to the content in the
+[brackets], but isn't case sensitive.
+
+</div>
+
 ## Hooks
 
 <div class="section">
