@@ -243,7 +243,7 @@ class Gui(BaseGui) :
     # Print a single item to the screen.
     def print_item(self, tag, story, row):
         d = { "story" : story, "tag" : tag, "row" : row, "cfg" : self.cfg,
-                "width" : self.cfg.width / self.cfg.columns,
+                "width" : self.cfg.gui_width / self.cfg.columns,
                 "window_list" : self.window_list }
         r = tag.renderer.story(d)
 
@@ -280,9 +280,11 @@ class Gui(BaseGui) :
 
             win.noutrefresh(0,0,
                     self.cfg.gui_top,
-                    i*(self.cfg.gui_width / self.cfg.columns),
-                    self.cfg.gui_height - 1,
-                    (i+1)*(self.cfg.gui_width / self.cfg.columns))
+                    i*(self.cfg.gui_width / self.cfg.columns) +
+                    self.cfg.gui_right,
+                    self.cfg.gui_top + self.cfg.gui_height - 1,
+                    (i+1)*(self.cfg.gui_width / self.cfg.columns) +
+                    self.cfg.gui_right)
 
         if self.reader_obj:
             self.reader_obj.draw_elements()

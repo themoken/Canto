@@ -68,7 +68,7 @@ class Reader(BaseGui):
                     self.top, self.right = (self.cfg.gui_height, 0)
         else:
             d["width"] = self.cfg.reader_lines
-            d["height"] = 0
+            d["height"] = self.cfg.gui_height
 
             self.lines, self.links = self.tag.renderer.reader(d)
 
@@ -91,7 +91,7 @@ class Reader(BaseGui):
     def draw_elements(self):
         self.more = self.lines - (self.height + self.offset)
         self.window.noutrefresh(self.offset, 0, self.top, self.right, \
-                self.height - 1 + self.top, self.width + self.right)
+                self.top + self.height - 1, self.width + self.right)
 
     def toggle_show_links(self):
         self.show_links = not self.show_links
