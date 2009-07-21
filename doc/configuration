@@ -171,6 +171,54 @@ This will use `fbv` to view an image in a text console.
 
 </div>
 
+## Reader Layout
+
+<div class="section">
+
+You can dedicate space for the reader, rather than having it float above the
+items (the default behavior). `reader_orientation` and `reader_lines`.
+
+Reader orientation can be one of five possible settings.
+
+    :::python
+    reader_orientation = None       # Default floating
+    reader_orientation = "left"     # Dedicated left of the item list
+    reader_orientation = "right"    # Dedicated right of the item list
+    reader_orientation = "top"      # Dedicated on top of the item list
+    reader_orientation = "bottom"   # Dedicated under the item list
+
+You can also specify the size for any of the dedicated layouts (i.e. not
+floating). For "left" and "right", `reader_lines` controls the width, and for
+"top" and "bottom" it controls the height. It's set like this:
+
+    :::python
+    reader_lines = 10
+
+`reader_lines` has a minimum of three lines since the default theme ceases to
+behave well when its space is so constricted. Three lines is practically
+unreadable, so this is unlikely to change.
+
+### Layout Hook
+
+Setting the orientation and size of the reader area statically can be useful,
+but can lead to trouble (like setting the reader area to be larger than the
+available space, which is not good). [Hooks](#hooks) are covered later, but for
+now a `resize_hook` is useful to resize the reader area to be a proportion of
+the available space, rather than a constant.
+
+This hook will make a reader area that takes half of the screen to the left, no
+matter how the window is resized and set the number of columns in the main list.
+
+    :::python
+    def resize_hook (cfg):
+        cfg.reader_orientation = "left"
+        cfg.reader_lines = cfg.width / 2
+        cfg.columns = (cfg.width / 2) / 65
+
+Copying and pasting this anywhere in your config will achieve the desired effect.
+
+</div>
+
 # Using Advanced Features
 
 Canto is extremely powerful due to its internal use of the Python
