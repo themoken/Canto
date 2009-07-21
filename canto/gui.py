@@ -110,6 +110,8 @@ def change_filter(fn):
             self.cfg.log("Filter: %s" % f)
             for t in self.tags:
                 t.clear()
+            self.sel = None
+            self.items = 0
             return REFILTER
     return dec
 
@@ -144,6 +146,7 @@ def change_tags(fn):
                 ot.clear()
             self.tags = t
             self.sel = None
+            self.items = 0
             self.cfg.log("Tags: %s" % ", ".join([unicode(x) for x in t]))
             return RETAG
     return dec
