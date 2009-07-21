@@ -521,8 +521,6 @@ class Main():
         self.ticks -= 1
         if self.ticks <= 0:
             if "interval" in self.cfg.triggers:
-                for f in self.cfg.feeds:
-                    f.time -= 1
                 self.update(0, self.cfg.feeds)
             self.ticks = 60
 
