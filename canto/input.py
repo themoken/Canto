@@ -135,7 +135,7 @@ def search(cfg, prompt):
         str = ".*" + re.escape(term) + ".*"
     
     try:
-        m = re.compile(str)
+        m = re.compile(str, re.I)
     except:
         return None
 
