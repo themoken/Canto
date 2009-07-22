@@ -266,9 +266,9 @@ Any visible non-newline character can be used directly. Whitespace characters
 
 Any invisible characters, like function keys, arrow keys, etc. can be used by
 their ncurses name. On the man page for `getch()`, a list of all possible
-names is available. Here's an [online copy]
-(http://www.mkssoftware.com/docs/man3/curs_getch.3.asp).  Typically definitions 
-using these keys look like this:
+names is available. Here's an 
+[online copy](http://www.mkssoftware.com/docs/man3/curs_getch.3.asp). 
+Typically definitions using these keys look like this:
 
     :::python
     keys['KEY_F1'] = ...
@@ -558,7 +558,7 @@ More complicated macros can be created that can cover both main view and reader
 view keybinds. Take for example the default binding of "n" in reader view.
 
     :::python
-    reader_keys = [ "destroy", "next_item", "reader" ]
+    reader_keys['n'] = [ "destroy", "next_item", "reader" ]
 
 This macro allows you to go to the next item without leaving the reader. When 
 this macro executes three events happen:  "destroy" kills the reader, 
@@ -815,7 +815,7 @@ You can also list multiple tags and use implicit default tags for use in
 
     :::python
     add("http://rss.slashdot.org/slashdot/Slashdot") # Creates implicit "Slashdot" tag
-    add("http:/.some-blog", tags=[None, "blogs"])
+    add("http://.some-blog", tags=[None, "blogs"])
     filters = [ None, with_tag_in("Slashdot", "blogs") ]
 
 Lastly, you can combine `with_tag_in` and other filters with `all_of`
@@ -1110,11 +1110,11 @@ The possible hooks:
 <tr>
 <td><pre>resize_hook</pre></td>
 <td>Run when the window is resized (including on start)</td>
-</tr>>
+</tr>
 <tr>
 <td><pre>new_hook</pre></td>
 <td>Run once for every new item.</td>
-</tr>>
+</tr>
 <tr>
 <td><pre>select_hook</pre></td>
 <td>Run when a new item is selected</td>
