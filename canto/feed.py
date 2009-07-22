@@ -19,7 +19,7 @@
 # update() for updating from disk and todisk() to commit the current state when
 # Canto shuts down.
 
-from const import STORY_QD, STORY_SAVED
+from const import STORY_QD, STORY_SAVED, STORY_UPDATED
 import story
 
 import cPickle
@@ -139,15 +139,18 @@ class Feed(list):
             # notice (doesn't care about tags), so we check and
             # append as needed.
 
+            updated = STORY_SAVED
             if self.tags[0] != nentry["canto_state"][0]:
                 nentry["canto_state"][0] = self.tags[0]
+                updated = STORY_UPDATED
 
             for tag in self.tags[1:]:
                 if tag not in nentry["canto_state"]:
                     nentry["canto_state"].append(tag)
+                    updated = STORY_UPDATED
 
             if (nentry not in self) and (nentry not in newlist):
-                newlist.append(story.Story(nentry, self.path))
+                newlist.append(story.Story(nentry, self.path, updated))
 
         # Eliminate entries that aren't in the feed. This is possible since c-f
         # enforces the number of kept items, so items not in entries are ready

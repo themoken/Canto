@@ -23,8 +23,8 @@ import cPickle
 import fcntl
 
 class Story():
-    def __init__(self, d, ufp_path):
-        self.updated = STORY_SAVED
+    def __init__(self, d, ufp_path, updated):
+        self.updated = updated
         self.ufp_path = ufp_path
         self.ondisk = None
         self.d = d
