@@ -601,7 +601,19 @@ class Gui(BaseGui) :
 
     @change_tags
     def set_tagset(self, t):
-        return (1, self.cfg.get_real_tagl(t))
+        newtags = []
+        for tag in t:
+            for ctag in self.cfg.cfgtags:
+                if ctag.tag == tag:
+                    newtags.append(ctag)
+                    break
+            else:
+                newtags.append(Tag(self.cfg,
+                    self.cfg.default_renderer,
+                    self.cfg.tag_sorts,
+                    self.cfg.tag_filters,
+                    tag))
+        return (self.cfg.tags.override(newtags), self.cfg.tags.cur())
 
     @noitem_unsafe
     def inline_search(self):
