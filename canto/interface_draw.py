@@ -164,6 +164,9 @@ class Renderer(BaseRenderer):
         self.indent = u"  "
         self.in_on = 0
 
+	# Call the initialization hook.
+	self.init_hook()
+
     def tag_head(self, dict):
         t = u"%1" + dict["tag"].tag + u" [%2" + unicode(dict["tag"].unread)\
                 + u"%0]%0"
@@ -431,3 +434,7 @@ class Renderer(BaseRenderer):
 
     def status(self, bar, height, width, str):
         self.simple_out([(str, u" ", u"")], 0, height, width, [bar])
+
+    def init_hook(self):
+	# Do nothing. Override this in your own renderer.
+	return 0
