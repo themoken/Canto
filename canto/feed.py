@@ -139,7 +139,10 @@ class Feed(list):
             # notice (doesn't care about tags), so we check and
             # append as needed.
 
-            for tag in self.tags:
+            if self.tags[0] != nentry["canto_state"][0]:
+                nentry["canto_state"][0] = self.tags[0]
+
+            for tag in self.tags[1:]:
                 if tag not in nentry["canto_state"]:
                     nentry["canto_state"].append(tag)
 
