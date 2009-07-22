@@ -539,7 +539,7 @@ class Main():
             iter = []
             for f in self.cfg.feeds:
                 for t in self.gui.tags:
-                    if t.tag in f.tags:
+                    if t.tag == "*" or t.tag in f.tags:
                         iter.append(f)
                         break
 
