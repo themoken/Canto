@@ -783,7 +783,7 @@ This addition will define an implicit tag "blogs". After adding that tag, you
 can use < and > to switch between the default set of tags (i.e. one per feed) 
 to the "blogs" tag.
 
-Notice that when you switch to the "blogs" tags, the displayed content will be 
+Notice that when you switch to the "blogs" tag, the displayed content will be 
 the stories in the first feed followed by the stories in the second feed. This 
 display may not seem very useful if you're using implicit tags, but, when you 
 add a sort to mix, the two feeds you can achieve some neat effects, like 
@@ -1229,5 +1229,108 @@ check the environment's `TERM` before employing the hooks.
 
 This code ensures that when you switch to the Linux console or another terminal,
 Canto won't start spewing uninterpreted content to the screen.
+
+</div>
+
+# Upgrading from 0.6.x
+
+<div class="section">
+
+For most users, upgrading to 0.7.x from 0.6.x should be painless. There are some
+quirks that may cause trouble.
+
+## Standard Procedures
+
+First of all, if you run `canto-fetch` as a daemon, you want to make sure that
+all the old daemons aren't running. There aren't any differences in the disk
+format between the two versions, but it's bad practice to have multiple versions
+of software running on the same data. You can properly kill all running
+`canto-fetch` instances like so:
+
+    :::bash
+    $ killall -INT canto-fetch
+
+After that, you should have no running instances. You can check with
+
+    :::bash
+    $ ps -u [youruser] | grep canto-fetch
+
+If you still having running instances after a few moments, you can issue
+`killall -9 canto-fetch` to force them to exit.
+
+## Configuration
+
+Once again, for most users, changes to your configuration shouldn't be
+necessary. If you use sorts, or define sorts and filters, then you made need a
+change.
+
+### Using Sorts
+
+The primary difference with using sorts is that sort order is no longer conveyed
+as a simple list. This was confusing and made for a lot of double lists in weird
+places.
+
+    :::python
+    add_tag("sometag", sorts=[[by_date]])       # 0.6.x
+    add_tag("sometag", sorts=[by_date])         # 0.7.x
+
+To convey the same meaning as the double lists used to (i.e. sort order), you
+can use the new `sort_order` function.
+
+    :::python
+    add_tag("sometag", sorts=[[by_alpha, by_len]])          # 0.6.x
+    add_tag("sometag", sorts=[sort_order(by_alpha, by_len)] # 0.7.x
+
+### Defining Filters and Sorts
+
+If you created your own filters and sorts for 0.6.x, the main difference is that
+these now must be classes subclassing `Filter` and `Sort` respectively. So where
+once
+
+    :::python
+    # 0.6.x valid filter
+    def myfilt(tag, story):
+        ...perform filter...
+
+was valid. You now need
+
+    :::python
+    # 0.7.x valid filter
+    class myfilt(Filter):
+        def __call__(self, tag, story):
+            ...perform filter...
+
+Also, any items used other than "title", "link", "id", and "canto_state",
+should be added to the precache variable of the class.
+
+    :::python
+    class myfilt(Filter):
+        def __init__(self):
+            Filter.__init__(self)
+            self.precache = ["extra_item", ...]
+        ...
+
+You'll know that this needs to be done if Canto is extremely sluggish. Of
+course, you can see examples of the new classes in 
+[canto.extra](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=blob;f=canto/extra.py;hb=HEAD)
+
+### Validation
+
+0.7.x is more strict than 0.6.x about validating your configuration. It's
+possible that accepted input that doesn't fall under the previous categories and
+still doesn't work with 0.7.x. Usually in this case, the error message is enough
+to set you straight. If you're still having trouble, [contact](../contact) me.
+
+### Other Changes
+
+* `new_hook` is enforce by canto-fetch now, and will thus run even without Canto
+
+* `keep` variables set < the number of items in the feed source will be ignored
+and thus `keep=0` now indicates that all items in the feed should be kept and no
+more.
+
+### If All Else Fails
+
+If you're really stuck and confused trying to upgrade: [contact](../contact) me.
 
 </div>
