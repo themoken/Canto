@@ -1092,6 +1092,69 @@ this knowledge, we can add the content:
 
 </div>
 
+## Update Triggers
+
+<div class="section">
+
+Canto supports a number of different update mechanisms.
+
+>**NOTE**: These triggers are to update the client from disk only, 
+they have nothing to do with getting items from the server. That is only
+controlled by running `canto-fetch` and the rates you have set in the
+configuration.
+
+* **Interval Updating**. This is the default behavior. Every so often (generally
+about a minute), the feeds are read from disk and the display is updated. This
+is what most people expect from their RSS reader.
+
+* **Change Tag Updating**. This makes the client update whenever you change
+feeds/tags. This is useful to use with filters.
+
+* **Signal Updating**. This enables you to issue a `SIGUSR1` to canto and
+trigger a screen update. Most useful from a script (i.e. write a script or a
+cron that runs `canto-fetch` and immediately issues `SIGUSR1`.
+
+* **Manual Updating**. Not automatic, but driven by a keybind (C-r by default).
+
+### Considerations
+
+The primary reason for having multiple update triggers is that each one caters
+differently to how you want to use Canto. Users that don't appreciate text
+shifting out from under their eyes might want to avoid the every-minute
+`interval` update and might prefer `change_tag` or manual updates that are much
+more predictable. Users that flit from one tag to another reading what looks
+interesting and breezing through the rest might want to avoid `change_tag`
+because it would cause an update too often and the `interval` update might be just
+fine for them. It's all about what suits you.
+
+If you think you'd rather have another kind of trigger, file a feature request
+bug and we'll consider it. They're fairly simple to implement.
+
+### Using Triggers
+
+Using triggers is a simple as using a list. By default, `triggers` is set like
+this:
+
+    :::python
+    triggers = ["interval"]
+
+You can add triggers or remove triggers with typical Python list functions
+
+    :::python
+    triggers.append("change_tag")
+    triggers.append("signal")
+    triggers.remove("interval")
+
+You can only set "change_tag", "signal", and "interval" in `triggers`. Manual
+isn't considered a real trigger, but is set like other keybinds to
+`force_update`.
+
+I expect there will be refinements to the trigger system in upcoming releases.
+Once again, any ideas for new triggers or improvements (or even code) are
+[welcome](contact).
+
+</div>
+
 ## Hooks
 
 <div class="section">
