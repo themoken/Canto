@@ -107,6 +107,20 @@ If you choose not to change settings, rate is set to five minutes (5) and keep
 is set to 0, which indicates that all the items in the feed source should be 
 kept.
 
+### Discard Policy
+
+Usually, it's preferable to discard items that are old enough that they're no
+longer inside the `keep` range for a particular feed. If you'd like to avoid
+ever discarding items with a particular tag or state, you can use the
+`never_discard` function. For example, to avoid ever discarding unread items:
+
+    :::python
+    never_discard("unread")
+
+You can also specify a tag like "Slashdot", but I wouldn't suggest it unless
+you're okay with spending large amounts of disk space for the 1000s of Slashdot
+articles you'll accumulate.
+
 </div>
 
 ## Browsing
