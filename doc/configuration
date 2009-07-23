@@ -1,3 +1,5 @@
+This is where you learn the details of `~/.canto/conf.py`. For the impatient,
+you can skip to the [example config](#example-config).
 
 [TOC]
 
@@ -5,7 +7,9 @@
 
 This section covers Canto's basics features and how to use filters, sorts, tags, 
 and the other pre-written goodies that can be found in `canto.extra`.  The 
-actual writing of custom content is covered in later sections.
+actual writing of custom content is covered in later sections. This is all
+intended to be put into `~/.canto/conf.py` (conf, without the extension, is
+acceptable as well).
 
 ## Adding feeds
 
