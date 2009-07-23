@@ -51,6 +51,44 @@ definition too.
 There are a few other options for `add`, but these are more logically covered
 elsewhere.
 
+### Script Extensions
+
+Canto supports using Snownews extensions. Essentially, these are executable
+scripts that, when run, spit out the feed XML. These are usually used to make a
+feed out of a webpage that doesn't usually provide a feed (which are thankfully
+becoming more and more rare). By default, these are put into
+`~/.canto/scripts/`, but this can be changed by adding the `-S` flag to
+`canto-fetch`.
+
+A typical example of using a script is to get a feed for the Slashdot polls
+which, as of this writing, has no RSS just for it.
+[slashdotpolls](http://codezen.org/static/slashdotpolls) is a script that will
+scrape Slashdot and output a feed. To use it:
+
+    :::bash
+    $ wget http://codezen.org/static/slashdotpolls
+    $ chmod +x slashdotpolls
+    $ mkdir ~/.canto/scripts
+    $ mv slashdotpolls ~/.canto/scripts/
+
+It's very important that the script is marked as executable, or the extension
+will fail.
+
+>**NOTE**: Because these extensions require an arbitrary script to be run as
+your user, DO NOT EVER use a script that comes from an unknown location without
+first READING the script to make sure it's not MALICIOUS.
+
+Then, to use the script from Canto, you'd add a feed starting with "script:",
+like this:
+
+    :::python
+    add("script:slashdotpolls -external")
+    add("script:myscript -arg1 -arg2 ...")
+
+For slashdotpolls, `-external` is a flag that makes it print the RSS. You can
+find a lot more extensions like this in the Snownews
+[repository](http://kiza.kcore.de/software/snownews/snowscripts/extensions).
+
 ### "Sourcing" Other Files
 
 Canto supports adding feeds from other file formats. This can be useful when
@@ -1390,6 +1428,67 @@ check the environment's `TERM` before employing the hooks.
 
 This code ensures that when you switch to the Linux console or another terminal,
 Canto won't start spewing uninterpreted content to the screen.
+
+</div>
+
+# Example Config
+
+<div class="section">
+
+Here is a modified version of my own config that should serve as a decent
+starting point for any new users.
+
+    :::python
+    from canto.extra import *
+    import os
+
+    # Handlers when in Linux console or xterm
+    if os.getenv("TERM") == "linux":
+        link_handler("elinks \"%u\"", text=True)
+        image_handler("fbi \"%u\"", text=True, fetch=True)
+    else:
+        link_handler("firefox \"%u\"")
+        image_handler("feh \"%u\"", fetch=True)
+
+    # Max column width of 65 characters
+    def resize_hook (cfg):
+        cfg.columns = cfg.width / 65
+
+    # Never discard items I haven't seen
+    never_discard("unread")
+
+    # I prefer change_tag to interval
+    # Uncomment these to use it too
+
+    # triggers.remove("interval")
+    # triggers.append("change_tag")
+
+    keys['/'] = search_filter
+    keys['y'] = yank
+
+    # Use [ / ] to switch between global filters
+    filters=[show_unread, None]
+
+    # Make unread items float to the top, when not
+    # using show_unread filter
+    default_tag_sorts([by_unread])
+
+    # Selected Feeds
+    add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
+    add("http://osnews.com/files/recent.xml", tags=[None, "news"])
+    add("http://www.damninteresting.com/?feed=rss2")
+    add("http://reddit.com/.rss", tags=["Reddit", "reddits", "news"])
+    add("http://programming.reddit.com/.rss", tags=[None, "reddits"])
+    add("http://netsec.reddit.com/.rss", tags=[None, "reddits"])
+    #...
+
+    # Some examples
+    add("script:slashdotpolls -external")
+    add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
+            password="digest")
+
+You can download this example config 
+[here](http://codezen.org/static/conf.py.example)
 
 </div>
 
