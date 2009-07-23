@@ -38,9 +38,9 @@ def convcolor(c):
     return INVALID_COLOR
 
 def register(c):
-    c.colors = [("white","black"),("blue","black"),("yellow","black"),\
-        ("green","black"),("pink","black"),("black","black"),\
-        ("blue","black"),(0,0)]
+    c.colors = [("white","black"),"blue","yellow",\
+        "green","pink","black",\
+        "blue","black"]
 
     c.default_renderer = Renderer()
     c.default_msg_tick = 5

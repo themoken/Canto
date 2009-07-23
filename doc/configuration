@@ -219,6 +219,153 @@ Copying and pasting this anywhere in your config will achieve the desired effect
 
 </div>
 
+## Colors
+
+<div class="section">
+
+Changing the colors of the interface is simple. There are eight default ncurses
+colors, and one place holder for a default value.
+
+<table>
+<tr>
+<td>Curses Color Number</td>
+<td>Representation</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>"default"</td>
+</tr>
+<tr>
+<td>0</td>
+<td>"black"</td>
+</tr>
+<tr>
+<td>1</td>
+<td>"red"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>"green"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>"yellow"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>"blue"</td>
+</tr>
+<tr>
+<td>5</td>
+<td>"pink" or "magenta"</td>
+</tr>
+<tr>
+<td>6</td>
+<td>"cyan"</td>
+</tr>
+<tr>
+<td>7</td>
+<td>"white"</td>
+</tr>
+</table>
+
+>**NOTE**: "default" is usually black on a default terminal. If your terminal
+supports transparency though, it will be made transparent.
+
+>**ALSO NOTE**: With curses colors you occasionally have to be creative about
+getting colors not listed here. For example, to achieve "gray", you have to use
+"black", but make the text bold.
+
+You can use these colors in eight different slots in canto.
+
+<table>
+<tr>
+<td>Color Pair</td>
+<td>Definition</td>
+<td>How it's used</td>
+</tr>
+<tr>
+<td>0</td>
+<td>(White, Black)</td>
+<td>This is default color pair</td>
+</tr>
+<tr>
+<td>1</td>
+<td>(Blue, Black)</td>
+<td>This is used for unread story items.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>(Yellow, Black)</td>
+<td>This is used for read story items.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>(Green, Black)</td>
+<td>This is used for links in the reader.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>(Magenta, Black)</td>
+<td>This is used for quotes in the reader.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>(Black,Black)</td>
+<td>This is used for emphasis (italic/small/em) text in the reader, used with %B to appear gray</td>
+</tr>
+<tr>
+<td>6</td>
+<td>(Blue,Black)</td>
+<td>This is used for image links in the reader</td>
+</tr>
+<tr>
+<td>7</td>
+<td>(Black,Black)</td>
+<td>This is unset/unused.</td>
+</tr>
+</table>
+
+Changing these items is as simple as using the `colors` list.
+
+    :::python
+    colors[0] = "blue"
+    colors[0] = 4
+    colors[0] = (4, -1)
+    colors[0] = ("blue", "default")
+
+These are all equivalent statements. If you only specify one number or color,
+it's used as the foreground and inherits the background of `colors[0]`, or
+"default" if you're setting `colors[0]`. Therefore:
+
+    :::python
+    colors[0] = ("blue", "white")
+    colors[1] = "red"
+
+Now `colors[1]` inherits `colors[0]`'s background and is set to ("red",
+"white").
+
+### 256 Colors
+
+On terminals that support 256 colors, you can specify colors by number. A color
+chart for xterm is available
+[here](http://www.calmar.ws/vim/256-xterm-24bit-rgb-color-chart.html)
+
+    :::python
+    colors[0] = 120
+
+To make sure that your terminal supports it, you can check with this 
+[color script](http://codezen.org/static/colortest), which is a mirrored copy of
+[this](http://www.vim.org/scripts/script.php?script_id=1349) Vim script.
+
+If you're having trouble with your terminal and you're sure that it should have
+support, try setting your `TERM` variable before invoking canto:
+
+    :::bash
+    $ TERM="xterm-256color" canto
+
+</div>
+
 # Using Advanced Features
 
 Canto is extremely powerful due to its internal use of the Python
