@@ -19,8 +19,8 @@ def validate(c):
         raise Exception, "triggers must be a list (%s)" % c.triggers
     for t in c.triggers:
         if t not in ["interval","signal","change_tag"]:
-            raise Exception, "%s is not a valid trigger name, try\
-                    \"interval\", \"signal\", or \"change_tag\"" % t
+            raise Exception, ("%s is not a valid trigger name, try" +
+                    " \"interval\", \"signal\", or \"change_tag\"") % t
 
 def test(c):
     pass

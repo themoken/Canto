@@ -46,6 +46,11 @@ import time
 import sys
 import os
 
+# This should be phased out after 0.7.x becomes standard
+def upgrade_help():
+    print "\nIf you're having trouble upgrading from 0.6.x please visit"
+    print "http://codezen.org/canto/config/#upgrading-from-06x"
+
 class Main():
     def __init__(self):
         signal.signal(signal.SIGUSR2, self.debug_out)
@@ -74,6 +79,7 @@ class Main():
             self.cfg.parse()
         except :
             traceback.print_exc()
+            upgrade_help()
             sys.exit(-1)
 
         self.cfg.log("Canto v %s (%s)" % \
@@ -188,6 +194,7 @@ class Main():
             self.cfg.validate()
         except Exception, err:
             print err
+            upgrade_help()
             sys.exit(0)
 
         # Print out a feed list
