@@ -1483,9 +1483,12 @@ starting point for any new users.
     #...
 
     # Some examples
-    add("script:slashdotpolls -external")
-    add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
-            password="digest")
+    # Uncomment if you've downloaded the script
+    # add("script:slashdotpolls -external")
+    #
+    # Simple password example
+    # add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
+    #        password="digest")
 
 You can download this example config 
 [here](http://codezen.org/static/conf.py.example)
