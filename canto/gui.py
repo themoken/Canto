@@ -602,17 +602,24 @@ class Gui(BaseGui) :
     @change_tags
     def set_tagset(self, t):
         newtags = []
-        for tag in t:
-            for ctag in self.cfg.cfgtags:
-                if ctag.tag == tag:
-                    newtags.append(ctag)
-                    break
-            else:
-                newtags.append(Tag(self.cfg,
-                    self.cfg.default_renderer,
-                    self.cfg.tag_sorts,
-                    self.cfg.tag_filters,
-                    tag))
+        if not t:
+            for feed in self.cfg.feeds:
+                for tag in self.cfg.cfgtags:
+                    if tag.tag == feed.tags[0]:
+                        newtags.append(tag)
+        else:
+            for tag in t:
+                for ctag in self.cfg.cfgtags:
+                    if ctag.tag == tag:
+                        newtags.append(ctag)
+                        break
+                else:
+                    newtags.append(Tag(self.cfg,
+                        self.cfg.default_renderer,
+                        self.cfg.tag_sorts,
+                        self.cfg.tag_filters,
+                        tag))
+
         return (self.cfg.tags.override(newtags), self.cfg.tags.cur())
 
     @noitem_unsafe
