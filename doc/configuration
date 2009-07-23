@@ -34,7 +34,7 @@ line will update a feed every 30 minutes and keep up to a 100 items.
 
 > The default `rate` is 5 for fetching from the server every five minutes.
 
-### Password protected feeds
+### Password Protected Feeds
 
 If the feed is behind browser authentication (i.e. when you try to reach it in a
 browser it brings up a username/password box), you can specify those in the feed
@@ -51,7 +51,7 @@ definition too.
 There are a few other options for `add`, but these are more logically covered
 elsewhere.
 
-### "Sourcing" other files
+### "Sourcing" Other Files
 
 Canto supports adding feeds from other file formats. This can be useful when
 trying to keep URLs synced between readers. Canto can source OPML files at
@@ -70,7 +70,7 @@ with a URL. If you want to add other attributes to feeds that have been added
 this way, then you can use `change_feed` that takes the same arguments as 
 `add` does.
 
-### Tweaking defaults
+### Tweaking Defaults
 
 At some point you may want to change the `rate` and `keep` parameters for a 
 large quantity of feeds and do so simultaneously.  Using `default_rate` and 
@@ -138,7 +138,7 @@ you can use a bit of logic to automatically set the browser based on the
     else:
         link_handler("firefox \"%u\"")              # X terminal
 
-### Non-HTML content
+### Non-HTML Content
 
 Links to PDFs and other content you'd rather view in a program other than
 your browser (like enclosures) can be setup by using `link_handler` with an
@@ -245,7 +245,7 @@ available to your config.
 
 <div class="section">
 
-### Specifying keys
+### Specifying Keys
 
 The first step to define your own keybinds is to learn how to specify which key
 you're binding to. Typically, it's very easy to rebind keys.
@@ -282,13 +282,13 @@ To specify Control or Alt key combinations, you can use "C-" for control and
     keys['M-a'] = ...   # Alt+A
     keys['C-M-a'] = ... # Ctrl+Alt+A
 
-### Default binds
+### Default Binds
 
 The following keybinds are typically available to the user. They will be used 
 in the examples below.
 
 
-#### Main view
+#### Main View
 
 <table>
 <tr>
@@ -467,7 +467,7 @@ in the examples below.
 </tr>
 </table>
 
-#### Reader view
+#### Reader View
 
 <table>
 <tr>
@@ -522,7 +522,7 @@ in the examples below.
 </tr>
 </table>
 
-### Using default binds
+### Using Default Binds
 
 Setting a new key for pre-existing functionality is easy to do using strings.
 As you can see in the above table, the bind "help" brings up the help page. To
@@ -574,7 +574,7 @@ list.  This also can be achieved with this simple code
 Using macros and keybinds, it's possible to get a maximum amount of work from a 
 minimum number of keystrokes.
 
-### Keybind goodies.
+### Keybind Goodies.
 
 Rebinding some existing functionality to a different key or creating a simple 
 macro will certainly make most users work faster and easier. 
@@ -1151,7 +1151,7 @@ isn't considered a real trigger, but is set like other keybinds to
 
 I expect there will be refinements to the trigger system in upcoming releases.
 Once again, any ideas for new triggers or improvements (or even code) are
-[welcome](contact).
+[welcome](../contact).
 
 </div>
 
@@ -1204,7 +1204,7 @@ The possible hooks:
 `new_hook` is intended to be used as a notification method. All other hooks
 don't function unless Canto is running.
 
-### Using hooks
+### Using Hooks
 
 There are only two hooks included in `canto.extra` by default. These are for
 manipulating the titles of an xterm (or another compatible X terminal).
