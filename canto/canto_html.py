@@ -125,7 +125,7 @@ class CantoHTML(HTMLParser):
                     self.result += u"\u25CF "
                 else:
                     self.list_stack[-1][1] += 1
-                    self.result += unicode(self.list_stack[-1][1])+ "."
+                    self.result += unicode(self.list_stack[-1][1])+ ". "
             else:
                 self.result += u"\n"
 
