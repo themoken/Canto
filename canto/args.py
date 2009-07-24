@@ -75,6 +75,9 @@ def parse_common_args(enc, extra_short, extra_long, iam="canto"):
     if conf_dir[-1] != '/' :
         conf_dir += '/'
 
+    if not os.path.exists(conf_dir):
+        os.mkdir(conf_dir)
+
     if iam == "canto":
         log_file = conf_dir + "log"
     else:
@@ -83,6 +86,16 @@ def parse_common_args(enc, extra_short, extra_long, iam="canto"):
     conf_file = conf_dir + "conf.py"
     feed_dir = conf_dir + "feeds/"
     script_dir = conf_dir + "scripts/"
+
+    # Make sure that the {feed,script}_dir does, indeed, exist and is
+    # actually a directory.
+
+    for dir in [feed_dir, script_dir]:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        elif not os.path.isdir(dir):
+            os.unlink(dir)
+            os.mkdir(dir)
 
     for opt, arg in optlist :
         if opt in ["-C", "--conf"] :

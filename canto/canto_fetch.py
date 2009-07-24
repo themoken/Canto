@@ -84,15 +84,6 @@ def main(enc):
         elif opt in ["-f","--force"]:
             force = True
 
-    # Make sure that the feed_dir does, indeed, exist and is
-    # actually a directory.
-
-    if not os.path.exists(cfg.feed_dir):
-        os.mkdir(cfg.feed_dir)
-    elif not os.path.isdir(cfg.feed_dir):
-        os.unlink(cfg.feed_dir)
-        os.mkdir(cfg.feed_dir)
-
     # Remove any crap out of the directory. This is mostly for
     # cleaning up when the user has removed a feed from the configuration.
 
