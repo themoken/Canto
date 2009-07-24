@@ -28,7 +28,7 @@ colordir = {"default" : -1,
 
 def convcolor(c):
     if type(c) == int:
-        if 0 <= c <= MAX_COLORS:
+        if -1 <= c <= MAX_COLORS:
             return c
         else:
             return INVALID_COLOR
