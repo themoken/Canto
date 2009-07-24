@@ -1,3 +1,29 @@
+Canto 0.7.0 ChangeLog
+* Convert to multiprocessing worker slave
+* Vast memory improvement (esp. for large lists)
+* Large scale refactor of *lots* of code
+* Better code documentation
+* Better site documentation
+* Partially validating configuration code
+* Partial test framework (to be added to as bugs arise)
+* Added configurable update triggers
+* Added `never_discard()` to keep certain items indefinitely.
+* Added SIGUSR2 signal to output debug backtrace.
+* Added state_change_hook
+* Added `canto-inspect`, a simple wrapper for examining feed internals
+* Added no-content stub for unfetchable feeds to avoid trying to update broken
+	URLS repeatedly.
+* Added `add_info` extra function for adding content to the reader
+* new_hook now enforced by canto-fetch
+* Ignore keep settings lower than the number of items in a feed
+* tags variably now implicitly set to sane default
+* "reader" keybind now doesn't set item read (coupled with "just_read" for
+	default)
+* Filters and Sorts now all subclass Filter and Sort class
+* Accept `conf.py` as well as `conf` for config name.
+* Fix double enforcement of rates (client more responsive to fetch updates)
+* Fix blank titles
+
 Canto 0.6.13 ChangeLog
 * Fix drawing regression
 
