@@ -495,178 +495,189 @@ in the examples below.
 
 <table>
 <tr>
+<td>Default Binding</td>
 <td>Name</td>
 <td>Function</td>
-<td>Default Binding</td>
 </tr>
 <tr>
+<td><pre>h</pre></td>
 <td><pre>help</pre></td>
 <td>Shows the man page (has all of these bindings listed).</td>
-<td><pre>h</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_DOWN / j</pre></td>
 <td><pre>next_item</pre></td>
 <td>Move to the next item.</td>
-<td><pre>KEY_DOWN / j</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_UP / k</pre></td>
 <td><pre>prev_item</pre></td>
 <td>Move to the previous item.</td>
-<td><pre>KEY_UP / k</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_NPAGE / l</pre></td>
 <td><pre>next_tag</pre></td>
 <td>Move to the next feed/group of items</td>
-<td><pre>KEY_NPAGE</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_PPAGE / o</pre></td>
 <td><pre>prev_tag</pre></td>
 <td>Move to the previous feed/group of items.</td>
-<td><pre>KEY_PPAGE</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_RIGHT</pre></td>
 <td><pre>just_read</pre></td>
 <td>Mark current story read and nothing else.</td>
-<td><pre>KEY_RIGHT</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_LEFT</pre></td>
 <td><pre>just_unread</pre></td>
 <td>Mark current story unread and nothing else.</td>
-<td><pre>KEY_LEFT</pre></td>
 </tr>
 <tr>
+<td><pre>g</pre></td>
 <td><pre>goto</pre></td>
 <td>Open the current story in your browser.</td>
-<td><pre>g</pre></td>
 </tr>
 <tr>
+<td><pre>f</pre></td>
 <td><pre>inline_search</pre></td>
 <td>Mark all stories matching a search.</td>
-<td><pre>f</pre></td>
 </tr>
 <tr>
+<td><pre>n</pre></td>
 <td><pre>next_mark</pre></td>
 <td>Go to the next marked story.</td>
-<td><pre>n</pre></td>
 </tr>
 <tr>
+<td><pre>p</pre></td>
 <td><pre>prev_mark</pre></td>
 <td>Go to the previous marked story.</td>
-<td><pre>p</pre></td>
 </tr>
 <tr>
+<td><pre>.</pre></td>
 <td><pre>next_unread</pre></td>
 <td>Go to the next unread story.</td>
-<td><pre>.</pre></td>
 </tr>
 <tr>
+<td><pre>,</pre></td>
 <td><pre>prev_unread</pre></td>
 <td>Go to the previous unread story.</td>
-<td><pre>,</pre></td>
 </tr>
 <tr>
-<td><pre>reader</pre></td>
-<td>Open the reader.</td>
 <td><pre>Space</pre></td>
+<td><pre>["just_read", "reader"]</pre></td>
+<td>Mark the story read and open the reader.</td>
 </tr>
 <tr>
-<td><pre>toggle_collapse_tag</pre></td>
-<td>Collapse/Show a feed/group of items.</td>
 <td><pre>c</pre></td>
+<td><pre>toggle_collapse_tag</pre></td>
+<td>Collapse/Show a tag of items.</td>
 </tr>
 <tr>
-<td><pre>set_collapse_all</pre></td>
-<td>Collapse on all feeds/groups.</td>
 <td><pre>C</pre></td>
+<td><pre>set_collapse_all</pre></td>
+<td>Collapse on all tags.</td>
 </tr>
 <tr>
-<td><pre>unset_collapse_all</pre></td>
-<td>Uncollapse all feeds/groups.</td>
 <td><pre>V</pre></td>
+<td><pre>unset_collapse_all</pre></td>
+<td>Uncollapse all tags.</td>
 </tr>
 <tr>
+<td><pre>m</pre></td>
 <td><pre>toggle_mark</pre></td>
 <td>Mark/unmark an item.</td>
-<td><pre>m</pre></td>
 </tr>
 <tr>
+<td><pre>M</pre></td>
 <td><pre>all_unmarked</pre></td>
 <td>Unmark all items</td>
-<td><pre>M</pre></td>
 </tr>
 <tr>
+<td><pre>r</pre></td>
 <td><pre>tag_read</pre></td>
 <td>Set all stories in a feed/group read.</td>
-<td><pre>r</pre></td>
 </tr>
 <tr>
+<td><pre>R</pre></td>
 <td><pre>all_read</pre></td>
 <td>Set all stories read.</td>
-<td><pre>R</pre></td>
 </tr>
 <tr>
+<td><pre>u</pre></td>
 <td><pre>tag_unread</pre></td>
 <td>Set all stories in a feed/group unread.</td>
-<td><pre>u</pre></td>
 </tr>
 <tr>
+<td><pre>U</pre></td>
 <td><pre>all_unread</pre></td>
 <td>Set all stories unread.</td>
-<td><pre>U</pre></td>
 </tr>
 <tr>
+<td><pre>C-r</pre></td>
 <td><pre>force_update</pre></td>
 <td>Reread stories from disk.</td>
-<td><pre>C-r</pre></td>
 </tr>
 <tr>
+<td><pre>C-l</pre></td>
 <td><pre>refresh</pre></td>
 <td>Redraw the screen.</td>
-<td><pre>C-l</pre></td>
 </tr>
 <tr>
+<td><pre>q</pre></td>
 <td><pre>quit</pre></td>
 <td>Quit Canto.</td>
-<td><pre>q</pre></td>
 </tr>
 <tr>
+<td><pre>]</pre></td>
 <td><pre>next_filter</pre></td>
 <td>Apply next global filter.</td>
-<td><pre>]</pre></td>
 </tr>
 <tr>
+<td><pre>]</pre></td>
 <td><pre>prev_filter</pre></td>
 <td>Apply previous global filter</td>
-<td><pre>]</pre></td>
 </tr>
 <tr>
+<td><pre>}</pre></td>
 <td><pre>next_tag_filter</pre></td>
 <td>Apply next tag filter (from filters)</td>
-<td><pre>}</pre></td>
 </tr>
 <tr>
+<td><pre>{</pre></td>
 <td><pre>prev_tag_filter</pre></td>
 <td>Apply previous feed filter</td>
-<td><pre>{</pre></td>
 </tr>
 <tr>
+<td><pre>=</pre></td>
+<td><pre>next_tag_sort</pre></td>
+<td>Apply next tag sort</td>
+</tr>
+<tr>
+<td><pre>-</pre></td>
+<td><pre>prev_tag_sort</pre></td>
+<td>Apply previous tag sort</td>
+</tr>
+<tr>
+<td><pre>&lt;</pre></td>
 <td><pre>prev_tagset</pre></td>
 <td>Show previous set of tags</td>
-<td><pre>&lt;</pre></td>
 </tr>
 <tr>
+<td><pre>&gt;</pre></td>
 <td><pre>next_tagset</pre></td>
 <td>Show next set of tags</td>
-<td><pre>&gt;</pre></td>
 <tr>
-<td><pre>goto_reltag</pre></td>
-<td>Goto the <code>nth</code> visible tag (filter aware)</td>
 <td><pre>;</pre></td>
+<td><pre>goto_reltag</pre></td>
+<td>Goto the <code>nth</code> visible tag, relative to current index
+(filter aware)</td>
 </tr>
 <tr>
+<td><pre>:</pre></td>
 <td><pre>goto_tag</pre></td>
 <td>Goto the <code>nth</code> tag (filter unaware)</td>
-<td><pre>:</pre></td>
 </tr>
 </table>
 
@@ -674,54 +685,54 @@ in the examples below.
 
 <table>
 <tr>
+<td>Default Binding</td>
 <td>Name</td>
 <td>Function</td>
-<td>Default Binding</td>
 </tr>
 <tr>
+<td><pre>KEY_DOWN / j</pre></td>
 <td><pre>scroll_down</pre></td>
 <td>Scrolls, if there's more text.</td>
-<td><pre>KEY_DOWN / j</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_UP / k</pre></td>
 <td><pre>scroll_up</pre></td>
 <td>Scroll up, if not at the top.</td>
-<td><pre>KEY_UP / k</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_NPAGE</pre></td>
 <td><pre>page_down</pre></td>
 <td>Page down.</td>
-<td><pre>KEY_NPAGE</pre></td>
 </tr>
 <tr>
+<td><pre>KEY_PPAGE</pre></td>
 <td><pre>page_up</pre></td>
 <td>Page Up.</td>
-<td><pre>KEY_PPAGE</pre></td>
 </tr>
 <tr>
+<td><pre>n</pre></td>
 <td><pre>["destroy","next_item","reader"]</pre></td>
 <td>Goto the next story without closing the reader.</td>
-<td><pre>n</pre></td>
 </tr>
 <tr>
+<td><pre>p</pre></td>
 <td><pre>["destroy","prev_item","reader"]</pre></td>
 <td>Goto the previous story without closing the reader.</td>
-<td><pre>p</pre></td>
 </tr>
 <tr>
+<td><pre>g</pre></td>
 <td><pre>goto</pre></td>
 <td>Go to a specific link listed inside the item text.</td>
-<td><pre>g</pre></td>
 </tr>
 <tr>
+<td><pre>l</pre></td>
 <td><pre>toggle_show_links</pre></td>
 <td>Show/hide the list of links at the bottom of the reader.</td>
-<td><pre>l</pre></td>
 </tr>
 <tr>
+<td><pre>space</pre></td>
 <td><pre>quit</pre></td>
 <td>Quit</td>
-<td><pre>space</pre></td>
 </tr>
 </table>
 
