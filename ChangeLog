@@ -1,5 +1,5 @@
 Canto 0.7.0 ChangeLog
-* Convert to multiprocessing worker slave
+* Convert to multiprocessing worker slave (huge performance)
 * Vast memory improvement (esp. for large lists)
 * Large scale refactor of *lots* of code
 * Better code documentation
@@ -23,6 +23,7 @@ Canto 0.7.0 ChangeLog
 * Accept `conf.py` as well as `conf` for config name.
 * Fix double enforcement of rates (client more responsive to fetch updates)
 * Fix blank titles
+* Fix runhere.sh killing c-f
 
 Canto 0.6.13 ChangeLog
 * Fix drawing regression
