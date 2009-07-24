@@ -246,9 +246,15 @@ def search_filter(gui):
 # Usage : keys["s"] = save
 
 def save(x):
+    import locale
+    enc = locale.getpreferredencoding()
+
+    # We have to encode strings to the preferredencoding() to avoid
+    # getting UnicodeEncode exceptions.
+
     file = open(os.getenv("HOME")+"/canto_out", "a")
-    file.write(x.sel["title"] + "\n")
-    file.write(x.sel["link"] + "\n\n")
+    file.write((x.sel["item"]["title"] + "\n").encode(enc, "ignore"))
+    file.write((x.sel["item"]["link"] + "\n\n").encode(enc, "ignore"))
     file.close()
 
 # Creates a keybind to copy the URL of the current story to the clipboard.
