@@ -539,20 +539,24 @@ class Gui(BaseGui) :
     def reader_dead(self):
         self.reader_obj = None
 
+    @change_selected
     @change_filter
     def set_filter(self, filt):
         filt = validate_filter(self.cfg, filt)
         return (self.cfg.filters.override(filt), self.cfg.filters.cur())
 
+    @change_selected
     @change_filter
     def next_filter(self):
         return (self.cfg.filters.next(), self.cfg.filters.cur())
 
+    @change_selected
     @change_filter
     def prev_filter(self):
         return (self.cfg.filters.prev(), self.cfg.filters.cur())
 
     @noitem_unsafe
+    @change_selected
     @change_tag_filter
     def set_tag_filter(self, filt):
         filt = validate_filter(self.cfg, filt)
@@ -560,6 +564,7 @@ class Gui(BaseGui) :
                 self.sel["tag"].filters.cur())
 
     @noitem_unsafe
+    @change_selected
     @change_tag_filter
     def next_tag_filter(self):
         self.cfg.log("%s" % self.sel["tag"].filters)
@@ -567,6 +572,7 @@ class Gui(BaseGui) :
                 self.sel["tag"].filters.cur())
 
     @noitem_unsafe
+    @change_selected
     @change_tag_filter
     def prev_tag_filter(self):
         return (self.sel["tag"].filters.prev(),\
@@ -591,14 +597,17 @@ class Gui(BaseGui) :
         return (self.sel["tag"].sorts.override(sort),\
                 self.sel["tag"].sorts.cur())
 
+    @change_selected
     @change_tags
     def next_tagset(self):
         return (self.cfg.tags.next(), self.cfg.tags.cur())
 
+    @change_selected
     @change_tags
     def prev_tagset(self):
         return (self.cfg.tags.prev(), self.cfg.tags.cur())
 
+    @change_selected
     @change_tags
     def set_tagset(self, t):
         newtags = []
