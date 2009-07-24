@@ -2,7 +2,7 @@ The compulsory Frequently Asked Questions page.
 
 [TOC]
 
-## Why Canto?
+# Why Canto?
 
 <div class="section">
 
@@ -32,7 +32,7 @@ All of the drawing code is done by a simple class full of literate Python. If yo
 
 </div>
 
-## Does Canto support Atom feeds?
+# Does Canto support Atom feeds?
 
 <div class="section">
 
@@ -40,7 +40,7 @@ Yes. Canto uses [feedparser](http://feedparser.org) which is capable of parsing 
 
 </div>
 
-## Does Canto support OPML?
+# Does Canto support OPML?
 
 <div class="section">
 
@@ -48,7 +48,7 @@ Yes, as of 0.5.2, Canto support importing from/export to OPML, as well as adding
 
 </div>
 
-## Does Canto support Unicode/UTF-8?
+# Does Canto support Unicode/UTF-8?
 
 <div class="section">
 
@@ -56,7 +56,7 @@ Yes. As long as your terminal and its font can support it, then Canto can output
 
 </div>
 
-## What does Canto require?
+# What does Canto require?
 
 <div class="section">
 
@@ -70,7 +70,7 @@ To **build** Canto: GCC or another standards compliant C compiler, ncurses heade
 
 </div>
 
-## Why ncurses?
+# Why ncurses?
 
 <div class="section">
 
@@ -84,7 +84,7 @@ And finally, I just really dig text-interfaces. [XMonad](http://xmonad.org) and 
 
 </div>
 
-## Why Python?
+# Why Python?
 
 <div class="section">
 
@@ -98,7 +98,7 @@ Lastly, Python is also second only to Perl in system adoption and... God knows I
 
 </div>
 
-## What license is Canto under?
+# What license is Canto under?
 
 <div class="section">
 
@@ -106,7 +106,7 @@ Canto is [GPLv2](http://www.gnu.org/licenses/old-licenses/gpl-2.0.html) software
 
 </div>
 
-## What platform does Canto run on?
+# What platform does Canto run on?
 
 <div class="section">
 
@@ -116,7 +116,7 @@ and unsupported.
 
 </div>
 
-## Where should I request features /  report bugs?
+# Where should I request features /  report bugs?
 
 <div class="section">
 

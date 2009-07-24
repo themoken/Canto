@@ -2,7 +2,7 @@ Getting started with Canto is easy. Most of this is covered in `man canto`, but 
 
 [TOC]
 
-## Quick Start
+# Quick Start
 
 <div class="section">
 
@@ -20,7 +20,7 @@ You can find a list of the default keybinds on the [configuration page](../confi
 
 </div>
 
-## Configuration
+# Configuration
 
 <div class="section">
 
@@ -34,7 +34,7 @@ If you store your feeds in a *list of URLs*, you can use `source_urls()` to read
 
 </div>
 
-## Fetching
+# Fetching
 
 <div class="section">
 
