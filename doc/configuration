@@ -783,7 +783,7 @@ Another common macro task is to open the reader and automatically open the link
 list.  This also can be achieved with this simple code
 
     :::python
-    keys[' '] = ["reader", "toggle_show_links" ]
+    keys[' '] = ["just_read", "reader", "toggle_show_links" ]
 
 Using macros and keybinds, it's possible to get a maximum amount of work from a 
 minimum number of keystrokes.
