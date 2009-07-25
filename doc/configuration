@@ -1539,8 +1539,34 @@ If you still having running instances after a few moments, you can issue
 ## Configuration
 
 Once again, for most users, changes to your configuration shouldn't be
-necessary. If you use sorts, or define sorts and filters, then you made need a
-change.
+necessary. If you loop through the color array, you may have to change your
+configuration or if you use sorts, or define sorts and filters, then you
+may need a change.
+
+### Color array
+
+This is mainly if you're doing a more advanced loop through the color list. If
+you're just setting colors in the typical way (`colors[0] = (num/str,num/str)`),
+then you should be okay.
+
+If you're looping with
+
+    :::python
+    for i, (fg, bg) in colors:
+
+Then you may run into trouble. The new default colors are not all set to tuples
+when configured so the (fg, bg) may except. However, the most common use for
+this loop was to set a common background for all colors. In 0.7.x, the
+background of a color without one set defaults to the background color of the
+first pair, making the loop unnecessary. In short
+
+    :::python
+    # 0.6.x version
+    for i, (fg, bg) in colors:
+        colors[i] = (fg, "newbackground")
+
+    # 0.7.x version, setting the background of 0, changes them all
+    colors[0] = ("white", "newbackground")
 
 ### Using Sorts
 
