@@ -731,8 +731,13 @@ in the examples below.
 </tr>
 <tr>
 <td><pre>space</pre></td>
-<td><pre>quit</pre></td>
-<td>Quit</td>
+<td><pre>destroy</pre></td>
+<td>Close the reader</td>
+</tr>
+<tr>
+<td><pre>q</pre></td>
+<td><pre>["destroy","quit"]</pre></td>
+<td>Quit Canto.</td>
 </tr>
 </table>
 
