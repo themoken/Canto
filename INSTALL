@@ -4,6 +4,7 @@
 - Python >=2.5 (tested mostly on 2.5.2)
 - NCursesw >=5.5 (yes, Unicode is a requirement)
 - Feedparser, chardet
+- Processing, if using < 2.6
 
 =BUILDING=
 - Python development headers

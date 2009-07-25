@@ -1,676 +1,1680 @@
-This is where we'll go into the magic of `~/.canto/conf`. This file is actually parsed and driven by the Python interpreter itself, so it's immensely powerful. It has the entirety of the Python language behind it, and allows for an incredible amount of flexibility.
-
-If you've already gone through the basics, then you might be looking for
-[Advanced Configuration](../advconfig/). That's were all the neat hooks and filters are covered.
+This is where you learn the details of `~/.canto/conf.py`. For the impatient,
+you can skip to the [example config](#example-config).
 
 [TOC]
 
-##  Example Config ##
+# Configuration
+
+This section covers Canto's basics features and how to use filters, sorts, tags, 
+and the other pre-written goodies that can be found in `canto.extra`.  The 
+actual writing of custom content is covered in later sections. This is all
+intended to be put into `~/.canto/conf.py` (conf, without the extension, is
+acceptable as well).
+
+## Adding feeds
 
 <div class="section">
 
-This gives a fairly comprehensive view of the config. Everything that is not defined in it, is defined in **canto.extra**, which you can browse [here](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=blob;f=canto/extra.py;hb=master)
+### `add()`
+
+`add` is the basic building block of Canto's config. As the name suggests, it
+adds a feed to the config. Ninety-nine percent of the time, a call like this 
+will get the job done:
 
     :::python
-    from canto.extra import *
-    import os
+    add("http://someurl")
 
-    if os.getenv("TERM") == "linux":
-        link_handler("elinks \"%u\"", text=True)
-    else:
-        link_handler("iceweasel \"%u\"")
-
-        # A dedicated image handler, that requires content
-        # to be fetched for it.
-        image_handler("xli \"%u\"", fetch=True)
-
-        # A dedicated PDF handler (great for LtU)
-        link_handler("evince \"%u\"", fetch=True, ext="pdf")
-
-        # If we're in X, update xterm title
-        # (Should work with most graphical terms)   
-        select_hook = set_xterm_title
-        end_hook = clear_xterm_title
-
-    def my_resize_hook(cfg):
-        cfg.columns = cfg.width / 70
-
-    resize_hook = my_resize_hook
-
-    # Global filters, switch with '[' and ']'
-    filters=[None, show_unread]
-
-    # You can also setup keybinds to set the global filter
-    keys['a'] = set_filter(show_unread) 
-
-    # Similarly you can set tag filters and keybinds
-    # switch with '{' and '}'
-
-    default_tag_filters([None, show_unread])
-    keys['b'] = set_tag_filter(show_unread)
-
-    # Tag sorts can also be set with a keybind
-    keys['s'] = set_tag_sort(by_alpha)
-    keys['d'] = set_tag_sort(reverse_sort(by_len))
-
-    # Keys can be single or lists of actions
-    # These keys kill the current reader, go to the next
-    # or prev unread item and start another reader
-
-    reader_keys["."] = ["destroy","next_unread","reader"]
-    reader_keys[","] = ["destroy","prev_unread","reader"]
-
-    # This sets the current item as read and automatically
-    # continues to the next item.
-
-    keys['x'] = ["just_read","next_item"]
-
-    # Searches can be bound to keybinds as well
-    keys['1'] = search(".*[Ll]inux.*", regex=True)
-    keys['2'] = search("Obama")
-
-    # And, of course keys can be unset.
-    keys['Q'] = None
-
-    # This makes the reader show links by default, rather
-    # than the default, toggling with 'l'
-    keys[' '] = ["reader","toggle_show_links"]
-
-    # A whole mess of feeds with tags, and without.
-    # A 'None' tag will be replaced with the feeds title
-    # The first tag is what is show at the top of each feed by default
-
-    add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
-    add("http://osnews.com/files/recent.xml", tags=[None, "news"])
-    add("http://www.damninteresting.com/?feed=rss2")
-    add("http://reddit.com/.rss", tags=["Reddit","news"])
-    add("http://programming.reddit.com/.rss", tags=["Proggit", "news"])
-    
-    # Username / Passwords are supported for feeds protected by
-    # Basic or Digest passwords
-
-    add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
-            password="digest")
-
-    # Tags can work without configuration, or can be customized.
-    # This makes the "news" tag default to showing only unread stories
-    # and sorting by date.
-
-    add_tag("news", filters=[show_unread], sorts=[[by_date]])
-
-    # Finally, you can set the tags shown with the tags list,
-    # and rotate with '<' and '>' by default.
-
-    tags = [ None, ["news"], ["Reddit", "Proggit"]]
-
-    # None will be interpreted as the default set of tags, i.e. one
-    # per feed.
-
-
-</div>
-
-##  add()
-
-<div class="section">
-
-**add(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
-
-`add()` is the most basic function of Canto's config, adding a feed to your
-reader. 
-
-Example:
+You can also tweak some other settings having to do with fetching the feed. The
+`rate` and `keep` variables effect the rate at which the feed is fetched from
+the server and `keep` determines how many items should be kept. The following
+line will update a feed every 30 minutes and keep up to a 100 items.
 
     :::python
-    add("http://rss.slashdot.org/slashdot/Slashdot", rate=10, keep=20)
+    add("http://someurl", rate=30, keep=100)
 
-In this example, Slashdot gets added to your feed list. It's updated every 10 minutes (default is 5), and only 20 stories will be stored on disk. Both keyword arguments (rate and keep) are optional, so 
+> **NOTE**: "keep" will be silently ignored if it's below the number of items
+> in the feed. In fact, by default `keep = 0`. This behavior differs from 
+> 0.6.x.
 
-    :::python
-    add("http://reddit.com/.rss")
+> The default `rate` is 5 for fetching from the server every five minutes.
 
-Is also valid. Feeds that use basic or digest authentication can be fetched
-using the `username` and `password` variables. An easy way to determine whether
-a feed is using either of these types of authentication is to browse to the feed
-with your browser. If the browser pops up a box asking for your username and
-password (rather than taking you to a page to login to the site), then it's
-fetchable. For an example, browse to the URL in this example:
+### Password Protected Feeds
 
-    :::python
-    add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
-            password="digest")
-
-The last simple option for `add` are the tags. Tags are applied to every story
-inside of a feed. Tags are simply arbitrary strings that can be used to collect
-items and filter/sort (or any other operation that works on groups of items). By
-default a `None` tag corresponds to the name of the feed given in the XML, and
-if no `tags` are specified, then `tags=[None]` is assumed. If tags are set
-though, the first tag is considered the main tag, and is used as the tag name in
-log output and in the default GUI.
+If the feed is behind browser authentication (i.e. when you try to reach it in a
+browser it brings up a username/password box), you can specify those in the feed
+definition too.
 
     :::python
-    add("http://reddit.com/.rss", tags=["Reddit", "news"])
-    add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
+    add("http://someprotectedurl", username="myuser", password="mypass")
 
-In the first `add` call, Reddit is added, but instead of using "reddit: what's
-new online" (the name of the feed given by the feed itself), just plain "Reddit"
-is used when printing messages or categorizing Reddit items. In the second `add`
-call, Slashdot is added using it's given name. Both feeds are tagged "news".
+> **NOTE**: In order to protect sensitive information in your config, it's
+> standard practice to `chmod 600 ~/.canto/conf` so that other users can't 
+> read your password even if they can read your home directory. However, 
+> Canto will not enforce these permissions as some other programs.
 
-In addition to any tags specified, every item has the tag "*", so it's possible
-to view every single item in a single tag, which is neat for doing things like
-sorting over every item.
+There are a few other options for `add`, but these are more logically covered
+elsewhere.
 
-The state of each item functions as a tag as well, so "read", "marked" can be 
-implemented as tags.
-However, anything that can be accomplished with those tags might be better
-accomplished with filters.
+### Script Extensions
 
-The `renderer` option is covered [here](../style/#per-feed-theming). The
-`filter` option is used identically to the filters described 
-[here](../advconfig/#filters).
+Canto supports using Snownews extensions. Essentially, these are executable
+scripts that, when run, spit out the feed XML. These are usually used to make a
+feed out of a webpage that doesn't usually provide a feed (which are thankfully
+becoming more and more rare). By default, these are put into
+`~/.canto/scripts/`, but this can be changed by adding the `-S` flag to
+`canto-fetch`.
 
-### Scripts
+A typical example of using a script is to get a feed for the Slashdot polls
+which, as of this writing, has no RSS just for it.
+[slashdotpolls](http://codezen.org/static/slashdotpolls) is a script that will
+scrape Slashdot and output a feed. To use it:
 
-As of 0.6.0, Canto includes the ability to run scripts similarly to Snownews' `execurl` functionality. To use this functionality, place the scripts in your script directory (default: `~/.canto/scripts/`) and add a feed with "script:" as the prefix.
+    :::bash
+    $ wget http://codezen.org/static/slashdotpolls
+    $ chmod +x slashdotpolls
+    $ mkdir ~/.canto/scripts
+    $ mv slashdotpolls ~/.canto/scripts/
 
-For example, if I wanted to run a script to make an RSS feed out of Slashdot polls called [slashdotpolls](http://codezen.org/static/slashdotpolls), I would place that file in `~/.canto/scripts/` and add the following line to my configuration:
+It's very important that the script is marked as executable, or the extension
+will fail.
+
+>**NOTE**: Because these extensions require an arbitrary script to be run as
+your user, DO NOT EVER use a script that comes from an unknown location without
+first READING the script to make sure it's not MALICIOUS.
+
+Then, to use the script from Canto, you'd add a feed starting with "script:",
+like this:
 
     :::python
     add("script:slashdotpolls -external")
+    add("script:myscript -arg1 -arg2 ...")
 
-Where `-external` is an argument to the script. **Be Aware: the script must have execute permissions, or canto-fetch will not execute it.** You can add these permissions with `chmod +x <scriptfile>`.
+For slashdotpolls, `-external` is a flag that makes it print the RSS. You can
+find a lot more extensions like this in the Snownews
+[repository](http://kiza.kcore.de/software/snownews/snowscripts/extensions).
 
-### Integration ###
+### "Sourcing" Other Files
 
-Feeds can automatically be appended to your config from the command line, using `canto -r <URL> [-t maintag]`, like so:
-
-    canto -r "http://reddit.com/.rss" -t "Reddit"
-
-Using this functionality from other applications is simple. For example, to allow Firefox to add feeds to your canto config directly, you can "open" it with this simple script
-
-    :::sh
-    #!/bin/sh
-    canto --url ${1/feed:/http:}
-
-Make sure this script is executable by `chmod +x <script>` before you try it. Thanks to Ypsy for the script.
-
-
-</div>
-
-##  add_tag()
-
-<div class="section">
-
-** add_tag("name", [filters=],[sorts=]) **
-
-`add_tag` is used to specify the attributes of tags. It's not necessary to add
-every tag that you use, as tags are all generated on-the-fly, but any tag that
-you want to have special attributes must be added. This includes the tags
-defined by feeds.
-
-    :::python
-    add_tag("Reddit", filters=[show_unread])
-    add_tag("news", sorts=[by_date])
-
-
-</div>
-
-##  change_feed()
-
-<div class="section">
-
-**change_feed(URL, [tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
-
-`change_feed` acts identically to `add`, but (as you would imagine) changes
-already added feeds. This is intended to add attributes to feeds added from
-other sources (like `source_urls` and `source_opml`) where these options aren't
-included in the input data.
-
-
-</div>
-
-##  source_opml()
-
-<div class="section">
-
-**source_opml("path", [append=True/False])**
-
-`source_opml` allows you to add feeds from an opml file at run time, rather than permanently. If you're interested in permanently adding or exporting your feeds with OPML, use `canto -i` and `canto -o` to import and export, respectively.
-
-Example:
+Canto supports adding feeds from other file formats. This can be useful when
+trying to keep URLs synced between readers. Canto can source OPML files at
+runtime simply by giving a path to the OPML file.
 
     :::python
     source_opml("/home/myuser/feeds.opml")
 
-That append option determines whether the feeds added will be appended to your config file. If true, they will be added in the same manner as `canto -i`. Note that this will be appended every time the config is executed, so only use it if you're sure you want to add the `add_feed` statements to your config.
-
-
-</div>
-
-##  source_urls()
-
-<div class="section">
-
-**source_urls("path", [append=True/False])**
-
-`source_urls` works similarly to `source_opml`, except it generates `add_feed` statements from a newline delimited list of URLs.
-
-
-</div>
-
-##  Setting defaults
-
-<div class="section">
-
-**default_rate(rate)**
-
-**default_keep(keep)**
-
-**default_renderer(renderer)**
-
-**default_tag_filters([filters...])**
-
-**default_tag_sorts([[sorts],[sorts]])**
-
-The functions set the default rate in minutes and number of stories to keep for
-each feed added after the call. Both of these can be called at any point, and
-will not change previously entered feeds.
-
-Example:
+Canto can also source plain lists of URLs, delimited by newlines.
 
     :::python
-    # These are actually Canto's defaults.
-    default_rate(5)
-    default_keep(40)
+    source_urls("/home/myuser/urls")
 
+Feeds that are sourced are added with the equivalent of a basic `add` call
+with a URL. If you want to add other attributes to feeds that have been added
+this way, then you can use `change_feed` that takes the same arguments as 
+`add` does.
+
+### Tweaking Defaults
+
+<<<<<<< HEAD:doc/configuration
+<div class="section">
+
+**add(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
+=======
+At some point you may want to change the `rate` and `keep` parameters for a 
+large quantity of feeds and do so simultaneously.  Using `default_rate` and 
+`default_keep` you can set those parameters for **every feed following 
+the call**. Because this change only affects feeds that are added after the 
+call, it can be used to set 'keep' and 'rate' variables for batches of feeds, 
+rather than all feeds.  If you want the 'keep' and 'rate' variables to affect 
+all feed behavior globally, set the defaults before you define your feeds.
+>>>>>>> experimental:doc/configuration
+
+> **NOTE**: To reiterate from above, `rate` is in minutes and `keep` will 
+> ignore any number lower than the number of items in the feed's source.
+
+The following is a good application of using the default calls:
+
+    :::python
+
+    default_rate(30)    # News feeds 
+    add("http://news1")
+    add("http://news2")
+    ...
+
+    default_rate(120)   # Slow blog feeds
+    add("http://blog1")
+    add("http://blog2")
+    ...
+
+    default_rate(1)     # Quick feed
+    default_keep(100)   # Lots of items could be missed
+    add("http://quick1")
+    add("http://quick2")
+    ...
+
+If you choose not to change settings, rate is set to five minutes (5) and keep 
+is set to 0, which indicates that all the items in the feed source should be 
+kept.
+
+### Discard Policy
+
+Usually, it's preferable to discard items that are old enough that they're no
+longer inside the `keep` range for a particular feed. If you'd like to avoid
+ever discarding items with a particular tag or state, you can use the
+`never_discard` function. For example, to avoid ever discarding unread items:
+
+    :::python
+    never_discard("unread")
+
+You can also specify a tag like "Slashdot", but I wouldn't suggest it unless
+you're okay with spending large amounts of disk space for the 1000s of Slashdot
+articles you'll accumulate.
 
 </div>
 
-##  Content Handlers
+## Browsing
 
 <div class="section">
 
-**link_handler(path, [text=],[fetch=],[ext=])**
-
-**image_handler(path, [text=],[fetch=],[ext=])**
-
-`link_handler` handles content that's contained in `<a>` tags, while
-`image_handler` handles `<img>` content. The `path` argument is the path to the
-binary, with "%u" in place of the URL. `text` should be set to `True` if Canto
-should wait for the program (like a text-browser), and `fetch` should be set to
-`True` if the content must be fetched (if your program can only open local
-files).
-
-The `ext` argument can be used to associate a particular handler only with links
-ending with a certain string.
-
-Example:
+Canto supports using external programs to open the content found in a feed item.
+Typically, you just want to set a `link_handler` to your favorite browser.
 
     :::python
-    # Your default link handlers
     link_handler("firefox \"%u\"")
 
-    # xli can't open internet URLs
-    image_handler("xli \"%u\"", fetch=True)
+This will use firefox as your browser. The `\"%u\"` will be replaced with the
+URL. Users that want to use a text based browser like
+[elinks](http://elink.or.cz), have to tell Canto to relinquish the terminal
+while you use it, like so:
 
-    # dedicated PDF handler
-    link_handler("evince \"%u\"", fetch=True, ext="pdf")
-
-    # text-browser
+    :::python
     link_handler("elinks \"%u\"", text=True)
 
+If you find yourself bouncing between the Linux console and an X terminal,
+you can use a bit of logic to automatically set the browser based on the
+`TERM` environmental variable.
+
+    :::python
+    import os
+    if os.getenv("TERM") == "linux":
+        link_handler("elinks \"%u\"", text=True)    # Text-only
+    else:
+        link_handler("firefox \"%u\"")              # X terminal
+
+### Non-HTML Content
+
+Links to PDFs and other content you'd rather view in a program other than
+your browser (like enclosures) can be setup by using `link_handler` with an
+extension. For example, to open and .mp3 in a podcast:
+
+    :::python
+    link_handler("mplayer -someoptions \"%u\"", ext="mp3")
+
+Fortunately, mplayer can stream from the web by default. Some applications
+require the content to be fetched before hand. This requirement can be handled
+using the `fetch` parameter. For example, to open a .pdf in evince that doesn't
+support opening from the internet directly you can write:
+
+    :::python
+    link_handler("evince \"%u\"", ext="pdf", fetch=True)
+
+Canto will then fetch the content into `/tmp` and run the associated program.
+
+<<<<<<< HEAD:doc/configuration
+<div class="section">
+
+** add_tag("name", [filters=],[sorts=]) **
+=======
+### Images
+>>>>>>> experimental:doc/configuration
+
+Images are handled similarly to links with the `image_handler` call. It takes
+the same arguments as `link_handler`. A good example:
+
+    :::python
+    image_handler("fbv \"%u\"", text=True, fetch=True)
+
+This will use `fbv` to view an image in a text console.
+
+> NOTE: Image links are denoted by the color blue in the reader
 
 </div>
 
-##  Reader positioning
+## Reader Layout
 
 <div class="section">
+<<<<<<< HEAD:doc/configuration
 
-**reader_orientation=["top"|"bottom"|"left"|"right"|None]**
+**change_feed(URL, [tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
+=======
+>>>>>>> experimental:doc/configuration
 
-**reader_lines = number**
+You can dedicate space for the reader, rather than having it float above the
+items (the default behavior). `reader_orientation` and `reader_lines`.
 
-If you don't like the reader floating over your list of items, then you can dedicate a certain amount of space to it. Set `reader_orientation` to "top", "bottom", "left", or "right" of the list. `None` is the default behavior, floating over the list.
-
-`reader_lines` can increase the dedicated space, the minimum is `3` lines because any smaller and the default theme ceases to behave well, but it's practically unreadable anyway, so no worries.
-
-Simple Example:
+Reader orientation can be one of five possible settings.
 
     :::python
-    reader_orientation = "top"
-    reader_lines = 10
+    reader_orientation = None       # Default floating
+    reader_orientation = "left"     # Dedicated left of the item list
+    reader_orientation = "right"    # Dedicated right of the item list
+    reader_orientation = "top"      # Dedicated on top of the item list
+    reader_orientation = "bottom"   # Dedicated under the item list
 
-Now, you'll have 10 lines of dedicated space for the reader at the top of the screen, and your list of items underneath. A more flexible way to do this is to use a `resize_hook` to dedicate a certain percentage of the screen to the reader
+You can also specify the size for any of the dedicated layouts (i.e. not
+floating). For "left" and "right", `reader_lines` controls the width, and for
+"top" and "bottom" it controls the height. It's set like this:
+
+<<<<<<< HEAD:doc/configuration
+<div class="section">
+
+**source_opml("path", [append=True/False])**
+=======
+    :::python
+    reader_lines = 10
+>>>>>>> experimental:doc/configuration
+
+`reader_lines` has a minimum of three lines since the default theme ceases to
+behave well when its space is so constricted. Three lines is practically
+unreadable, so this is unlikely to change.
+
+### Layout Hook
+
+Setting the orientation and size of the reader area statically can be useful,
+but can lead to trouble (like setting the reader area to be larger than the
+available space, which is not good). [Hooks](#hooks) are covered later, but for
+now a `resize_hook` is useful to resize the reader area to be a proportion of
+the available space, rather than a constant.
+
+This hook will make a reader area that takes half of the screen to the left, no
+matter how the window is resized and set the number of columns in the main list.
 
     :::python
     def resize_hook (cfg):
         cfg.reader_orientation = "left"
         cfg.reader_lines = cfg.width / 2
-        cfg.columns = (cfg.width / 2) / 50
+        cfg.columns = (cfg.width / 2) / 65
 
-This will set half of the screen to the left as dedicated space for the reader,
-and try to divide the rest into columns of width 50. `resize_hook` is covered 
-with the rest of the [hooks](../advconfig/#hooks).
+Copying and pasting this anywhere in your config will achieve the desired effect.
 
 </div>
 
-##  keys
+## Colors
+
+<div class="section">
+<<<<<<< HEAD:doc/configuration
+
+**source_urls("path", [append=True/False])**
+=======
+>>>>>>> experimental:doc/configuration
+
+Changing the colors of the interface is simple. There are eight default ncurses
+colors, and one place holder for a default value.
+
+<table>
+<tr>
+<td>Curses Color Number</td>
+<td>Representation</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>"default"</td>
+</tr>
+<tr>
+<td>0</td>
+<td>"black"</td>
+</tr>
+<tr>
+<td>1</td>
+<td>"red"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>"green"</td>
+</tr>
+<tr>
+<td>3</td>
+<td>"yellow"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>"blue"</td>
+</tr>
+<tr>
+<td>5</td>
+<td>"pink" or "magenta"</td>
+</tr>
+<tr>
+<td>6</td>
+<td>"cyan"</td>
+</tr>
+<tr>
+<td>7</td>
+<td>"white"</td>
+</tr>
+</table>
+
+>**NOTE**: "default" is usually black on a default terminal. If your terminal
+supports transparency though, it will be made transparent.
+
+>**ALSO NOTE**: With curses colors you occasionally have to be creative about
+getting colors not listed here. For example, to achieve "gray", you have to use
+"black", but make the text bold.
+
+<<<<<<< HEAD:doc/configuration
+<div class="section">
+
+**default_rate(rate)**
+=======
+You can use these colors in eight different slots in canto.
+>>>>>>> experimental:doc/configuration
+
+<table>
+<tr>
+<td>Color Pair</td>
+<td>Definition</td>
+<td>How it's used</td>
+</tr>
+<tr>
+<td>0</td>
+<td>(White, Black)</td>
+<td>This is default color pair</td>
+</tr>
+<tr>
+<td>1</td>
+<td>(Blue, Black)</td>
+<td>This is used for unread story items.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>(Yellow, Black)</td>
+<td>This is used for read story items.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>(Green, Black)</td>
+<td>This is used for links in the reader.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>(Magenta, Black)</td>
+<td>This is used for quotes in the reader.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>(Black,Black)</td>
+<td>This is used for emphasis (italic/small/em) text in the reader, used with %B to appear gray</td>
+</tr>
+<tr>
+<td>6</td>
+<td>(Blue,Black)</td>
+<td>This is used for image links in the reader</td>
+</tr>
+<tr>
+<td>7</td>
+<td>(Black,Black)</td>
+<td>This is unset/unused.</td>
+</tr>
+</table>
+
+Changing these items is as simple as using the `colors` list.
+
+    :::python
+    colors[0] = "blue"
+    colors[0] = 4
+    colors[0] = (4, -1)
+    colors[0] = ("blue", "default")
+
+These are all equivalent statements. If you only specify one number or color,
+it's used as the foreground and inherits the background of `colors[0]`, or
+"default" if you're setting `colors[0]`. Therefore:
+
+    :::python
+    colors[0] = ("blue", "white")
+    colors[1] = "red"
+
+Now `colors[1]` inherits `colors[0]`'s background and is set to ("red",
+"white").
+
+### 256 Colors
+
+On terminals that support 256 colors, you can specify colors by number. A color
+chart for xterm is available
+[here](http://www.calmar.ws/vim/256-xterm-24bit-rgb-color-chart.html)
+
+    :::python
+    colors[0] = 120
+
+To make sure that your terminal supports it, you can check with this 
+[color script](http://codezen.org/static/colortest), which is a mirrored copy of
+[this](http://www.vim.org/scripts/script.php?script_id=1349) Vim script.
+
+<<<<<<< HEAD:doc/configuration
+<div class="section">
+
+**link_handler(path, [text=],[fetch=],[ext=])**
+=======
+If you're having trouble with your terminal and you're sure that it should have
+support, try setting your `TERM` variable before invoking canto:
+>>>>>>> experimental:doc/configuration
+
+    :::bash
+    $ TERM="xterm-256color" canto
+
+</div>
+
+# Using Advanced Features
+
+Canto is extremely powerful due to its internal use of the Python
+interpreter for all of its configuration requirements. The details of writing 
+extension content is covered elsewhere, but there is a lot of good information
+included with the source.
+
+## Importing canto.extra
 
 <div class="section">
 
-**keys["somekey"] = str, list of strings, function, list of functions**
+In order to use extra content it must be imported in the usual pythonic way, as 
+in:
 
-**reader_keys["somekey"] = str, list of strings, function, list of functions**
+    :::python
+    from canto.extra import *
 
-Canto has two main GUI elements. The main view, which lists the headlines, and the reader, which gives you more details on a particular story. Each of these views has a different set of possible keybinds.
+A call to import canto.extra will make all of the goodies packaged with Canto 
+available to your config.
 
-The format of somekey follows the convention of `C-` for Ctrl, and `M-` for meta (usu. Alt). So, to bind Ctrl-Alt-J to a function somekey would be `C-M-j`, or `M-C-j` (order doesn't matter). In addition, more complex non-printable characters are looked up in the Python curses module. You can find a list of curses keys [here](http://www.mkssoftware.com/docs/man3/curs_getch.3.asp), which is the manpage for `getch`.
+</div>
 
-Also note that multiple keys can be bound to a single function, and multiple functions can be assigned to a single key. If you wish to unbind a key, set it to `None`.
+## Keybinds
 
-The functions you can bind to are:
+<div class="section">
 
-### Main view keys
+### Specifying Keys
+
+The first step to define your own keybinds is to learn how to specify which key
+you're binding to. Typically, it's very easy to rebind keys.
+
+    :::python
+    keys['a'] = ...
+    reader_keys['a'] = ...
+
+Any visible non-newline character can be used directly. Whitespace characters
+(including newline) can be embedded with their typical escape (i.e. \t for tab,
+\n for newline, etc.).
+
+    :::python
+    keys['\n'] = ...    # Enter
+    keys['\t'] = ...    # Tab
+    keys[' '] = ...     # Space
+    keys['  '] = ...    # Tab
+
+Any invisible characters, like function keys, arrow keys, etc. can be used by
+their ncurses name. On the man page for `getch()`, a list of all possible
+names is available. Here's an 
+[online copy](http://www.mkssoftware.com/docs/man3/curs_getch.3.asp). 
+Typically definitions using these keys look like this:
+
+    :::python
+    keys['KEY_F1'] = ...
+    keys['KEY_LEFT'] = ...
+
+To specify Control or Alt key combinations, you can use "C-" for control and
+"M-" (meta) for Alt.
+
+    :::python
+    keys['C-a'] = ...   # Ctrl+A
+    keys['M-a'] = ...   # Alt+A
+    keys['C-M-a'] = ... # Ctrl+Alt+A
+
+### Default Binds
+
+The following keybinds are typically available to the user. They will be used 
+in the examples below.
+
+
+#### Main View
+
 <table>
 <tr>
+<td>Default Binding</td>
 <td>Name</td>
 <td>Function</td>
-<td>Default Binding</td>
 </tr>
 <tr>
-<td>`help`</td>
+<td><pre>h</pre></td>
+<td><pre>help</pre></td>
 <td>Shows the man page (has all of these bindings listed).</td>
-<td>`h`</td>
 </tr>
 <tr>
-<td>`next_item`</td>
+<td><pre>KEY_DOWN / j</pre></td>
+<td><pre>next_item</pre></td>
 <td>Move to the next item.</td>
-<td>`KEY_DOWN / j`</td>
 </tr>
 <tr>
-<td>`prev_item`</td>
+<td><pre>KEY_UP / k</pre></td>
+<td><pre>prev_item</pre></td>
 <td>Move to the previous item.</td>
-<td>`KEY_UP / k`</td>
 </tr>
 <tr>
-<td>`next_tag`</td>
+<td><pre>KEY_NPAGE / l</pre></td>
+<td><pre>next_tag</pre></td>
 <td>Move to the next feed/group of items</td>
-<td>`KEY_NPAGE`</td>
 </tr>
 <tr>
-<td>`prev_tag`</td>
+<td><pre>KEY_PPAGE / o</pre></td>
+<td><pre>prev_tag</pre></td>
 <td>Move to the previous feed/group of items.</td>
-<td>`KEY_PPAGE`</td>
 </tr>
 <tr>
-<td>`just_read`</td>
+<td><pre>KEY_RIGHT</pre></td>
+<td><pre>just_read</pre></td>
 <td>Mark current story read and nothing else.</td>
-<td>`KEY_RIGHT`</td>
 </tr>
 <tr>
-<td>`just_unread`</td>
+<td><pre>KEY_LEFT</pre></td>
+<td><pre>just_unread</pre></td>
 <td>Mark current story unread and nothing else.</td>
-<td>`KEY_LEFT`</td>
 </tr>
 <tr>
-<td>`goto`</td>
+<td><pre>g</pre></td>
+<td><pre>goto</pre></td>
 <td>Open the current story in your browser.</td>
-<td>`g`</td>
 </tr>
 <tr>
-<td>`inline_search`</td>
+<td><pre>f</pre></td>
+<td><pre>inline_search</pre></td>
 <td>Mark all stories matching a search.</td>
-<td>`f`</td>
 </tr>
 <tr>
-<td>`next_mark`</td>
+<td><pre>n</pre></td>
+<td><pre>next_mark</pre></td>
 <td>Go to the next marked story.</td>
-<td>`n`</td>
 </tr>
 <tr>
-<td>`prev_mark`</td>
+<td><pre>p</pre></td>
+<td><pre>prev_mark</pre></td>
 <td>Go to the previous marked story.</td>
-<td>`p`</td>
 </tr>
 <tr>
-<td>`next_unread`</td>
+<td><pre>.</pre></td>
+<td><pre>next_unread</pre></td>
 <td>Go to the next unread story.</td>
-<td>`.`</td>
 </tr>
 <tr>
-<td>`prev_unread`</td>
+<td><pre>,</pre></td>
+<td><pre>prev_unread</pre></td>
 <td>Go to the previous unread story.</td>
-<td>`,`</td>
 </tr>
 <tr>
-<td>`reader`</td>
-<td>Open the reader.</td>
-<td>`Space`</td>
+<td><pre>Space</pre></td>
+<td><pre>["just_read", "reader"]</pre></td>
+<td>Mark the story read and open the reader.</td>
 </tr>
 <tr>
-<td>`toggle_collapse_tag`</td>
-<td>Collapse/Show a feed/group of items.</td>
-<td>`c`</td>
+<td><pre>c</pre></td>
+<td><pre>toggle_collapse_tag</pre></td>
+<td>Collapse/Show a tag of items.</td>
 </tr>
 <tr>
-<td>`set_collapse_all`</td>
-<td>Collapse on all feeds/groups.</td>
-<td>`C`</td>
+<td><pre>C</pre></td>
+<td><pre>set_collapse_all</pre></td>
+<td>Collapse on all tags.</td>
 </tr>
 <tr>
-<td>`unset_collapse_all`</td>
-<td>Uncollapse all feeds/groups.</td>
-<td>`V`</td>
+<td><pre>V</pre></td>
+<td><pre>unset_collapse_all</pre></td>
+<td>Uncollapse all tags.</td>
 </tr>
 <tr>
-<td>`toggle_mark`</td>
+<td><pre>m</pre></td>
+<td><pre>toggle_mark</pre></td>
 <td>Mark/unmark an item.</td>
-<td>`m`</td>
 </tr>
 <tr>
-<td>`all_unmarked`</td>
+<td><pre>M</pre></td>
+<td><pre>all_unmarked</pre></td>
 <td>Unmark all items</td>
-<td>`M`</td>
 </tr>
 <tr>
-<td>`tag_read`</td>
+<td><pre>r</pre></td>
+<td><pre>tag_read</pre></td>
 <td>Set all stories in a feed/group read.</td>
-<td>`r`</td>
 </tr>
 <tr>
-<td>`all_read`</td>
+<td><pre>R</pre></td>
+<td><pre>all_read</pre></td>
 <td>Set all stories read.</td>
-<td>`R`</td>
 </tr>
 <tr>
-<td>`tag_unread`</td>
+<td><pre>u</pre></td>
+<td><pre>tag_unread</pre></td>
 <td>Set all stories in a feed/group unread.</td>
-<td>`u`</td>
 </tr>
 <tr>
-<td>`all_unread`</td>
+<td><pre>U</pre></td>
+<td><pre>all_unread</pre></td>
 <td>Set all stories unread.</td>
-<td>`U`</td>
 </tr>
 <tr>
-<td>`force_update`</td>
+<td><pre>C-r</pre></td>
+<td><pre>force_update</pre></td>
 <td>Reread stories from disk.</td>
-<td>`C-r`</td>
 </tr>
 <tr>
-<td>`refresh`</td>
+<td><pre>C-l</pre></td>
+<td><pre>refresh</pre></td>
 <td>Redraw the screen.</td>
-<td>`C-l`</td>
 </tr>
 <tr>
-<td>`quit`</td>
+<td><pre>q</pre></td>
+<td><pre>quit</pre></td>
 <td>Quit Canto.</td>
-<td>`q`</td>
 </tr>
 <tr>
-<td>`next_filter`</td>
+<td><pre>]</pre></td>
+<td><pre>next_filter</pre></td>
 <td>Apply next global filter.</td>
-<td>`]`</td>
 </tr>
 <tr>
-<td>`prev_filter`</td>
+<td><pre>]</pre></td>
+<td><pre>prev_filter</pre></td>
 <td>Apply previous global filter</td>
-<td>`]`</td>
 </tr>
 <tr>
-<td>`next_tag_filter`</td>
+<td><pre>}</pre></td>
+<td><pre>next_tag_filter</pre></td>
 <td>Apply next tag filter (from filters)</td>
-<td>`}`</td>
 </tr>
 <tr>
-<td>`prev_tag_filter`</td>
+<td><pre>{</pre></td>
+<td><pre>prev_tag_filter</pre></td>
 <td>Apply previous feed filter</td>
-<td>`{`</td>
 </tr>
 <tr>
-<td>`prev_tagset`</td>
+<td><pre>=</pre></td>
+<td><pre>next_tag_sort</pre></td>
+<td>Apply next tag sort</td>
+</tr>
+<tr>
+<td><pre>-</pre></td>
+<td><pre>prev_tag_sort</pre></td>
+<td>Apply previous tag sort</td>
+</tr>
+<tr>
+<td><pre>&lt;</pre></td>
+<td><pre>prev_tagset</pre></td>
 <td>Show previous set of tags</td>
-<td>`<`</td>
 </tr>
 <tr>
-<td>`next_tagset`</td>
+<td><pre>&gt;</pre></td>
+<td><pre>next_tagset</pre></td>
 <td>Show next set of tags</td>
-<td>`>`</td>
 <tr>
-<td>`goto_reltag`</td>
-<td>Goto the `nth` visible tag (filter aware)</td>
-<td>`;`</td>
+<td><pre>;</pre></td>
+<td><pre>goto_reltag</pre></td>
+<td>Goto the <code>nth</code> visible tag, relative to current index
+(filter aware)</td>
 </tr>
 <tr>
-<td>`goto_tag`</td>
-<td>Goto the `nth` tag (filter unaware)</td>
-<td>`:`</td>
-</tr>
-<tr>
-<td>`switch`</td>
-<td>Switch focus to next gui item.</td>
-<td>`TAB`</td>
+<td><pre>:</pre></td>
+<td><pre>goto_tag</pre></td>
+<td>Goto the <code>nth</code> tag (filter unaware)</td>
 </tr>
 </table>
 
-### Reader keys
+#### Reader View
 
 <table>
 <tr>
+<td>Default Binding</td>
 <td>Name</td>
 <td>Function</td>
-<td>Default Binding</td>
 </tr>
 <tr>
-<td><code>scroll_down</code></td>
+<td><pre>KEY_DOWN / j</pre></td>
+<td><pre>scroll_down</pre></td>
 <td>Scrolls, if there's more text.</td>
-<td><code>KEY_DOWN / j</code></td>
 </tr>
 <tr>
-<td><code>scroll_up</code></td>
+<td><pre>KEY_UP / k</pre></td>
+<td><pre>scroll_up</pre></td>
 <td>Scroll up, if not at the top.</td>
-<td><code>KEY_UP / k</code></td>
 </tr>
 <tr>
-<td><code>page_down</code></td>
+<td><pre>KEY_NPAGE</pre></td>
+<td><pre>page_down</pre></td>
 <td>Page down.</td>
-<td><code>KEY_NPAGE</code></td>
 </tr>
 <tr>
-<td><code>page_up</code></td>
+<td><pre>KEY_PPAGE</pre></td>
+<td><pre>page_up</pre></td>
 <td>Page Up.</td>
-<td><code>KEY_PPAGE</code></td>
 </tr>
 <tr>
-<td><code>["destroy","next_item","reader"]</code></td>
+<td><pre>n</pre></td>
+<td><pre>["destroy","next_item","reader"]</pre></td>
 <td>Goto the next story without closing the reader.</td>
-<td><code>n</code></td>
 </tr>
 <tr>
-<td><code>["destroy","prev_item","reader"]</code></td>
+<td><pre>p</pre></td>
+<td><pre>["destroy","prev_item","reader"]</pre></td>
 <td>Goto the previous story without closing the reader.</td>
-<td><code>p</code></td>
 </tr>
 <tr>
-<td><code>goto</code></td>
+<td><pre>g</pre></td>
+<td><pre>goto</pre></td>
 <td>Go to a specific link listed inside the item text.</td>
-<td><code>g</code></td>
 </tr>
 <tr>
-<td><code>toggle_show_links</code></td>
+<td><pre>l</pre></td>
+<td><pre>toggle_show_links</pre></td>
 <td>Show/hide the list of links at the bottom of the reader.</td>
-<td><code>l</code></td>
 </tr>
 <tr>
-<td><code>switch</code></td>
-<td>Change focus to next gui item</td>
-<td><code>TAB</code></td>
-</tr>
-<tr>
-<td><code>quit</code></td>
+<td><pre>space</pre></td>
+<td><pre>quit</pre></td>
 <td>Quit</td>
-<td><code>space</code></td>
 </tr>
 </table>
 
-Examples:
+### Using Default Binds
 
-Set z in the main screen to open the story's link in a browser.
-
-    :::python
-    keys["z"] = "goto"
-
-Set Ctrl-Alt-F1 to help.
+Setting a new key for pre-existing functionality is easy to do using strings.
+As you can see in the above table, the bind "help" brings up the help page. To
+rebind this functionality to the F1 key (a typical DOS binding), you could 
+simpy do
 
     :::python
-    keys["C-M-KEY_F1"] = "help"
+    keys["KEY_F1"] = "help"
 
-Set 'j' to scroll up in the reader.
-
-    :::python
-    reader_keys["j"] = "scroll_up"
-
-Set 'x' to set current item read and move to the next item.
+As you might expect, you can also override existing keys
 
     :::python
-    keys["x"] = ["just_read","next_item"]
+    keys[' '] = "next_item" # Overrides the default "reader" command
 
+And you can unset a key all together
+
+    :::python
+    keys['q'] = None    # Unsets 'q'
+
+### Macros
+
+Canto allows you to queue up more than one action with a keybind. A simple list
+can get the job done. For example, to create a keybind that will set an item as
+read and move to the next list item (rather than using the right arrow followed
+by the down arrow) we could set a macro like this
+
+    :::python
+    keys['j'] = ["just_read", "next_item"]
+
+"just_read" sets the item as read and "next_item" moves to the next item.
+
+More complicated macros can be created that can cover both main view and reader 
+view keybinds. Take for example the default binding of "n" in reader view.
+
+    :::python
+    reader_keys['n'] = [ "destroy", "next_item", "reader" ]
+
+This macro allows you to go to the next item without leaving the reader. When 
+this macro executes three events happen:  "destroy" kills the reader, 
+"next_item" makes the main interface go to the next item, and "reader" makes the
+main interface re-open the reader.  All this work is done with one keystroke. 
+
+Another common macro task is to open the reader and automatically open the link 
+list.  This also can be achieved with this simple code
+
+    :::python
+    keys[' '] = ["just_read", "reader", "toggle_show_links" ]
+
+Using macros and keybinds, it's possible to get a maximum amount of work from a 
+minimum number of keystrokes.
+
+### Keybind Goodies.
+
+Rebinding some existing functionality to a different key or creating a simple 
+macro will certainly make most users work faster and easier. 
+
+Up until now, we've only used strings in the keybinds and macros. These strings
+are shorthand for built-in functionality. However, in place of these strings, 
+you can bind functions to keystrokes.  Doing so, adds a very powerful feature to 
+Canto's interface.
+
+Later in the document we'll cover `set_filter`, `set_tag_filter`, and
+`set_tag_sort` which are all defined in `canto.extra`. For now, we'll cover some
+more interesting and useful additions.
+
+#### Searching
+
+You can setup a keybind to search for your favorite terms using the `search`
+keybind, which takes a keyword argument or a regex. This uses the internal
+`inline_search` behavior and marks all items matching the search.
+
+    :::python
+    keys['1'] = search("Linux")
+    keys['2'] = search(".*[Uu]buntu.*", regex=True)
+
+You can also use `search_filter` which will prompt you interactively for a
+keyword (or a regex if you prefix the string with "rgx:") and filter out all
+unmatching items.
+
+    :::python
+    keys['/'] = search_filter
+
+Once again, note that `search_filter` is **not** in quotes, it is not a string
+because it's not a builtin keybind. `search_filter` is defined in `canto.extra`
+and therefore is used as a function.
+
+#### Copying (Yanking)
+
+A neat function for putting a link on the X clipboard (for use in pasting into a
+chat, a browser, etc.) can be used
+
+    :::python
+    keys['y'] = yank
+
+> **NOTE**: Yank requires `xclip` to be installed and visible in your `PATH`. On
+Debian based distros it's the `xclip` package, but on some it might be included
+with a generic X11 application meta-package. If in doubt, do `which xclip` from
+your shell.
+
+#### Saving
+
+The last neat little utility is `save` which writes a file (~/canto_out) with a
+title and a link when called. This is designed as a template example for writing
+a keybind, rather than a fully functional bind but it can be useful.
+
+    :::python
+    keys['s'] = save
 
 </div>
 
-##  Advanced
+## Filters
 
 <div class="section">
 
-There are a handful of other configuration options that you can use.
+Perhaps the most useful extra feature Canto provides is its powerful filter 
+system. `canto.extra` provides a number of filters to use
 
-Canto has many options that allow you to change (radically, I might add) the way
-that Canto draws the screen, and (a little more safely) change the default
-colors used to display. These are covered in detail on the [styling](../style/) page.
+<table>
+<tr>
+<td><pre>None</pre></td>
+<td>Filter no items.</td>
+</tr>
+<tr>
+<td><pre>show_unread</pre></td>
+<td>Ignore all items that have been marked read</td>
+</tr>
+<tr>
+<td><pre>show_marked</pre></td>
+<td>Ignore all items that are unmarked</td>
+</tr>
+<tr>
+<td><pre>only_with("string")</pre></td>
+<td>Show only items that have "string" in the title</td>
+</tr>
+<tr>
+<td><pre>only_without("string")</pre></td>
+<td>Show only items that **don't** have "string" in the title</td>
+</tr>
+<tr>
+<td><pre>all_of(filter1, filter2, ...)</pre></td>
+<td>Show only items that pass all listed filters (binary and)</td>
+</tr>
+<tr>
+<td><pre>any_of(filter1, filter2, ...)</pre></td>
+<td> Show items that pass any of the listed filters (binary or).</td>
+</tr>
+</table>
 
-**Filters** are covered [here](../advconfig/#filters)
+Additionally, there is `with_tag_in`, which is covered in the tag section, 
+specifically.
 
-**Hooks** are covered [here](../advconfig/#hooks).
+There are three ways to apply filters.
 
-**Sorting** feeds arbitrarily is covered [here](../advconfig/#sorting).
+- **Global filters**. These apply regardless. Any items that you see in the
+interface had to pass through this filter. Global filters are useful, for 
+example, to filter items based upon a given state, as in`show_unread`.
 
-As are a lot of other goodies, like writing your own [arbitrary keybinds](../advconfig/#advanced-keybinds).
+- **Tag filters**. These filters only apply to specific tags (See the
+tag section).
 
+- **Feed filters**. These filters are applied when loading content from disk.
+Items that don't pass this filter will never appear in the interface. Feed 
+filters are useful when you want to ignore a whole set of items entirely, like 
+news posts in webcomic feeds.
+
+
+### Using Global Filters
+
+Of the the three filters, global filters are arguably the most useful.For 
+example, a global filter can be used to filter out items that have already been 
+read. Accomplishing that is simple:
+
+    :::python
+    filters=[show_unread]
+
+Setting the 'show unread' filter will remove all previously read feed items by 
+default when Canto opens. If you  still want to have access to all items, you 
+can add the `None` filter to the list:
+
+    :::python
+    filters=[show_unread, None]
+
+With this filter in place, you can switch between `show_unread` and `None` using
+`[` and `]`to cycle through the list.
+
+If you're more comfortable using a keybind to choose your global filters,
+then you can use `set_filter`. This allows you to set the global filter
+regardless of whether it's in the `filters` list:
+
+    :::python
+    keys['1'] = set_filter(show_unread)
+    keys['2'] = set_filter(show_marked)
+    keys['3'] = set_filter(None)
+
+This lets you use the 1, 2, and 3 keys to set your filters directly, without
+needing to cycle through the list.
+
+### Using Feed Filters
+
+Most of the time, feed filters are only useful if you want to completely
+ignore some easily filtered content in a feed. My favorite example is
+ignoring all non-comic items in a webcomic feed. Take
+[penny-arcade](http://penny-arcade.com)'s feed for example. Each item's
+title is clearly marked with "Comic:" or "News:".
+
+If I wanted just completely ignore non-comic items, I could modify the `add`
+call for Penny Arcade to use the `only_with` filter:
+
+    :::python
+    add("http://feeds.penny-arcade.com/pa-mainsite", filter=only_with("Comic:"))
+
+This filter will eliminate all items that don't have "Comic:" in the title. 
+Other examples include filtering distro package feeds for only a certain type
+of package (i.e. Gentoo, `only_with("sys-devel")`), or filtering porn torrents
+from torrent site feeds (`only_without("XXX")`, provided the feed items are 
+clearly marked).
 
 </div>
 
-##  Deprecated config options
+## Tags
 
 <div class="section">
 
-Canto 0.6.0 deprecated a number of configuration options. `browser` and
-`text_browser` are replaced with the much more flexible and robust
-`link_handler`. Canto will still interpret these options with only a warning.
+A tag is an arbitrary set of stories. By default, Canto creates a single tag per
+feed and if you never use any other tags, feeds and tags are analogous.
 
-`add_feed` has been replaced with `add` and `add_tag`. Canto will interpret
-`add_feed` still with a warning, but will ignore *all* extra options.
+A tag allows you to filter, sort and otherwise customize how these groups of
+items are displayed.
 
-All of these configuration options **will** disappear from Canto in the **near
-future**, so please update your configs.
+### Manipulating Default Tags
+
+As mentioned above, each feed is given a tag by default. That tag's name is the
+name specified in the feed's source. So for the reddit feed, the tag's title
+(which is displayed at the top of the box of stories in the interface) is
+"reddit.com: what's new online!". That title is a bit long, and we want to use
+something a little more concise. So, to override the default tag, we can add
+this to the config:
+
+    :::python
+    add("http://reddit.com/.rss", tags=["Reddit"])
+
+This addition will cause the displayed name to change to "Reddit" from the 
+longer "reddit.com: what's new online!".
+
+### Adding Tags
+
+Adding a tag to a feed is as simple as coming up with a name and adding it to
+the tag list.
+
+    :::python
+    add("http://some-blog", tags=[None, "blogs"])
+    add("http://some-other-blog", tags=[None, "blogs"])
+
+> **NOTE**: `None` in the tag is shorthand for using the title included with the
+> feed. If all tags are omitted, `tags=[None]` is implied.
+
+This addition will define an implicit tag "blogs". After adding that tag, you 
+can use < and > to switch between the default set of tags (i.e. one per feed) 
+to the "blogs" tag.
+
+Notice that when you switch to the "blogs" tag, the displayed content will be 
+the stories in the first feed followed by the stories in the second feed. This 
+display may not seem very useful if you're using implicit tags, but, when you 
+add a sort to mix, the two feeds you can achieve some neat effects, like 
+organizing all of your favorite blog posts from around the internet in 
+chronological order.
+
+### Using Tags as Folders
+
+Typically, the above behavior, appending the items together by using a common 
+tag is not what a user expects unless they're going to use a sort.  Usually, 
+tags are used as folders names so that switching to "blogs" means showing all 
+the feeds that have "blogs" in the tags.
+
+This behavior is accomplished using the `with_tag_in` filter. Following the 
+above example, we can emulate folders with global filters:
+
+    
+    :::python
+    add("http://some-blog", tags=[None, "blogs"])
+    add("http://some-other-blog", tags=[None, "blogs"])
+    filters = [ None, with_tag_in("blogs") ]
+
+With this snippet, using ']' to switch to the next global filter will cause 
+Canto to display only the items in the two "blogs" feeds, but the items will 
+still be organized by feed rather than displayed as an appended list of items.
+
+You can also list multiple tags and use implicit default tags for use in
+`with_tag_in`
+
+    :::python
+    add("http://rss.slashdot.org/slashdot/Slashdot") # Creates implicit "Slashdot" tag
+    add("http://.some-blog", tags=[None, "blogs"])
+    filters = [ None, with_tag_in("Slashdot", "blogs") ]
+
+Lastly, you can combine `with_tag_in` and other filters with `all_of`
+
+    :::python
+    filters = [ None, all_of(with_tag_in("blogs"), show_unread) ]
+
+This combination will make your second global filter show you all of your blog 
+feeds, but only their unread items.
+
+### Adding Explicit Tags
+
+So far we've only dealt with implicit tags that are either created by default or
+by appending a string to the `tags` list. Such creations are only useful for 
+using tags with < / > or in filters.
+
+However, tags themselves can have attributes. You can make an explicit tag with
+the `add_tag` function.
+
+    :::python
+    add("http://some-blog", tags=[None, "blogs"])
+    add("http://some-other-blog", tags=[None, "blogs"])
+    add_tag("blogs", ...parameters...)
+
+These definitions can come before or after you use them in `add` calls.
+
+### Tag Filters
+
+Tag filters, as the name would suggest only apply to a specific tag. These 
+filters  are useful if a filter would only make sense for a certain set of items
+rather than globally.
+
+Let's return to the webcomic example from the [feed filter](#using-feed-filters)
+section. In that example, we wanted to entirely discard posts that were news
+and only see comics. Using a tag filter, however, it's possible to keep all
+items, but merely hide (rather than entirely discard) the other stories. This is
+useful if you want to prioritize one set of stories over another. In this case,
+we want to prioritize the comics, but make the news items available on request.
+
+    :::python
+    add("http://feeds.penny-arcade.com/pa-mainsite") # Implicitly creates "Penny Arcade" tag
+    add_tag("Penny Arcade", filters=[only_with("Comic:"), only_with("News:")])
+
+This example makes the "Penny Arcade" tag explicit and sets up two tag filters.
+Now when you've selected the Penny Arcade feed, you can use { and } to switch
+between the tag filters and show comics or news. Alternatively, a similar effect
+could be achieved by using `only_without("Comic:")` as the second filter, which
+would allow all items not shown in the first filter, not necessarily just items
+with "News:" in them.
+
+Using these tag filters, you can essentially turn one tag or feed into multiple
+overlapping tags and cycle through them.
+
+> **NOTE**: Tag filters are always overridden by global filters. If your global
+filter is `show_unread`, even if your tag filter is `None`, you won't see any
+read items.
+
+Like global filters, tag filters can be set by default.
+
+    :::python
+    default_tag_filters([show_unread])
+
+Similar to `default_rate` and `default_keep`, these defaults are applied as
+**explicit** tags are created. Any tags created with `add_tag` will inherit the
+default tag filters from the call immediately before
+the `add_tag` (or `[None]` if it hasn't been called at all). Implicit tags
+(i.e. not created with `add_tag`) are made explicit after the rest of the
+configuration is done, so they will inherit the defaults from the last call to
+`default_tag_filters` made in the config.
+
+Just like global filters, tag filters can be set directly via keybind
+
+    :::python
+    keys['u'] = set_tag_filter(show_unread)
+
+This keybind will set the current tag's filter to `show_unread`.
+
+> **NOTE** : Unlike global filters, tag filters will *never* make a tag fully
+disappear since there would be no easy way to change the tag filter back to one
+with items in it.
+
+### Sorts
+
+Another benefit of making explicit tags is the ability to sort items in varied 
+ways. `canto.extra` defines some default sorts to use.
+
+<table>
+<tr>
+<td><pre>None</pre></td>
+<td>Use the ordering specified in the feed.</td>
+</tr>
+<tr>
+<td><pre>by_date</pre></td>
+<td>Order by the time the items are parsed.</td>
+</tr>
+<tr>
+<td><pre>by_len</pre></td>
+<td>Order by length of title.</td>
+</tr>
+<tr>
+<td><pre>by_content</pre></td>
+<td>Order by length of content.</td>
+</tr>
+<tr>
+<td><pre>by_alpha</pre></td>
+<td>Sort alphabetically.</td>
+</tr>
+<tr>
+<td><pre>by_unread</pre></td>
+<td>Order by read status.</td>
+</tr>
+<tr>
+<td><pre>reverse_sort(sort)</pre></td>
+<td>Reverse the given sort.</td>
+</tr>
+</table>
+
+> **NOTE**: Sorts based on strings are done on unparsed strings. This means that
+the strings could still have HTML built into them and untranslated entities.
+This effects the sort because the length or the first character may not be
+what's displayed. A title "&lt;strong&gt;Zoo&lt;/strong&gt;" will sort 
+alphabetically before "Aardvark Sighting" because "<" is before "A", despite
+the fact that the HTML will not be displayed.
+
+> This was done to speed sorts so that interpretable HTML wouldn't have to be
+stripped before and replaced after the sorting it done.
+
+> **ALSO NOTE**: Sorts can possibly make Canto's memory footprint increase
+marginally if they require access to data that isn't usually kept in memory.
+Sorts that function on the title (`by_length`, `by_alpha`, etc.) have no effect
+because the title is *always* in memory. Sorts like `by_date` require a date
+field to be kept in memory so it adds a couple of bytes per story.
+
+> This was also a speed tweak to avoid stories hitting the disk every time it's
+sorted which makes the program grind to a halt.
+
+The simplest way to use a sort is to do so when you define a tag
+
+    :::python
+    add_tag("Tag", sorts=[by_unread])
+
+The above code will sort the given tag with unread stories first.
+
+Similarly to filters and sorts you can set defaults and use keybinds to set
+sorts.
+
+    :::python
+    default_tag_sorts([show_unread])
+    keys['s'] = set_tag_sort(show_unread)
+
+And, once again, like `default_tag_filters`, explicit tags inherit the tag
+filters from the previous call to default_tag_sorts, while implicit tags
+inherit the sorts from the final call to default_tag_sorts.
+
+Sorts like `by_date` are most useful when combining two feeds into a single tag
+
+    :::python
+    add("http://news1", tags=["News"])
+    add("http://news2", tags=["News"])
+    add_tag("News", sorts=[by_date])
+
+
+### Sort Order
+
+Anywhere that a sort can be used, you can use multiple sorts with the
+`sort_order` function from `canto.extra`. This takes any number of sorts in
+order of priority.
+
+    :::python
+    default_tag_sorts([sort_order(by_unread, by_alpha)])
+
+This snippet will make tags sort items first by unread status and then sort the
+same items alphabetically.
+
+</div>
+
+## Adding Content
+
+<div class="section">
+
+A common task is to add relevant information to the reader.
+
+### Typical Content
+
+A lot of feeds support typical information about each item. By default, the
+reader displays the title, the description, and the subsequent links. If you
+wanted to add other content, you can use `add_info`. For example, to add the
+author of an item to the reader:
+
+    :::python
+    r = get_default_renderer()
+    add_info(r, "Author")
+
+This will add the following line to the reader, above the content:
+
+    Author: [author]
+
+`add_info` takes other arguments to customize how the line is displayed.
+
+    :::python
+    add_info(r, "Author", caption="by: ")
+
+The resulting line now looks like this:
+
+    by: [author]
+
+If the item being displayed doesn't include any author information, the line
+will be entirely ommitted. It can also be that the information isn't useful and
+should be ignored. Lots of feed generators set author to a default like
+`donotreply@somedomain` which isn't useful info. Other feeds will put author
+information into the content anyway. Because of this, you can specify to only
+add the information to particular tags.
+
+    :::python
+    add_info(r, "Author", tags=["Slashdot"...])
+
+### Less Common Content
+
+It's difficult to know whether your RSS includes any special information. As of
+0.7.x, canto includes a simple wrapper script called `canto-inspect`. You call
+it like so:
+
+    canto-inspect [URL] > output
+
+It's essentially a custom pretty printer for the XML, nothing very advanced.
+However, using this you can detect interesting content. Like this partial output
+from `canto-inspect http://rss.slashdot.org/slashdot/Slashdot`:
+
+    :::text
+    [entries]
+        [0]
+            [summary_detail]
+                [base]: http://rss.slashdot.org/slashdot/Slashdot
+                [type]: text/html
+                [value]: ...
+                [language]
+            [updated_parsed]: ...
+            [links]
+                [0]
+                    [href]: http://rss.slashdot.org/~r/Slashdot/slashdot/...
+                    [type]: text/html
+                    [rel]: alternate
+            [title]: Doctors Fight Patent On Medical Knowledge
+            [slash_department]: no-not-patent-medicine
+            [feedburner_origlink]: http://yro.slashdot.org/story/09/07/...
+            [author]: kdawson
+            [updated]: 2009-07-21T18:20:00+00:00
+            [summary]: ...
+            [title_detail]
+                [base]: http://rss.slashdot.org/slashdot/Slashdot
+                [type]: text/plain
+                [value]: Doctors Fight Patent On Medical Knowledge
+                [language]
+            [slash_section]: yro
+            [link]: http://rss.slashdot.org/~r/Slashdot/slashdot/~3/...
+            [slash_hit_parade]: 0,0,0,0,0,0,0
+            [id]: http://yro.slashdot.org/story/09/07/21/1646216/...
+            [tags]
+                [0]
+                    [term]: patents
+                    [scheme]
+                    [label]
+
+In this mess of information, we can see some interesting content, like 
+`slash_department` and `slash_section` which might be of interest. Armed with
+this knowledge, we can add the content:
+
+    :::python
+    r = get_default_renderer()
+    add_info(r, "slash_department", caption="Dept: ", tags=["Slashdot"])
+
+> **NOTE**: The first argument to `add_info` corresponds to the content in the
+[brackets], but isn't case sensitive.
+
+</div>
+
+## Update Triggers
+
+<div class="section">
+
+Canto supports a number of different update mechanisms.
+
+>**NOTE**: These triggers are to update the client from disk only, 
+they have nothing to do with getting items from the server. That is only
+controlled by running `canto-fetch` and the rates you have set in the
+configuration.
+
+* **Interval Updating**. This is the default behavior. Every so often (generally
+about a minute), the feeds are read from disk and the display is updated. This
+is what most people expect from their RSS reader.
+
+* **Change Tag Updating**. This makes the client update whenever you change
+feeds/tags. This is useful to use with filters.
+
+* **Signal Updating**. This enables you to issue a `SIGUSR1` to canto and
+trigger a screen update. Most useful from a script (i.e. write a script or a
+cron that runs `canto-fetch` and immediately issues `SIGUSR1`.
+
+* **Manual Updating**. Not automatic, but driven by a keybind (C-r by default).
+
+### Considerations
+
+The primary reason for having multiple update triggers is that each one caters
+differently to how you want to use Canto. Users that don't appreciate text
+shifting out from under their eyes might want to avoid the every-minute
+`interval` update and might prefer `change_tag` or manual updates that are much
+more predictable. Users that flit from one tag to another reading what looks
+interesting and breezing through the rest might want to avoid `change_tag`
+because it would cause an update too often and the `interval` update might be just
+fine for them. It's all about what suits you.
+
+If you think you'd rather have another kind of trigger, file a feature request
+bug and we'll consider it. They're fairly simple to implement.
+
+### Using Triggers
+
+Using triggers is a simple as using a list. By default, `triggers` is set like
+this:
+
+    :::python
+    triggers = ["interval"]
+
+You can add triggers or remove triggers with typical Python list functions
+
+    :::python
+    triggers.append("change_tag")
+    triggers.append("signal")
+    triggers.remove("interval")
+
+You can only set "change_tag", "signal", and "interval" in `triggers`. Manual
+isn't considered a real trigger, but is set like other keybinds to
+`force_update`.
+
+I expect there will be refinements to the trigger system in upcoming releases.
+Once again, any ideas for new triggers or improvements (or even code) are
+[welcome](../contact).
+
+</div>
+
+## Hooks
+
+<div class="section">
+
+Canto includes a number of hooks for outside extensibility. You may find hooks
+to be most useful when you author them yourself.  Even so, but `canto.extra` 
+does include a few basic, but useful, hooks.
+
+The possible hooks:
+
+<table>
+<tr>
+<td><pre>start_hook</pre></td>
+<td>Run once, on startup</td>
+</tr>
+<tr>
+<td><pre>resize_hook</pre></td>
+<td>Run when the window is resized (including on start)</td>
+</tr>
+<tr>
+<td><pre>new_hook</pre></td>
+<td>Run once for every new item.</td>
+</tr>
+<tr>
+<td><pre>select_hook</pre></td>
+<td>Run when a new item is selected</td>
+</tr>
+<tr>
+<td><pre>unselect_hook</pre></td>
+<td>Run when an item is unselected</td>
+</tr>
+<tr>
+<td><pre>state_change_hook</pre></td>
+<td>Run whenever an item's state (read/marked) changes</td>
+</tr>
+<tr>
+<td><pre>update_hook</pre></td>
+<td>Run when the interface updates</td>
+</tr>
+<tr>
+<td><pre>end_hook</pre></td>
+<td>Run when the interface closes</td>
+</tr>
+</table>
+
+> **NOTE**: All hooks are enforced by the interface **except new_hook**.
+`new_hook` is intended to be used as a notification method. All other hooks
+don't function unless Canto is running.
+
+### Using Hooks
+
+There are only two hooks included in `canto.extra` by default. These are for
+manipulating the titles of an xterm (or another compatible X terminal).
+
+    :::python
+    select_hook = set_xterm_title
+    end_hook = clear_xterm_title
+
+This will set the xterm's title to "Tag - Title" when you select an item and
+clear it when Canto closes.
+
+Because this hook doesn't work everywhere and where it doesn't work it
+essentially clobbers ncurses by printing to the screen (you set an xterm
+title by writing to stdout with a special code), it's usually preferable to
+check the environment's `TERM` before employing the hooks.
+
+    :::python
+    import os
+    if os.getenv("TERM") == "xterm":  # Or other compatible term
+        select_hook = set_xterm_title
+        end_hook = clear_xterm_title
+
+This code ensures that when you switch to the Linux console or another terminal,
+Canto won't start spewing uninterpreted content to the screen.
+
+</div>
+
+# Example Config
+
+<div class="section">
+
+Here is a modified version of my own config that should serve as a decent
+starting point for any new users.
+
+    :::python
+    from canto.extra import *
+    import os
+
+    # Handlers when in Linux console or xterm
+    if os.getenv("TERM") == "linux":
+        link_handler("elinks \"%u\"", text=True)
+        image_handler("fbi \"%u\"", text=True, fetch=True)
+    else:
+        link_handler("firefox \"%u\"")
+        image_handler("feh \"%u\"", fetch=True)
+
+    # Max column width of 65 characters
+    def resize_hook (cfg):
+        cfg.columns = cfg.width / 65
+
+    # Never discard items I haven't seen
+    never_discard("unread")
+
+    # I prefer change_tag to interval
+    # Uncomment these to use it too
+
+    # triggers.remove("interval")
+    # triggers.append("change_tag")
+
+    keys['/'] = search_filter
+    keys['y'] = yank
+
+    # Use [ / ] to switch between global filters
+    filters=[show_unread, None]
+
+    # Make unread items float to the top, when not
+    # using show_unread filter
+    default_tag_sorts([by_unread])
+
+    # Selected Feeds
+    add("http://rss.slashdot.org/slashdot/Slashdot", tags=[None, "news"])
+    add("http://osnews.com/files/recent.xml", tags=[None, "news"])
+    add("http://www.damninteresting.com/?feed=rss2")
+    add("http://reddit.com/.rss", tags=["Reddit", "reddits", "news"])
+    add("http://programming.reddit.com/.rss", tags=[None, "reddits"])
+    add("http://netsec.reddit.com/.rss", tags=[None, "reddits"])
+    #...
+
+    # Some examples
+    # Uncomment if you've downloaded the script
+    # add("script:slashdotpolls -external")
+    #
+    # Simple password example
+    # add("http://feedparser.org/docs/examples/digest_auth.xml", username="test",
+    #        password="digest")
+
+You can download this example config 
+[here](http://codezen.org/static/conf.py.example)
+
+</div>
+
+# Upgrading from 0.6.x
+
+<div class="section">
+
+For most users, upgrading to 0.7.x from 0.6.x should be painless. There are some
+quirks that may cause trouble.
+
+## Standard Procedures
+
+First of all, if you run `canto-fetch` as a daemon, you want to make sure that
+all the old daemons aren't running. There aren't any differences in the disk
+format between the two versions, but it's bad practice to have multiple versions
+of software running on the same data. You can properly kill all running
+`canto-fetch` instances like so:
+
+    :::bash
+    $ killall -INT canto-fetch
+
+After that, you should have no running instances. You can check with
+
+    :::bash
+    $ ps -u [youruser] | grep canto-fetch
+
+If you still having running instances after a few moments, you can issue
+`killall -9 canto-fetch` to force them to exit.
+
+## Configuration
+
+Once again, for most users, changes to your configuration shouldn't be
+necessary. If you loop through the color array, you may have to change your
+configuration or if you use sorts, or define sorts and filters, then you
+may need a change.
+
+### Color array
+
+This is mainly if you're doing a more advanced loop through the color list. If
+you're just setting colors in the typical way (`colors[0] = (num/str,num/str)`),
+then you should be okay.
+
+If you're looping with
+
+    :::python
+    for i, (fg, bg) in colors:
+
+Then you may run into trouble. The new default colors are not all set to tuples
+when configured so the (fg, bg) may except. However, the most common use for
+this loop was to set a common background for all colors. In 0.7.x, the
+background of a color without one set defaults to the background color of the
+first pair, making the loop unnecessary. In short
+
+    :::python
+    # 0.6.x version
+    for i, (fg, bg) in colors:
+        colors[i] = (fg, "newbackground")
+
+    # 0.7.x version, setting the background of 0, changes them all
+    colors[0] = ("white", "newbackground")
+
+### Using Sorts
+
+The primary difference with using sorts is that sort order is no longer conveyed
+as a simple list. This was confusing and made for a lot of double lists in weird
+places.
+
+    :::python
+    add_tag("sometag", sorts=[[by_date]])       # 0.6.x
+    add_tag("sometag", sorts=[by_date])         # 0.7.x
+
+To convey the same meaning as the double lists used to (i.e. sort order), you
+can use the new `sort_order` function.
+
+    :::python
+    add_tag("sometag", sorts=[[by_alpha, by_len]])          # 0.6.x
+    add_tag("sometag", sorts=[sort_order(by_alpha, by_len)] # 0.7.x
+
+### Defining Filters and Sorts
+
+If you created your own filters and sorts for 0.6.x, the main difference is that
+these now must be classes subclassing `Filter` and `Sort` respectively. So where
+once
+
+    :::python
+    # 0.6.x valid filter
+    def myfilt(tag, story):
+        ...perform filter...
+
+was valid. You now need
+
+    :::python
+    # 0.7.x valid filter
+    class myfilt(Filter):
+        def __call__(self, tag, story):
+            ...perform filter...
+
+Also, any items used other than "title", "link", "id", and "canto_state",
+should be added to the precache variable of the class.
+
+    :::python
+    class myfilt(Filter):
+        def __init__(self):
+            Filter.__init__(self)
+            self.precache = ["extra_item", ...]
+        ...
+
+You'll know that this needs to be done if Canto is extremely sluggish. Of
+course, you can see examples of the new classes in 
+[canto.extra](http://codezen.org/cgi-bin/gitweb.cgi?p=canto.git;a=blob;f=canto/extra.py;hb=HEAD)
+
+### Validation
+
+0.7.x is more strict than 0.6.x about validating your configuration. It's
+possible that accepted input that doesn't fall under the previous categories and
+still doesn't work with 0.7.x. Usually in this case, the error message is enough
+to set you straight. If you're still having trouble, [contact](../contact) me.
+
+### Other Changes
+
+* `new_hook` is enforce by canto-fetch now, and will thus run even without Canto
+
+* `keep` variables set < the number of items in the feed source will be ignored
+and thus `keep=0` now indicates that all items in the feed should be kept and no
+more.
+
+### If All Else Fails
+
+If you're really stuck and confused trying to upgrade: [contact](../contact) me.
 
 </div>

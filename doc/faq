@@ -2,7 +2,7 @@ The compulsory Frequently Asked Questions page.
 
 [TOC]
 
-## Why Canto?
+# Why Canto?
 
 <div class="section">
 
@@ -12,14 +12,14 @@ I'm not sure how people can stand three-pane readers. Graphical or console, I do
 
 **Extensibility**
 
-Everything used to configure Canto is actually part of the Python interpreter. It has all of the power of Python anywhere. Hooks are provided to allow you to perform actions on particular events (start,stop,update,resize,select,unselect), filters allow you to filter items out on arbitrary terms (globally or on a feed basis), and intelligent keybinds allow you to script your way to pretty much anything you want. 
+Everything used to configure Canto is actually part of the Python interpreter. It has all of the power of Python anywhere. Hooks are provided to allow you to perform actions on particular events (start, stop, update, resize, select, unselect, new), filters allow you to filter items out on arbitrary terms (globally or on a feed basis), and intelligent keybinds allow you to script your way to pretty much anything you want.
 
 Examples:
 
 - Use a keybind to write the item to a file, or mail it to a friend.
 - Use a filter to only browse through items you haven't read yet.
-- Use a custom renderer for a feed to display extra information on its items.
-- Sort feeds by date, alphabetically, by length, or by number of comments in article
+- Simply add content like an item's tags or author to the reader.
+- Sort feeds by date, alphabetically, by length, or by any other arbitrary criteria.
 - Keybind your favorite search terms to cycle through them.
 - Detect that your terminal is xterm or a tty and set the browser appropriately
 - Arbitrary things, like change the theme based on the time of day
@@ -28,29 +28,27 @@ The point being that, with all of Python behind it, you can manipulate Canto in 
 
 **Theming**
 
-All of the drawing code is done by a simple class full of literate Python. If you want to modify how anything is drawn to the screen, subclass the renderer, change anything you want and voila... Canto now draws differently. Sounds a lot harder than it is.
-
-This allows you a lot of flexibility to do things like highlight particular keywords, or change the way a particular feed is drawn, or even what stories are drawn at all. Again, just because I didn't think to add support to the reader for what you want to do, doesn't mean you can't do it.
+All of the drawing code is done by a simple class full of literate Python. If you want to modify how anything is drawn to the screen, subclass the renderer, change anything you want and voila... Canto now draws differently. Definitely for advanced users, but extremely powerful.
 
 </div>
 
-## Does Canto support Atom feeds?
+# Does Canto support Atom feeds?
 
 <div class="section">
 
-Yes. Canto uses [feedparser](http://feedparser.org) which is capable of parsing virtually any syndicated news format on the planet and aside from that, Canto doesn't care.
+Yes. Canto uses [feedparser](http://feedparser.org) which is capable of parsing virtually any syndicated news format on the planet and aside from that, Canto doesn't care if a feed is any version of RSS, Atom, or any other feed type.
 
 </div>
 
-## Does Canto support OPML?
+# Does Canto support OPML?
 
 <div class="section">
 
-Yes, as of 0.5.2, Canto support importing from/export to OPML, as well as adding feeds from an OPML file via config using ([source_opml](../config/#source_opml)).
+Yes, as of 0.5.2, Canto support importing from/export to OPML, as well as adding feeds from an OPML file at [runtime](../config/#sourcing-other-files)
 
 </div>
 
-## Does Canto support Unicode/UTF-8?
+# Does Canto support Unicode/UTF-8?
 
 <div class="section">
 
@@ -58,17 +56,21 @@ Yes. As long as your terminal and its font can support it, then Canto can output
 
 </div>
 
-## What does Canto require?
+# What does Canto require?
 
 <div class="section">
 
 Canto >=0.5.0 requires Python 2.5 or better, ncurses 5.5 or better, [feedparser](http://feedparser.org), and [chardet](http://chardet.feedparser.org). There are packages for all four of these dependencies in all major distributions. I actively test with Debian's sid (unstable) packages, which can cause trouble because feedparser doesn't make releases very often so a lot of distros have heavily patched versions (as of this writing, Debian has 12 patches against the vanilla feedparser 4.1 source).
 
+For users still using Python 2.5, Canto >=0.7.0 uses the [processing
+module](http://pypi.python.org/pypi/processing). This module is included in
+Python 2.6 without any extra installation. 
+
 To **build** Canto: GCC or another standards compliant C compiler, ncurses header files, and python header files (for compiling the core code).
 
 </div>
 
-## Why ncurses?
+# Why ncurses?
 
 <div class="section">
 
@@ -82,7 +84,7 @@ And finally, I just really dig text-interfaces. [XMonad](http://xmonad.org) and 
 
 </div>
 
-## Why Python?
+# Why Python?
 
 <div class="section">
 
@@ -96,7 +98,7 @@ Lastly, Python is also second only to Perl in system adoption and... God knows I
 
 </div>
 
-## What license is Canto under?
+# What license is Canto under?
 
 <div class="section">
 
@@ -104,19 +106,17 @@ Canto is [GPLv2](http://www.gnu.org/licenses/old-licenses/gpl-2.0.html) software
 
 </div>
 
-## What platform does Canto run on?
+# What platform does Canto run on?
 
 <div class="section">
 
-*Theoretically*, Canto should run under any Unix-like OS with Python and a compatible ncurses library. Everything is in Python, and the core drawing code is known to have compiled on Linux and at some point in time, on the three major BSD operating systems. There have been problems with BSD support, however, particularly with OpenBSD.
-
-Testing of Canto, however, hasn't been done extensively on any system other than Linux x86/amd64, because that's what I (and 99% of the desktop users) have at home. 
-
-Since 0.5.7 there's been an official Debian package which is built on every architecture Debian supports, this includes alpha, amd64, armel, hppa, i386, ia64, m68k, mips, mipsel, powerpc, s390, and sparc. This doesn't necessarily mean that Canto *runs* on all of these, but it at least builds which is a good sign.
+Canto should run on any Linux system with the required libraries, regardless of
+architecture. Other platforms like *BSD, Cygwin, and Windows are 100% untested
+and unsupported.
 
 </div>
 
-## Where should I request features /  report bugs?
+# Where should I request features /  report bugs?
 
 <div class="section">
 

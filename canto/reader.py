@@ -7,14 +7,16 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from input import num_input
+from basegui import BaseGui
+from input import input
 from const import *
 import utility
 
 import curses
 
-class Reader :
-    def __init__(self, cfg, story, register, deregister):
+class Reader(BaseGui):
+    def __init__(self, cfg, tag, story, dead_call):
+
         self.story = story
         self.cfg = cfg
         self.keys = cfg.reader_key_list
@@ -25,16 +27,10 @@ class Reader :
         self.width = 0
         self.height = 0
         self.show_links = 0
+        self.tag = tag
+        self.dead = dead_call
 
-        register(self)
-        self.register = register
-        self.deregister = deregister
         self.refresh()
-
-    def __str__(self):
-        if self.focus:
-            return u"%B[" + self.story["title"][:10] + u"]%b"
-        return u"[" + self.story["title"][:10] + u"]"
 
     def refresh(self):
         # It's unfortunate, but because the interface is so complex,
@@ -45,47 +41,57 @@ class Reader :
         # A way to get this right off the bat would be nice, but I doubt
         # it would enhance the performance more than one iota.
 
+        d = { "story" : self.story,
+              "tag" : self.tag,
+              "cfg" : self.cfg,
+              "show_links" : self.show_links,
+              "window" : None }
+
         if self.cfg.reader_orientation in ["top","bottom",None]:
             # First render for self.lines
-            self.lines, self.links = self.story.renderer.reader(self.cfg, \
-                    self.story, self.cfg.width, self.show_links, None)
+            d["width"] = self.cfg.gui_width
+            d["height"] = 0
+            self.lines, self.links = self.tag.renderer.reader(d)
 
             # This is the default, old behavior (floating window)
             if not self.cfg.reader_orientation:
-                self.height, self.width = min(self.lines, self.cfg.gui_height),\
-                        self.cfg.width
+                d["width"] = self.cfg.gui_width
+                d["height"] = min(self.lines, self.cfg.gui_height)
                 self.top, self.right = (0,0)
             # Rendering the reader into a pre-existing space
             else:
-                self.height = self.cfg.reader_lines
-                self.width = self.cfg.width
+                d["height"] = self.cfg.reader_lines
+                d["width"] = self.cfg.gui_width
                 if self.cfg.reader_orientation == "top":
                     self.top, self.right = (0,0)
                 else:
                     self.top, self.right = (self.cfg.gui_height, 0)
         else:
-            self.lines, self.links = self.story.renderer.reader(self.cfg, \
-                    self.story, self.cfg.reader_lines, self.show_links, None)
+            d["width"] = self.cfg.reader_lines
+            d["height"] = self.cfg.gui_height
 
-            self.height = self.cfg.gui_height
-            self.width = self.cfg.reader_lines
+            self.lines, self.links = self.tag.renderer.reader(d)
 
             if self.cfg.reader_orientation == "left":
                 self.top, self.right = (0, 0)
             else:
                 self.top, self.right = (0, self.cfg.gui_width)
                 
-        self.window = curses.newpad(self.lines, self.width)
+        self.window = curses.newpad(self.lines, d["width"])
         self.window.bkgdset(curses.color_pair(1))
-        self.lines, self.links = self.story.renderer.reader(self.cfg, self.story, \
-                self.width, self.show_links, self.window)
+
+        d["window"] = self.window
+        self.width = d["width"]
+        self.height = d["height"]
+
+        self.lines, self.links = self.tag.renderer.reader(d)
 
         self.draw_elements()
 
     def draw_elements(self):
         self.more = self.lines - (self.height + self.offset)
-        self.window.refresh(self.offset, 0, self.top, self.right, \
-                self.height - 1 + self.top, self.width + self.right)
+        self.window.noutrefresh(self.offset, 0, self.top, self.right, \
+                self.top + self.height - 1, self.width + self.right)
 
     def toggle_show_links(self):
         self.show_links = not self.show_links
@@ -97,25 +103,67 @@ class Reader :
     def scroll_down(self):
         if self.more > 0 :
             self.offset += 1
+        return REDRAW_ALL
 
     def page_down(self):
         if self.more > self.height:
             self.offset += self.height
         else:
             self.offset = self.lines - self.height
+        return REDRAW_ALL
 
     def scroll_up(self):
         if self.offset :
             self.offset -= 1
+        return REDRAW_ALL
     
     def page_up(self):
         if self.offset > self.height:
             self.offset -= self.height
         else:
             self.offset = 0
+        return REDRAW_ALL
 
     def goto(self):
-        self.dogoto(num_input(self.cfg, u"Link Number"))
+        term = input(self.cfg, "Goto")
+        if not term:
+            return
+        
+        links = []
+        terms = term.split(',')
+
+        for t in terms:
+            try:
+                links.append(int(t))
+            except:
+                if t.count('-') == 1:
+                    d = t.index('-')
+                    a = t[:d]
+                    b = t[(d+1):]
+                    try:
+                        a = int(a)
+                        b = int(b)
+                    except:
+                        self.cfg.log("Unable to interpret range!")
+                        return
+                    for l in xrange(a,b + 1):
+                        links.append(l)
+                else:
+                    self.cfg.log("Unable to interpret link!")
+                    return
+
+        out = "Going to link"
+        if len(links) != 1:
+            out += "s "
+            for n in links[:-1]:
+                out += "%d, " % n
+            out += "and %d" % links[-1]
+        else:
+            out += " %d" % links[0]
+        self.cfg.log(out)
+
+        for l in links:
+            self.dogoto(l)
 
     def dogoto(self, n):
         if n == None:
@@ -124,30 +172,11 @@ class Reader :
             utility.goto(self.links[n], self.cfg)
         return 1
 
-    def switch(self):
-        return WINDOW_SWITCH
-
-    def alarm(self, a=None, b=None):
-        pass
-    
-    def action(self, a):
-        if hasattr(a, "__call__"):
-            r = a(self)
-        else:
-            r = 0
-            f = getattr(self,a,None)
-            if f:
-                r = f()
-
-        if not r:
-            self.draw_elements()
-        return r
-
-    def quit(self):
-        self.destroy()
-        return REDRAW_ALL
-
     def destroy(self):
+        # Dereference anything fetched from disk to render.
+        self.story.free()
+
         self.window.erase()
         self.draw_elements()
-        self.deregister()
+        self.dead()
+        return REDRAW_ALL

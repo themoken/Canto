@@ -7,19 +7,21 @@
 #   it under the terms of the GNU General Public License version 2 as 
 #   published by the Free Software Foundation.
 
-from utility import Cycle
 import story
 
 class Tag(list):
-    def __init__(self, cfg, sorts = [[None]], filters = [None], c = "*"):
+    def __init__(self, cfg, renderer, sorts = [[None]], \
+            filters = [None], c = "*"):
+
         list.__init__(self)
+
         self.cfg = cfg
+        self.renderer = renderer
         self.tag = c
         self.collapsed = 0
         self.start = 0
         self.read = 0
         self.unread = 0
-        self.last_iter = []
 
         self.filters = filters
         self.sorts = sorts
@@ -38,59 +40,75 @@ class Tag(list):
 
     def all_read(self):
         for s in self :
-            s.read()
+            s.set("read")
         self.unread = 0
         self.read = len(self)
 
     def all_unread(self):
         for s in self :
-            s.unread()
+            s.unset("read")
         self.read = 0
         self.unread = len(self)
 
-    def set_read(self, idx):
-        if not self[idx].wasread():
-            self[idx].read()
+    def set_read(self, item):
+        if not item.was("read"):
+            item.set("read")
             self.unread -= 1
             self.read += 1
 
-    def set_unread(self, idx):
-        if self[idx].wasread():
-            self[idx].unread()
+    def set_unread(self, item):
+        if item.was("read"):
+            item.unset("read")
             self.unread += 1
             self.read -= 1
 
-    def extend(self, iter):
-        self.last_iter = iter
-        matched_tag = [s for s in iter if self.tag in s["canto_state"]]
+    def sort_add(self, iter):
+        if not iter:
+            return
+        sort = self.sorts.cur()
+        if not len(self) or not sort:
+            list.extend(self, iter)
+            return
 
-        filt = self.filters.cur()
-        if filt:
-            list.extend(self, filter(lambda x: filt(self, x), matched_tag))
-        else:
-            list.extend(self, matched_tag)
+        for i, item in enumerate(self):
+            while sort(item, iter[0]) > 0:
+                list.insert(self, i, iter[0])
+                del iter[0]
+                if not iter:
+                    return
+        list.extend(self, iter)
+
+    def retract(self, iter):
+        for item in iter:
+            if item in self:
+                if item.was("read"):
+                    self.read -= 1
+                else:
+                    self.unread -= 1
+                self.remove(item)
 
         empty = 0
-        if filt and not len(self):
+        if self.filters.cur() and not len(self):
             d = { "title" : "No unfiltered items.",
                   "description" : "You've filtered out everything!",
-                  "canto_state" : [self.tag, "unread"],
-                  "id" : None
+                  "canto_state" : [self.tag, "*"],
+                  "id" : "canto-internal"
                 }
 
-            stub = story.Story(d , None, self.cfg.default_renderer)
+            stub = story.Story(d, lambda : {})
             self.append(stub)
             empty = 1
-        else:
-            if not hasattr(self.sorts.cur(), "__iter__"):
-                dosorts = [self.sorts.cur()]
-            else:
-                dosorts = self.sorts.cur()
 
-            for s in dosorts:
-                if s:
-                    list.sort(self, s)
+        self.enum(empty)
 
+    def extend(self, iter):
+        self.sort_add(iter)
+        if len(self) > 1 and self[0]["id"] == "canto-internal":
+            del self[0]
+
+        self.enum()
+
+    def enum(self, empty = 0):
         if empty:
             self.read = 0
             self.unread = 0
@@ -104,8 +122,8 @@ class Tag(list):
             if lt:
                 self[-1].last = 1
 
-            self.read = len(filter(lambda x : x.wasread(), self))
+            self.read = len(filter(lambda x : x.was("read"), self))
             self.unread = len(self) - self.read
 
     def clear(self):
-        del self[:]
+        self.retract(self[:])
