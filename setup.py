@@ -5,7 +5,7 @@ from distutils.command.install_data import install_data
 import commands
 
 version = ['0','7','0']
-man_date = "21 February 2009"
+man_date = "24 July 2009"
 git_commit = commands.getoutput("git show --pretty=oneline\
         --abbrev-commit").split()[0]
 
