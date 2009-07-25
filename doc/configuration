@@ -114,11 +114,6 @@ this way, then you can use `change_feed` that takes the same arguments as
 
 ### Tweaking Defaults
 
-<<<<<<< HEAD:doc/configuration
-<div class="section">
-
-**add(URL,[tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
-=======
 At some point you may want to change the `rate` and `keep` parameters for a 
 large quantity of feeds and do so simultaneously.  Using `default_rate` and 
 `default_keep` you can set those parameters for **every feed following 
@@ -126,7 +121,6 @@ the call**. Because this change only affects feeds that are added after the
 call, it can be used to set 'keep' and 'rate' variables for batches of feeds, 
 rather than all feeds.  If you want the 'keep' and 'rate' variables to affect 
 all feed behavior globally, set the defaults before you define your feeds.
->>>>>>> experimental:doc/configuration
 
 > **NOTE**: To reiterate from above, `rate` is in minutes and `keep` will 
 > ignore any number lower than the number of items in the feed's source.
@@ -219,13 +213,7 @@ support opening from the internet directly you can write:
 
 Canto will then fetch the content into `/tmp` and run the associated program.
 
-<<<<<<< HEAD:doc/configuration
-<div class="section">
-
-** add_tag("name", [filters=],[sorts=]) **
-=======
 ### Images
->>>>>>> experimental:doc/configuration
 
 Images are handled similarly to links with the `image_handler` call. It takes
 the same arguments as `link_handler`. A good example:
@@ -242,11 +230,6 @@ This will use `fbv` to view an image in a text console.
 ## Reader Layout
 
 <div class="section">
-<<<<<<< HEAD:doc/configuration
-
-**change_feed(URL, [tags=],[rate=],[keep=],[renderer=],[filter=],[username=],[password=])**
-=======
->>>>>>> experimental:doc/configuration
 
 You can dedicate space for the reader, rather than having it float above the
 items (the default behavior). `reader_orientation` and `reader_lines`.
@@ -264,14 +247,8 @@ You can also specify the size for any of the dedicated layouts (i.e. not
 floating). For "left" and "right", `reader_lines` controls the width, and for
 "top" and "bottom" it controls the height. It's set like this:
 
-<<<<<<< HEAD:doc/configuration
-<div class="section">
-
-**source_opml("path", [append=True/False])**
-=======
     :::python
     reader_lines = 10
->>>>>>> experimental:doc/configuration
 
 `reader_lines` has a minimum of three lines since the default theme ceases to
 behave well when its space is so constricted. Three lines is practically
@@ -301,11 +278,6 @@ Copying and pasting this anywhere in your config will achieve the desired effect
 ## Colors
 
 <div class="section">
-<<<<<<< HEAD:doc/configuration
-
-**source_urls("path", [append=True/False])**
-=======
->>>>>>> experimental:doc/configuration
 
 Changing the colors of the interface is simple. There are eight default ncurses
 colors, and one place holder for a default value.
@@ -360,13 +332,7 @@ supports transparency though, it will be made transparent.
 getting colors not listed here. For example, to achieve "gray", you have to use
 "black", but make the text bold.
 
-<<<<<<< HEAD:doc/configuration
-<div class="section">
-
-**default_rate(rate)**
-=======
 You can use these colors in eight different slots in canto.
->>>>>>> experimental:doc/configuration
 
 <table>
 <tr>
@@ -448,14 +414,8 @@ To make sure that your terminal supports it, you can check with this
 [color script](http://codezen.org/static/colortest), which is a mirrored copy of
 [this](http://www.vim.org/scripts/script.php?script_id=1349) Vim script.
 
-<<<<<<< HEAD:doc/configuration
-<div class="section">
-
-**link_handler(path, [text=],[fetch=],[ext=])**
-=======
 If you're having trouble with your terminal and you're sure that it should have
 support, try setting your `TERM` variable before invoking canto:
->>>>>>> experimental:doc/configuration
 
     :::bash
     $ TERM="xterm-256color" canto
