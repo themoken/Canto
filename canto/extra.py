@@ -128,7 +128,7 @@ class only_with(Filter):
         if "regex" in kwargs and kwargs["regex"]:
             self.match = re.compile(keyword)
         else:
-            self.match = re.compile(".*" + keyword + ".*", re.I)
+            self.match = re.compile(".*" + re.escape(keyword) + ".*", re.I)
 
     def __str__(self):
         return "With %s" % self.keyword
@@ -222,7 +222,8 @@ def search(s, **kwargs):
     if "regex" in kwargs and kwargs["regex"]:
         return lambda x : x.do_inline_search(re.compile(s))
     else:
-        return lambda x : x.do_inline_search(re.compile(".*" + s + ".*", re.I))
+        return lambda x : x.do_inline_search(\
+                re.compile(".*" + re.escape(s) + ".*", re.I))
 
 # Creates a keybind to do a interactive search.
 #
