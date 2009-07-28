@@ -122,7 +122,11 @@ class Feed(list):
             nentry["id"] = entry["id"]
             nentry["feed"] = self.URL
             nentry["canto_state"] = entry["canto_state"]
-            nentry["title"] = entry["title"]
+
+            if "title" not in entry:
+                nentry["title"] = ""
+            else:
+                nentry["title"] = entry["title"]
 
             for pc in self.cfg.precache:
                 if pc in entry:
