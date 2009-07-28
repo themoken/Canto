@@ -31,7 +31,7 @@ def register(c):
             elif type(kwargs[key]) not in [unicode, str]:
                 raise Exception, "%s's %s must be a string." % (URL, key)
 
-        if filter not in kwargs:
+        if "filter" not in kwargs:
             kwargs["filter"] = None
 
         if not "tags" in kwargs:
