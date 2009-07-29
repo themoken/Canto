@@ -1541,6 +1541,35 @@ After that, you should have no running instances. You can check with
 If you still having running instances after a few moments, you can issue
 `killall -9 canto-fetch` to force them to exit.
 
+## Shared Memory
+
+The (multi)processing module requires semaphores that are supported by
+`/dev/shm` with glibc. If you're getting weird errors like
+
+    OSError: [Errno 13] Permission denied
+
+or
+
+    OSError: [Errno 38] Function not implemented
+
+Then you need to mount `/dev/shm` and make sure you have read/write
+permissions. You can do this as root or with sudo like this:
+
+    :::bash
+    $ sudo mount shm /dev/shm -t tmpfs
+
+By default, `tmpfs` is has 777 permissions, but just in case:
+
+    :::bash
+    $ sudo chmod 777 /dev/shm
+
+As a side note, this is mounted by default in most common distros, and can
+improve the peformance of some applications using shared memory. In fact, glibc
+2.2+ expects it to be mounted. To get it to be mounted on startup, add this line
+to your `/etc/fstab`
+
+    tmpfs    /dev/shm    tmpfs   defaults    0 0
+
 ## Configuration
 
 Once again, for most users, changes to your configuration shouldn't be
