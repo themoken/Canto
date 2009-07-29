@@ -132,7 +132,11 @@ class ProcessHandler():
                 Process(target = self.run,
                         args = (self.update, self.updated,
                             cfg.all_filters, cfg.all_sorts, cfg.feeds))
-        self.process.start()
+
+        try:
+            self.process.start()
+        except OSError:
+            pass
 
     def run(self, update, updated, all_filters, all_sorts, feeds):
         def scan_tags(feeds):
@@ -318,7 +322,14 @@ class ProcessHandler():
         self.send_and_wait(PROC_KILL)
         self.update.close()
         self.updated.close()
-        self.process.join()
+
+        # OSX seems to not like the process join.
+        # We shouldn't care, since it should be dead
+        # by now anyway.
+        try:
+            self.process.join()
+        except:
+            pass
 
     def flush(self):
         self.send_and_wait(PROC_FLUSH)
