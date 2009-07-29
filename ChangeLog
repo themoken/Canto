@@ -1,3 +1,11 @@
+Canto 0.7.1 ChangeLog
+* Fix hard (feed) filters
+* Fix keyword escaping for non-regex searches
+* Fix items with totally undefined titles
+* Fix fetchlog header from arg refactor
+* Ignore some exceptions cause by multiprocessing
+* Minor doc tweaks
+
 Canto 0.7.0 ChangeLog
 * Convert to multiprocessing worker slave (huge performance)
 * Vast memory improvement (esp. for large lists)
