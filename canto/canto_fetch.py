@@ -17,7 +17,7 @@
 # main is only used when canto-fetch is called from the command line.
 # run is used internally by canto when it needs to invoke an update.
 
-from const import VERSION_TUPLE
+from const import VERSION_TUPLE, GIT_SHA
 from cfg.base import get_cfg
 import utility
 import args
@@ -48,6 +48,11 @@ def main(enc):
     except :
         traceback.print_exc()
         sys.exit(-1)
+
+    cfg.log("Canto-fetch v %s (%s)" % \
+            ("%d.%d.%d" % VERSION_TUPLE, GIT_SHA), "w")
+    cfg.log("Time: %s" % time.asctime())
+    cfg.log("Config parsed successfully.")
 
     def log_func(x):
         if verbose:
