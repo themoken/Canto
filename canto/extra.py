@@ -363,7 +363,7 @@ class by_unread(Sort):
 class reverse_sort(Sort):
     def __init__(self, other_sort):
         self.other_sort = validate_sort(None, other_sort)
-        self.precache = other_sort.precache
+        self.precache = self.other_sort.precache
 
     def __str__(self):
         return "Reversed %s" % self.other_sort
