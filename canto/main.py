@@ -285,8 +285,8 @@ class Main():
 
         self.sigusr = 0
         self.resize = 0
-        self.alarmed = 1
-        self.ticks = 1
+        self.alarmed = 0
+        self.ticks = 60
 
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
@@ -306,6 +306,7 @@ class Main():
         signal.signal(signal.SIGALRM, self.alarm)
         signal.signal(signal.SIGINT, self.done)
         signal.signal(signal.SIGUSR1, self.sigusr)
+        signal.alarm(1)
 
         self.cfg.log("Signals set.")
         self.estring = None
