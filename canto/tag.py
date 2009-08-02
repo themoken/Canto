@@ -67,7 +67,8 @@ class Tag(list):
             return
         sort = self.sorts.cur()
         if not len(self) or not sort:
-            list.extend(self, iter)
+            for item in reversed(iter):
+                list.insert(self, 0, item)
             return
 
         for i, item in enumerate(self):
