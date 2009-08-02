@@ -169,7 +169,7 @@ class aggregate_filter(Filter):
         self.filters = [ validate_filter(None, f) for f in filters ]
 
         self.precache = []
-        for f in filters:
+        for f in self.filters:
             if not f:
                 continue
             for pc in f.precache:
