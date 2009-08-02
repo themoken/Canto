@@ -65,19 +65,23 @@ class Tag(list):
     def sort_add(self, iter):
         if not iter:
             return
+
         sort = self.sorts.cur()
+
         if not len(self) or not sort:
-            for item in reversed(iter):
-                list.insert(self, 0, item)
+            for item, idx in iter:
+                list.insert(self, idx, item)
             return
 
         for i, item in enumerate(self):
-            while sort(item, iter[0]) > 0:
-                list.insert(self, i, iter[0])
+            while sort(item, iter[0][0]) > 0:
+                list.insert(self, i, iter[0][0])
                 del iter[0]
                 if not iter:
                     return
+
         list.extend(self, iter)
+
 
     def retract(self, iter):
         for item in iter:

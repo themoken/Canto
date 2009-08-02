@@ -388,7 +388,7 @@ class Main():
                                 new.append((gf, tf, s, None))
                                 continue
                             for i, newidx in enumerate(l):
-                                l[i] = feed[newidx]
+                                l[i] = (feed[newidx], newidx)
                             new.append((gf, tf, s, l))
 
                         self.gui.alarm(new, old)
