@@ -115,6 +115,7 @@ class Feed(list):
                 if (not centry.updated) and\
                     (centry["canto_state"] != entry["canto_state"]):
                     centry["canto_state"] = entry["canto_state"]
+                newlist.append(centry)
                 continue
 
             # nentry is the new, stripped down version of the item
@@ -153,17 +154,10 @@ class Feed(list):
                     nentry["canto_state"].append(tag)
                     updated = STORY_UPDATED
 
-            if (nentry not in self) and (nentry not in newlist):
+            if nentry not in newlist:
                 newlist.append(story.Story(nentry, self.path, updated))
 
-        # Eliminate entries that aren't in the feed. This is possible since c-f
-        # enforces the number of kept items, so items not in entries are ready
-        # to be eliminated, even if keep is a high number.
-
-        for centry in self:
-            if centry not in entries:
-                self.remove(centry)
-
+        del self[:]
         list.extend(self, filter(self.filter, newlist))
 
     # Merging items means that they're unvalidated and unfiltered. This is
