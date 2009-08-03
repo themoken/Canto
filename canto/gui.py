@@ -348,7 +348,7 @@ class Gui(BaseGui) :
                         self.tags[i].filters.cur() == tf and\
                         self.cfg.filters.cur() == gf:
                         # Add or remove them as necessary
-                        if lst == old:
+                        if lst is old:
                             self.tags[i].retract(l)
                         else:
                             self.tags[i].extend(l)
