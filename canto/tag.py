@@ -68,7 +68,11 @@ class Tag(list):
 
         sort = self.sorts.cur()
 
-        if not len(self) or not sort:
+        if not len(self):
+            list.extend(self, [item[0] for item in iter])
+            return
+
+        if not sort:
             for item, idx in iter:
                 list.insert(self, idx, item)
             return
@@ -80,7 +84,7 @@ class Tag(list):
                 if not iter:
                     return
 
-        list.extend(self, iter)
+        list.extend(self, [ item[0] for item in iter])
 
     def retract(self, iter):
         for item in iter:
