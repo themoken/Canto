@@ -4,8 +4,8 @@ from distutils.core import setup, Extension
 from distutils.command.install_data import install_data
 import commands
 
-version = ['0','7','1']
-man_date = "29 July 2009"
+version = ['0','7','2']
+man_date = "02 August 2009"
 git_commit = commands.getoutput("git show --pretty=oneline\
         --abbrev-commit").split()[0]
 

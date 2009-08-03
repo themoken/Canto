@@ -1,3 +1,8 @@
+Canto 0.7.2 ChangeLog
+* Fix some precache troubles with aggregate filters / reverse
+* Restore feed-order without sort
+* Startup cleanups
+
 Canto 0.7.1 ChangeLog
 * Fix hard (feed) filters
 * Fix keyword escaping for non-regex searches

@@ -82,7 +82,6 @@ class Tag(list):
 
         list.extend(self, iter)
 
-
     def retract(self, iter):
         for item in iter:
             if item in self:
