@@ -158,7 +158,9 @@ class Feed(list):
                 newlist.append(story.Story(nentry, self.path, updated))
 
         del self[:]
-        list.extend(self, filter(self.filter, newlist))
+        for item in newlist:
+            if not self.filter or self.filter(self, item):
+                list.append(self, item)
 
     # Merging items means that they're unvalidated and unfiltered. This is
     # used when story objects are read in from a pipe.

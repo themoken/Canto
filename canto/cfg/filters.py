@@ -80,8 +80,7 @@ def post_parse(c):
     for feed in c.feeds:
         if not feed.filter:
             continue
-        newfilt = validate_filter(c, feed.filter)
-        feed.filter = lambda x : newfilt(feed, x)
+        feed.filter = validate_filter(c, feed.filter)
 
 def validate_filter(c, f):
     if not f:
