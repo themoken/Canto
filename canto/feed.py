@@ -110,7 +110,11 @@ class Feed(list):
         newlist = []
         for entry in entries:
 
-            if entry in self:
+            # This checks existence in newlist as well to avoid
+            # duplicate items on feeds with duplicates in them.
+            # (i.e. broken)
+
+            if entry in self and entry not in newlist:
                 centry = self[self.index(entry)]
                 if (not centry.updated) and\
                     (centry["canto_state"] != entry["canto_state"]):
