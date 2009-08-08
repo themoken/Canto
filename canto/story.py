@@ -52,6 +52,9 @@ class Story():
     # particular feed entry.
 
     def get_ufp_entry(self):
+        if not self.ufp_path:
+            return {}
+
         try:
             f = open(self.ufp_path, "r")
             try:

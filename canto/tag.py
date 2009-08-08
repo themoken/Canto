@@ -103,7 +103,7 @@ class Tag(list):
                   "id" : "canto-internal"
                 }
 
-            stub = story.Story(d, lambda : {})
+            stub = story.Story(d, None, 0)
             self.append(stub)
             empty = 1
 
