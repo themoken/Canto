@@ -106,6 +106,7 @@
 
 from const import *
 
+import signal
 import time
 import sys
 import os
@@ -174,6 +175,8 @@ class ProcessHandler():
 
         def send(obj):
             return updated.put(obj)
+
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
 
         while True:
             while True:
