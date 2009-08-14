@@ -176,7 +176,16 @@ class ProcessHandler():
         def send(obj):
             return updated.put(obj)
 
+        # SIGINT is issued to all sub-processes when given as ^C,
+        # and the SIGINT handler for the main process will cleanup
+        # the worker, so that's the only one that's truly necessary
+        # AFAICT, but chalk the rest of the ignores up to paranoia.
+
+        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+        signal.signal(signal.SIGWINCH, signal.SIG_IGN)
+        signal.signal(signal.SIGALRM, signal.SIG_IGN)
         signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGUSR1, signal.SIG_IGN)
 
         while True:
             while True:
@@ -218,6 +227,7 @@ class ProcessHandler():
                 feed = [ f for f in feeds if f.URL == args[0] ][0]
                 feed.merge(args[1])
                 if not feed.update():
+                    send((PROC_DEQD, feed.URL))
                     continue
 
             if action == PROC_UPDATE:
@@ -298,7 +308,7 @@ class ProcessHandler():
                     odiff[i] = (filter, tf, ts, odiff[i])
 
                 # Step 6: Queue up the results for the interface process.
-                send((feed.URL, feed[:], ndiff, odiff))
+                send((PROC_UPDATE, feed.URL, feed[:], ndiff, odiff))
 
             if action > PROC_UPDATE:
                 del feed[:]
@@ -320,6 +330,12 @@ class ProcessHandler():
             got = self.recv()
             if got == (symbol, ):
                 return
+
+        # Send_and_wait ignores all items on the queue
+        # so none of the feeds are still queued.
+
+        for f in self.cfg.feeds:
+            f.qd = False
 
     def kill_process(self):
         self.send_and_wait(PROC_KILL)

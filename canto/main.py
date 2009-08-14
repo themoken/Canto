@@ -369,30 +369,32 @@ class Main():
 
                     r = self.ph.recv(True, 0.01)
                     if r:
-                        feed = [ f for f in self.cfg.feeds if f.URL == r[0]][0]
-
-                        old = []
-                        for gf, tf, s, l in r[3]:
-                            if not l:
+                        feed = [ f for f in self.cfg.feeds if f.URL == r[1]][0]
+                        if r[0] == PROC_UPDATE:
+                            old = []
+                            for gf, tf, s, l in r[4]:
+                                if not l:
+                                    old.append((gf, tf, s, l))
+                                    continue
+                                for i, oldidx in enumerate(l):
+                                    l[i] = feed[oldidx]
                                 old.append((gf, tf, s, l))
-                                continue
-                            for i, oldidx in enumerate(l):
-                                l[i] = feed[oldidx]
-                            old.append((gf, tf, s, l))
 
-                        feed.merge(r[1])
+                            feed.merge(r[2])
 
-                        new = []
-                        for gf, tf, s, l in r[2]:
-                            if not l:
-                                new.append((gf, tf, s, None))
-                                continue
-                            for i, newidx in enumerate(l):
-                                l[i] = (feed[newidx], newidx)
-                            new.append((gf, tf, s, l))
+                            new = []
+                            for gf, tf, s, l in r[3]:
+                                if not l:
+                                    new.append((gf, tf, s, None))
+                                    continue
+                                for i, newidx in enumerate(l):
+                                    l[i] = (feed[newidx], newidx)
+                                new.append((gf, tf, s, l))
 
-                        self.gui.alarm(new, old)
-                        self.gui.draw_elements()
+                            self.gui.alarm(new, old)
+                            self.gui.draw_elements()
+                        else:
+                            self.cfg.log("DEQD %s" % feed.URL)
                         feed.qd = False
                     continue
 
