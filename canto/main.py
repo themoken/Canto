@@ -393,8 +393,6 @@ class Main():
 
                             self.gui.alarm(new, old)
                             self.gui.draw_elements()
-                        else:
-                            self.cfg.log("DEQD %s" % feed.URL)
                         feed.qd = False
                     continue
 
