@@ -24,7 +24,8 @@ def register(c):
             for f in l:
                 if c.locals["add"](f[0], tags=[f[1]]) and append:
                     if f[1]:
-                        file.write(u"""add("%s", tags=["%s"])\n""" % f)
+                        file.write(u"""add("%s", tags=["%s"])\n""" % (f[0],
+                            f[1].replace("\"", "\\\"")))
                     else:
                         file.write(u"""add("%s")\n""" % f[0])
 
