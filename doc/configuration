@@ -390,16 +390,16 @@ Changing these items is as simple as using the `colors` list.
     colors[0] = (4, -1)
     colors[0] = ("blue", "default")
 
-These are all equivalent statements. If you only specify one number or color,
-it's used as the foreground and inherits the background of `colors[0]`, or
-"default" if you're setting `colors[0]`. Therefore:
+These statements are equivalent. If you only specify one number or one color,
+it's used as the foreground color and inherits the background of `colors[0]`, 
+or "default" if you're setting `colors[0]`. Therefore:
 
     :::python
     colors[0] = ("blue", "white")
     colors[1] = "red"
 
-Now `colors[1]` inherits `colors[0]`'s background and is set to ("red",
-"white").
+Now `colors[1]` inherits `colors[0]`'s background, which would now be set to 
+("red", "white").
 
 ### 256 Colors
 
@@ -410,12 +410,13 @@ chart for xterm is available
     :::python
     colors[0] = 120
 
-To make sure that your terminal supports it, you can check with this 
+To make sure that your terminal supports 256 colors, you can test it with this 
 [color script](http://codezen.org/static/colortest), which is a mirrored copy of
 [this](http://www.vim.org/scripts/script.php?script_id=1349) Vim script.
 
-If you're having trouble with your terminal and you're sure that it should have
-support, try setting your `TERM` variable before invoking canto:
+If you're having trouble with your terminal and are sure that it supports 
+256 colors, try setting your `TERM` variable before invoking 
+canto:
 
     :::bash
     $ TERM="xterm-256color" canto
@@ -857,7 +858,7 @@ a keybind, rather than a fully functional bind but it can be useful.
 <div class="section">
 
 Perhaps the most useful extra feature Canto provides is its powerful filter 
-system. `canto.extra` provides a number of filters to use
+system. `canto.extra` provides a number of useful filters
 
 <table>
 <tr>
@@ -1242,8 +1243,8 @@ The resulting line now looks like this:
     by: [author]
 
 If the item being displayed doesn't include any author information, the line
-will be entirely ommitted. It can also be that the information isn't useful and
-should be ignored. Lots of feed generators set author to a default like
+will be entirely ommitted. Additionally, it could be that the information isn't 
+useful and should be ignored. Lots of feed generators set author to a default like
 `donotreply@somedomain` which isn't useful info. Other feeds will put author
 information into the content anyway. Because of this, you can specify to only
 add the information to particular tags.
@@ -1259,11 +1260,11 @@ it like so:
 
     canto-inspect [URL] > output
 
-It's essentially a custom pretty printer for the XML, nothing very advanced.
-However, using this you can detect interesting content. Like this partial output
-from `canto-inspect http://rss.slashdot.org/slashdot/Slashdot`:
+It's essentially a custom pretty printer for the XML, Although it is not 
+extremely advanced, using canto-inspect you can detect interesting content,
+as in this partial output from `canto-inspect http://rss.slashdot.org/slashdot/Slashdot`:
 
-    :::text
+    :::text 
     [entries]
         [0]
             [summary_detail]
@@ -1298,9 +1299,9 @@ from `canto-inspect http://rss.slashdot.org/slashdot/Slashdot`:
                     [scheme]
                     [label]
 
-In this mess of information, we can see some interesting content, like 
-`slash_department` and `slash_section` which might be of interest. Armed with
-this knowledge, we can add the content:
+In the above hodge-podge of information, we can see some content which might interest 
+some users. Take `slash_department` and `slash_section` divisions for example.
+Using the add_info function, we can add the content as follows:
 
     :::python
     r = get_default_renderer()
@@ -1322,9 +1323,9 @@ they have nothing to do with getting items from the server. That is only
 controlled by running `canto-fetch` and the rates you have set in the
 configuration.
 
-* **Interval Updating**. This is the default behavior. Every so often (generally
+* **Interval Updating**. This is the default behavior. At intervals (generally
 about a minute), the feeds are read from disk and the display is updated. This
-is what most people expect from their RSS reader.
+behavior is what most people expect from their RSS reader.
 
 * **Change Tag Updating**. This makes the client update whenever you change
 feeds/tags. This is useful to use with filters.
@@ -1337,17 +1338,16 @@ cron that runs `canto-fetch` and immediately issues `SIGUSR1`.
 
 ### Considerations
 
-The primary reason for having multiple update triggers is that each one caters
-differently to how you want to use Canto. Users that don't appreciate text
+Multiple update triggers allow users to update Canto's feeds in different ways 
+depending upon their reading habits. Users who don't appreciate text
 shifting out from under their eyes might want to avoid the every-minute
-`interval` update and might prefer `change_tag` or manual updates that are much
-more predictable. Users that flit from one tag to another reading what looks
-interesting and breezing through the rest might want to avoid `change_tag`
-because it would cause an update too often and the `interval` update might be just
-fine for them. It's all about what suits you.
+`interval` update and use the `change_tag` or manual update triggers
+to insure more predictable refreshes. On the other hand, users that tend to
+jump from one tag to another and do short bursts of content reading might find
+the interval triggers more to their liking.  It's all about what suits you.
 
-If you think you'd rather have another kind of trigger, file a feature request
-bug and we'll consider it. They're fairly simple to implement.
+If you feel there is an update trigger that we need to implement, file a feature
+request bug and we'll consider it. Update triggers are fairly easy to implement.
 
 ### Using Triggers
 
@@ -1379,7 +1379,7 @@ Once again, any ideas for new triggers or improvements (or even code) are
 <div class="section">
 
 Canto includes a number of hooks for outside extensibility. You may find hooks
-to be most useful when you author them yourself.  Even so, but `canto.extra` 
+to be most useful when you author them yourself.  Even so, `canto.extra` 
 does include a few basic, but useful, hooks.
 
 The possible hooks:
@@ -1574,8 +1574,8 @@ to your `/etc/fstab`
 
 Once again, for most users, changes to your configuration shouldn't be
 necessary. If you loop through the color array, you may have to change your
-configuration or if you use sorts, or define sorts and filters, then you
-may need a change.
+configuration. If you use sorts, or define sorts and filters, then you
+may need a configuration change.
 
 ### Color array
 
@@ -1590,8 +1590,8 @@ If you're looping with
 
 Then you may run into trouble. The new default colors are not all set to tuples
 when configured so the (fg, bg) may except. However, the most common use for
-this loop was to set a common background for all colors. In 0.7.x, the
-background of a color without one set defaults to the background color of the
+this loop is to set a common background for all colors. In 0.7.x, if a color is 
+not set, the background of a color defaults to the background color of the
 first pair, making the loop unnecessary. In short
 
     :::python
@@ -1622,8 +1622,8 @@ can use the new `sort_order` function.
 ### Defining Filters and Sorts
 
 If you created your own filters and sorts for 0.6.x, the main difference is that
-these now must be classes subclassing `Filter` and `Sort` respectively. So where
-once
+these now must be classes which subclass `Filter` and `Sort` respectively. So 
+where once
 
     :::python
     # 0.6.x valid filter
