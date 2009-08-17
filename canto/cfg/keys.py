@@ -95,8 +95,8 @@ def register(c):
          "KEY_PPAGE" : "page_up",
          "g" : "goto",
          "l" : "toggle_show_links",
-         "n" : ["destroy", "just_read", "next_item","reader"],
-         "p" : ["destroy", "just_read", "prev_item","reader"],
+         "n" : ["destroy", "next_item", "just_read", "reader"],
+         "p" : ["destroy", "prev_item", "just_read", "reader"],
          "h" : ["destroy","help"],
          "q" : ["destroy","quit"],
          " " : "destroy"}
