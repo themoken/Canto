@@ -1,3 +1,15 @@
+Canto 0.7.3 ChangeLog
+* Fix various update issues on long-running clients
+* Fix sluggish reader link toggling
+* Fix worker signals (and ^C as a side-effect)
+* Fix reader n/p keys not setting items read
+* Fix double quotes in programmatically added main tags
+* Fix shadows on horrendously broken feeds
+* Fix all-filtered stub
+* Refix hard-filters (??)
+* Minor cleanups
+* Documentation clarifications
+
 Canto 0.7.2 ChangeLog
 * Fix some precache troubles with aggregate filters / reverse
 * Restore feed-order without sort
