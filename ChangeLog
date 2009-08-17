@@ -1,3 +1,6 @@
+Canto 0.7.4 ChangeLog
+* Correct some overlooked 0.7.3 stuff =P
+
 Canto 0.7.3 ChangeLog
 * Fix various update issues on long-running clients
 * Fix sluggish reader link toggling
