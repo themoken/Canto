@@ -507,6 +507,7 @@ class Main():
             self.cfg.wait_for_pid = 0
             signal.signal(signal.SIGALRM, self.alarm)
             signal.signal(signal.SIGWINCH, self.winch)
+            self.alarmed = 1
             self.resize = 1
 
     # Back to better practices. =)
