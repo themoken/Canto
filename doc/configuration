@@ -567,7 +567,7 @@ in the examples below.
 </tr>
 <tr>
 <td><pre>Space</pre></td>
-<td><pre>["just_read", "reader"]</pre></td>
+<td><pre>"reader"</pre></td>
 <td>Mark the story read and open the reader.</td>
 </tr>
 <tr>
@@ -712,12 +712,12 @@ in the examples below.
 </tr>
 <tr>
 <td><pre>n</pre></td>
-<td><pre>["destroy", "next_item", "just_read", "reader"]</pre></td>
+<td><pre>["destroy", "just_read", "next_item", "reader"]</pre></td>
 <td>Goto the next story without closing the reader.</td>
 </tr>
 <tr>
 <td><pre>p</pre></td>
-<td><pre>["destroy", "prev_item", "just_read", "reader"]</pre></td>
+<td><pre>["destroy", "just_read", "prev_item", "reader"]</pre></td>
 <td>Goto the previous story without closing the reader.</td>
 </tr>
 <tr>
@@ -731,14 +731,19 @@ in the examples below.
 <td>Show/hide the list of links at the bottom of the reader.</td>
 </tr>
 <tr>
-<td><pre>space</pre></td>
-<td><pre>destroy</pre></td>
+<td><pre>Space</pre></td>
+<td><pre>["destroy", "just_read"]</pre></td>
 <td>Close the reader</td>
 </tr>
 <tr>
 <td><pre>q</pre></td>
-<td><pre>["destroy","quit"]</pre></td>
+<td><pre>["destroy", "just_read", "quit"]</pre></td>
 <td>Quit Canto.</td>
+</tr>
+<tr>
+<td><pre>h</pre></td>
+<td><pre>["destroy", "just_read", "help"]</pre></td>
+<td>Show help.</td>
 </tr>
 </table>
 

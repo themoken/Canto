@@ -70,7 +70,7 @@ def register(c):
          "f" : "inline_search",
          "n" : "next_mark",
          "p" : "prev_mark",
-         " " : ["just_read", "reader"],
+         " " : "reader",
          "c" : "toggle_collapse_tag",
          "C" : "set_collapse_all",
          "V" : "unset_collapse_all",
@@ -95,11 +95,11 @@ def register(c):
          "KEY_PPAGE" : "page_up",
          "g" : "goto",
          "l" : "toggle_show_links",
-         "n" : ["destroy", "next_item", "just_read", "reader"],
-         "p" : ["destroy", "prev_item", "just_read", "reader"],
-         "h" : ["destroy","help"],
-         "q" : ["destroy","quit"],
-         " " : "destroy"}
+         "n" : ["destroy", "just_read", "next_item", "reader"],
+         "p" : ["destroy", "just_read", "prev_item", "reader"],
+         "h" : ["destroy", "just_read", "help"],
+         "q" : ["destroy", "just_read", "quit"],
+         " " : ["destroy", "just_read"]}
 
     c.locals.update({
          "keys" : c.key_list,
