@@ -21,16 +21,13 @@ Canto has two official mailing lists.
 
 * [canto-reader-announce](http://codezen.org/cgi-bin/mailman/listinfo/canto-reader-announce) is the typical ANNOUNCE: list, read-only and essentially designed for maintainers or folks that aren't running a distro that packages Canto. This content is not mirrored on the canto-reader list.
 
-Both of these lists are mirrored on Google groups.
-
-
 </div>
 
 #  Bug Tracker
 
 <div class="section">
 
-Canto uses Google Code for its [bug tracker](http://code.google.com/p/canto-reader/issues/list). Generally, you should submit bugs through IRC or the mailing lists first, but you can also create a bug/feature request here. This requires a Google ID. 
+Canto uses GitHub for its [bug tracker](http://github.com/themoken/Canto/issues). Generally, you should submit bugs through IRC or the mailing lists first, but you can also create a bug/feature request here. This requires a GitHub account.
 
 
 </div>
