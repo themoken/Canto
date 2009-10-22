@@ -86,8 +86,14 @@ def add_info(r, item, **kwargs):
                     (kwargs["caption"], dict["story"][realitem]))\
                     + dict["content"]
 
-    add_hook_pre_reader(r, hook, before=add_info_holster)
-    add_info_holster = hook
+    if "before" in kwargs:
+        add_hook_pre_reader(r, hook, before=kwargs["before"])
+    elif "after" in kwargs:
+        add_hook_pre_reader(r, hook, after=kwargs["after"])
+    else:
+        add_hook_pre_reader(r, hook, before=add_info_holster)
+        add_info_holster = hook
+
     return hook
 
 # Filter for filtering out all read stories.
@@ -275,6 +281,27 @@ def yank(gui):
         gui.cfg.log("xclip must be installed for yank to work!")
     else:
         gui.cfg.log("Yanked: %s" % gui.sel["item"]["title"])
+
+# Downloads image/link content into a specified directory using wget.
+#
+# Usage : reader_keys['w'] = wget_link("/path/to/downloads")
+
+def wget_link(path):
+    def do_wget(reader):
+        term = input.num_input(reader.cfg, "Link")
+        if not term:
+            return
+
+        try:
+            url = reader.links[term][1]
+        except:
+            reader.cfg.log("Invalid link.")
+            return
+
+        cmd = "wget -P \"" + path + "\" \"%u\""
+        utility.silentfork(cmd, url, 0, 0)
+
+    return do_wget
 
 # Note: the following two hacks are for xterm and compatible
 # terminal emulators ([u]rxvt, eterm, aterm, etc.). These should
