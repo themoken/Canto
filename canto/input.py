@@ -98,10 +98,19 @@ def input(cfg, prompt):
 
     temp = signal.getsignal(signal.SIGALRM)
     signal.signal(signal.SIGALRM, signal.SIG_IGN)
- 
-    curses.curs_set(1)
+
+    # These curs_set calls can except, but we shouldn't care
+    try:
+        curses.curs_set(1)
+    except:
+        pass
+
     term = InputBox(cfg.msg).edit()
-    curses.curs_set(0)
+
+    try:
+        curses.curs_set(0)
+    except:
+        pass
 
     signal.signal(signal.SIGALRM, temp)
     signal.alarm(1)
