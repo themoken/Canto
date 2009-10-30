@@ -531,6 +531,7 @@ class Gui(BaseGui) :
 
     @noitem_unsafe
     def reader(self) :
+        self.sel["item"].in_reader = True
         self.reader_obj = Reader(self.cfg, self.sel["tag"],\
                 self.sel["item"], self.reader_dead)
         return REDRAW_ALL
@@ -538,6 +539,7 @@ class Gui(BaseGui) :
     # This is the callback when the reader is done.
     def reader_dead(self):
         self.reader_obj = None
+        self.sel["item"].in_reader = False
 
     @change_selected
     @change_filter

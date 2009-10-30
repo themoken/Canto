@@ -89,6 +89,10 @@ class Tag(list):
     def retract(self, iter):
         for item in iter:
             if item in self:
+                # Items in the reader are immune to being retraced.
+                if item.in_reader:
+                    continue
+
                 if item.was("read"):
                     self.read -= 1
                 else:

@@ -29,6 +29,7 @@ class Story():
         self.ondisk = None
         self.d = d
         self.sel = 0
+        self.in_reader = 0
     
     def __eq__(self, other):
         if self["id"] != other["id"]:
