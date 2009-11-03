@@ -291,8 +291,11 @@ class Main():
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 
         # Init colors
-        for i, (fg, bg) in enumerate(self.cfg.colors):
-            curses.init_pair(i + 1, fg, bg)
+        try:
+            for i, (fg, bg) in enumerate(self.cfg.colors):
+                curses.init_pair(i + 1, fg, bg)
+        except:
+            self.cfg.log("Unable to init curses color pairs!")
 
         self.cfg.log("Curses initialized.")
     
