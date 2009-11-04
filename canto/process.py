@@ -134,10 +134,11 @@ class ProcessHandler():
                         args = (self.update, self.updated,
                             cfg.all_filters, cfg.all_sorts, cfg.feeds))
 
-        try:
-            self.process.start()
-        except OSError:
-            pass
+	try:
+	    self.process.start()
+        except:
+            return False
+        return True
 
     def run(self, update, updated, all_filters, all_sorts, feeds):
         def scan_tags(feeds):
@@ -338,6 +339,16 @@ class ProcessHandler():
             f.qd = False
 
     def kill_process(self):
+        # Fuck around with the signals because multiprocessing
+        # chokes unless SIGCHLD == SIG_DFL.
+
+        # This seems dangerous, but it relies on the fact that kill_process
+        # should only be called in a context in which Canto's not waiting for a
+        # text based forked process (see self.chld in Main for more).
+
+        sig = signal.getsignal(signal.SIGCHLD)
+        signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+
         self.send_and_wait(PROC_KILL)
         self.update.close()
         self.updated.close()
@@ -349,6 +360,8 @@ class ProcessHandler():
             self.process.join()
         except:
             pass
+
+        signal.signal(signal.SIGCHLD, sig)
 
     def flush(self):
         self.send_and_wait(PROC_FLUSH)

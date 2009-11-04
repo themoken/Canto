@@ -181,7 +181,6 @@ class Main():
 
         fixedtags = self.ph.recv()
         
-        signal.signal(signal.SIGCHLD, self.chld)
         self.ph.kill_process()
         for i, f in enumerate(self.cfg.feeds):
             self.cfg.feeds[i].tags = fixedtags[i]
@@ -257,7 +256,11 @@ class Main():
         for f in self.cfg.feeds:
             del f[:]
 
-        self.ph.start_process(self.cfg)
+        if not self.ph.start_process(self.cfg):
+            print "Unable to start secondary process. Bailing"
+            sys.exit(-1)
+
+        signal.signal(signal.SIGCHLD, self.chld)
         self.update(1, self.cfg.feeds, PROC_BOTH)
 
         # At this point we know that we're going to actually launch
