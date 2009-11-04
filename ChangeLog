@@ -1,3 +1,9 @@
+Canto 0.7.5 ChangeLog
+* Fix some reader inconsistencies with reader keys moving selections
+* Wrap some harmless, rare curses exceptions
+* Workaround messed up SIGCHLD handling in multiprocessing
+* Doc updates
+
 Canto 0.7.4 ChangeLog
 * Correct some overlooked 0.7.3 stuff =P
 
