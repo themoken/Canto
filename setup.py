@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 from __future__ import with_statement # This isn't required in Python 2.6
-from distutils.core import setup, Extension
-from distutils.command.install_data import install_data
 import commands
-
+import distutils.core
+import distutils.command.install_data
+import uninstall
 version = ['0','7','5']
 man_date = "04 November 2009"
 git_commit = commands.getoutput("git show --pretty=oneline\
         --abbrev-commit").split()[0]
 
-class Canto_install_data(install_data):
+# TODO: replace with build_manpages target (@james will do this shortly if approved)
+class Canto_install_data(distutils.command.install_data.install_data):
     def run(self):
-        ret = install_data.run(self)
+        ret = distutils.command.install_data.install_data.run(self)
 
         install_cmd = self.get_finalized_command('install')
         libdir = install_cmd.install_lib
@@ -34,7 +35,7 @@ class Canto_install_data(install_data):
                 f.seek(0)
                 f.write(d)
 
-setup(name='Canto',
+distutils.core.setup(name='Canto',
         version=".".join(version),
         description='An ncurses RSS aggregator.',
         author='Jack Miller',
@@ -45,10 +46,13 @@ setup(name='Canto',
         license='GPLv2',
         scripts=['bin/canto','bin/canto-fetch', 'bin/canto-inspect'],
         packages=['canto', 'canto.cfg'],
-        ext_modules=[Extension('canto.widecurse',\
+        ext_modules=[distutils.core.Extension('canto.widecurse',\
                 sources = ['canto/widecurse.c'], libraries = ['ncursesw'],
                 library_dirs=["/usr/local/lib", "/opt/local/lib"],
                 include_dirs=["/usr/local/include", "/opt/local/include"])],
         data_files = [("share/man/man1/", ["man/canto.1", "man/canto-fetch.1"])],
-        cmdclass={'install_data': Canto_install_data}
+        cmdclass={
+		'install_data': Canto_install_data,
+		'install': uninstall.install, 'uninstall': uninstall.uninstall
+	}
 )
