@@ -302,25 +302,25 @@ static PyObject * mvw(PyObject *self, PyObject *args)
 static PyObject *disable_color(PyObject *self, PyObject *args)
 {
     ignore |= IGNORE_COLOR;
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *enable_color(PyObject *self, PyObject *args)
 {
     ignore &= ~IGNORE_COLOR;
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *disable_style(PyObject *self, PyObject *args)
 {
     ignore |= IGNORE_STYLE;
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 static PyObject *enable_style(PyObject *self, PyObject *args)
 {
     ignore &= ~IGNORE_COLOR;
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 
