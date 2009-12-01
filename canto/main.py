@@ -461,7 +461,10 @@ class Main():
         self.cfg.msg = None
 
         # Kill curses
-        curses.endwin()
+        try:
+            curses.endwin()
+        except:
+            pass
 
         self.cfg.log("Curses done.")
 
@@ -606,7 +609,11 @@ class Main():
 
     def refresh(self):
         # Get new self.cfg.{height, width}
-        curses.endwin()
+        try:
+            curses.endwin()
+        except:
+            pass
+
         self.cfg.stdscr.touchwin()
         self.cfg.stdscr.refresh()
         self.cfg.stdscr.keypad(1)
