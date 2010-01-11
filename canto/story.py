@@ -131,7 +131,7 @@ class Story():
     def get_text(self):
         if "content" in self:
             for c in self["content"]:
-                if "text" in c["type"]:
+                if "type" in c and "text" in c["type"]:
                     return c["value"]
 
         return self["description"]
