@@ -182,11 +182,11 @@ class ProcessHandler():
         # the worker, so that's the only one that's truly necessary
         # AFAICT, but chalk the rest of the ignores up to paranoia.
 
-        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
-        signal.signal(signal.SIGWINCH, signal.SIG_IGN)
-        signal.signal(signal.SIGALRM, signal.SIG_IGN)
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-        signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+        signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+        signal.signal(signal.SIGWINCH, signal.SIG_DFL)
+        signal.signal(signal.SIGALRM, signal.SIG_DFL)
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        signal.signal(signal.SIGUSR1, signal.SIG_DFL)
 
         while True:
             while True:
