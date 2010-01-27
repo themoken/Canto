@@ -2,5 +2,8 @@
 
 import canto.main
 
-if __name__ == "__main__" : 
-    canto.main.Main()
+if __name__ == "__main__" :
+    c = canto.main.Main()
+    while c.restart:
+        c = canto.main.Main(c.cfg.stdscr)
+    sys.exit(0)

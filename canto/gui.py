@@ -706,6 +706,9 @@ class Gui(BaseGui) :
         for t in self.tags :
             t.all_unread()
 
+    def restart(self):
+        return RESTART
+
     def quit(self):
         if self.cfg.end_hook:
             self.cfg.end_hook(self)

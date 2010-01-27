@@ -52,7 +52,7 @@ def upgrade_help():
     print "http://codezen.org/canto/config/#upgrading-from-06x"
 
 class Main():
-    def __init__(self):
+    def __init__(self, stdscr = None):
         signal.signal(signal.SIGUSR2, self.debug_out)
 
         # Let locale figure itself out
@@ -86,6 +86,16 @@ class Main():
                 ("%d.%d.%d" % VERSION_TUPLE, GIT_SHA), "w")
         self.cfg.log("Time: %s" % time.asctime())
         self.cfg.log("Config parsed successfully.")
+
+        # If we were passed an existing curses screen (i.e. restart)
+        # pass it through to the config.
+
+        self.cfg.stdscr = stdscr
+        if self.cfg.stdscr:
+            self.restarting = True
+        else:
+            self.restarting = False
+        self.restart = False
 
         # Default arguments.
         flags = 0 
@@ -267,24 +277,25 @@ class Main():
         # the client, so we fire up ncurses and add the screen
         # information to our Cfg().
 
-        self.cfg.stdscr = curses.initscr()
-        self.cfg.stdscr.nodelay(1)
+        if not self.restarting:
+            self.cfg.stdscr = curses.initscr()
+            self.cfg.stdscr.nodelay(1)
 
-        # curs_set can return ERR, we shouldn't care
-        try:
-                curses.curs_set(0)
-        except:
-                pass
+            # curs_set can return ERR, we shouldn't care
+            try:
+                    curses.curs_set(0)
+            except:
+                    pass
 
-        # if any of these mess up though, the rest of the
-        # the operation is suspect, so die.
-        try:
-                curses.noecho()
-                curses.start_color()
-                curses.use_default_colors()
-        except:
-                self.cfg.log("Unable to init curses, bailing")
-                self.done()
+            # if any of these mess up though, the rest of the
+            # the operation is suspect, so die.
+            try:
+                    curses.noecho()
+                    curses.start_color()
+                    curses.use_default_colors()
+            except:
+                    self.cfg.log("Unable to init curses, bailing")
+                    self.done()
 
         self.sigusr = 0
         self.resize = 0
@@ -301,7 +312,7 @@ class Main():
             self.cfg.log("Unable to init curses color pairs!")
 
         self.cfg.log("Curses initialized.")
-    
+
         # Instantiate the base Gui class
         self.gui = Gui(self.cfg, self.cfg.tags.cur())
 
@@ -322,8 +333,9 @@ class Main():
         # shitting all over the terminal.
 
         try:
-            # Initial draw of the screen
-            self.refresh()
+            # Initial draw of the screen, if not restarting
+            self.refresh(self.restarting)
+            self.restarting = False
 
             # Main program loop, terminated when all handlers have
             # deregistered / exited.
@@ -440,6 +452,9 @@ class Main():
                         self.update(1, ufds)
                     elif r == REDRAW_ALL:
                         self.gui.draw_elements()
+                    elif r == RESTART:
+                        self.restart = True
+                        self.gui = None
                     elif r == EXIT:
                         self.gui = None
                         break
@@ -461,12 +476,13 @@ class Main():
         self.cfg.msg = None
 
         # Kill curses
-        try:
-            curses.endwin()
-        except:
-            pass
+        if not self.restart:
+            try:
+                curses.endwin()
+            except:
+                pass
 
-        self.cfg.log("Curses done.")
+            self.cfg.log("Curses done.")
 
         # If there was an exception, nicely print it out.
         if self.estring:
@@ -493,7 +509,6 @@ class Main():
         os.dup2(fd, sys.stderr.fileno())
 
         self.ph.kill_process()
-        sys.exit(0)
 
     # For the most part, it's smart to avoid doing anything but set a flag in an
     # signal handler. CHLD is an exception because the only case in which we do
@@ -607,16 +622,17 @@ class Main():
     # Refresh should only be called when it's possible that the screen has
     # changed shape. 
 
-    def refresh(self):
+    def refresh(self, restart = False):
         # Get new self.cfg.{height, width}
-        try:
-            curses.endwin()
-        except:
-            pass
+        if not restart:
+            try:
+                curses.endwin()
+            except:
+                pass
 
-        self.cfg.stdscr.touchwin()
-        self.cfg.stdscr.refresh()
-        self.cfg.stdscr.keypad(1)
+            self.cfg.stdscr.touchwin()
+            self.cfg.stdscr.refresh()
+            self.cfg.stdscr.keypad(1)
 
         self.cfg.height, self.cfg.width = self.cfg.stdscr.getmaxyx()
 

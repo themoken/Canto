@@ -54,6 +54,7 @@ def register(c):
          "KEY_LEFT" : "just_unread",
          "KEY_NPAGE" : "next_tag",
          "KEY_PPAGE" : "prev_tag",
+         "\\" : "restart",
          "[" : "prev_filter",
          "]" : "next_filter",
          "{" : "prev_tag_filter",
