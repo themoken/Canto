@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import canto.main
+import sys
 
 if __name__ == "__main__" :
     c = canto.main.Main()
