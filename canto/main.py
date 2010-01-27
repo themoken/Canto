@@ -498,16 +498,6 @@ class Main():
         self.ph.sync()
         self.cfg.log("Flushed to disk.")
 
-        # This is a shitty workaround. The processing module for 2.5
-        # insists on occasionally writing an exception to
-        # stderr which is harmless but messy. To avoid, pipe
-        # stderr to /dev/null. I hope that this has been resolved in
-        # 2.6's builtin multiprocessing module, because it's really poor
-        # form for a library to output to stdout/stderr.
-
-        fd = os.open("/dev/null", os.O_RDWR)
-        os.dup2(fd, sys.stderr.fileno())
-
         self.ph.kill_process()
 
     # For the most part, it's smart to avoid doing anything but set a flag in an
