@@ -284,7 +284,7 @@ class ProcessHandler():
                 for i, (t, tf, ts) in enumerate(taginfo):
                     sort = all_sorts[ts]
                     if not sort:
-                        break
+                        continue
                     if ndiff[i]:
                         ndiff[i].sort(sort)
                     if odiff[i]:
