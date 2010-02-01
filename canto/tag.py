@@ -77,10 +77,12 @@ class Tag(list):
                 list.insert(self, idx, item)
             return
 
+        added = 0
         for i, item in enumerate(self):
             while sort(item, iter[0][0]) > 0:
-                list.insert(self, i, iter[0][0])
+                list.insert(self, i + added, iter[0][0])
                 del iter[0]
+                added += 1
                 if not iter:
                     return
 
