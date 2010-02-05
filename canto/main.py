@@ -468,9 +468,13 @@ class Main():
 
     def done(self, a=None, b=None):
         # Unset signals.
-        for s in [signal.SIGALRM, signal.SIGWINCH,
-                signal.SIGCHLD, signal.SIGINT]:
-            signal.signal(s, signal.SIG_IGN)
+        for s in [signal.SIGWINCH, signal.SIGCHLD, signal.SIGINT]:
+            signal.signal(s, signal.SIG_DFL)
+
+        # This one's noisy on the shell and doesn't interfere
+        # with multiprocessing. Ignore it.
+
+        signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
         # Kill the message log
         self.cfg.msg = None
