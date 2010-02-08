@@ -123,10 +123,12 @@ except Exception, e:
 
 class ProcessHandler():
     def __init__(self, cfg):
+        self.persist = True
         self.cfg = cfg
-        self.start_process(cfg)
+        self.start_process(cfg, True)
 
-    def start_process(self, cfg):
+    def start_process(self, cfg, persist=False):
+        self.persist = persist
         self.updated = Queue()
         self.update = Queue()
         self.process = \
@@ -315,9 +317,15 @@ class ProcessHandler():
                 del feed[:]
 
     def send(self, obj):
+        if not self.process:
+            self.start_process(self.cfg)
         return self.update.put(obj)
 
-    def recv(self, block=True, timeout=None):
+    # recv_raw won't attempt to kill the process if no more work is queued.
+    # Its intended for use when syncing / killing when a tuple is floated
+    # through the process and no feeds are queued.
+
+    def recv_raw(self, block=True, timeout=None):
         r = None
         try:
             r = self.updated.get(block, timeout)
@@ -325,10 +333,24 @@ class ProcessHandler():
             pass
         return r
 
+    def recv(self, block=True, timeout=None):
+        r = self.recv_raw(block, timeout)
+
+        # If no more feeds are queued and we're not persistent (used very early), 
+        # kill the slave process in addition to returning the received value.
+        if self.persist:
+            return r
+        for f in self.cfg.feeds:
+            if f.qd:
+                return r
+
+        self.kill_process()
+        return r
+
     def send_and_wait(self, symbol):
         self.send((symbol, ))
         while True:
-            got = self.recv()
+            got = self.recv_raw()
             if got == (symbol, ):
                 return
 
@@ -362,6 +384,7 @@ class ProcessHandler():
             pass
 
         signal.signal(signal.SIGCHLD, sig)
+        self.process = None
 
     def flush(self):
         self.send_and_wait(PROC_FLUSH)
@@ -369,4 +392,4 @@ class ProcessHandler():
     def sync(self):
         for f in self.cfg.feeds:
             self.send((PROC_SYNC, f.URL, f[:]))
-            self.recv()
+            self.recv_raw()

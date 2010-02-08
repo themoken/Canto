@@ -188,7 +188,6 @@ class Main():
             self.ph.send((PROC_UPDATE, f.URL, []))
             f.merge(self.ph.recv()[1])
         self.ph.send((PROC_GETTAGS, ))
-
         fixedtags = self.ph.recv()
         
         self.ph.kill_process()
@@ -384,6 +383,9 @@ class Main():
 
                     # Make sure we don't pin the CPU, so if there's no input and
                     # no waiting updates, sleep for awhile.
+                    if not self.ph.process:
+                        time.sleep(0.01)
+                        continue
 
                     r = self.ph.recv(True, 0.01)
                     if r:
