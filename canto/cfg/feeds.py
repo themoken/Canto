@@ -68,7 +68,7 @@ def register(c):
         for f in c.feeds:
             if f.URL == URL:
                 c.feeds.remove(f)
-                add(URL, kwargs)
+                add(URL, **kwargs)
                 break
 
     def set_default_rate(rate):
