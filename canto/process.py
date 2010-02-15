@@ -136,9 +136,10 @@ class ProcessHandler():
                         args = (self.update, self.updated,
                             cfg.all_filters, cfg.all_sorts, cfg.feeds))
 
-	try:
-	    self.process.start()
-        except:
+        try:
+            self.process.start()
+        except Exception, e:
+            self.cfg.log("FAILED TO START process: %s" % e)
             return False
         return True
 
