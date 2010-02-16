@@ -24,48 +24,44 @@
 # Python's clock (see: Haskell, Erlang).
 # --END SIDE RANT--
 #
-# Multiprocessing in canto is not simple. The ProcessManager class forks a
-# process with two pipes, one directed to the process and another directed from
-# the process (the typical pipe setup). The interface process puts a work object
-# in the pipe, the worker process does the work and puts the result in the
-# outgoing pipe. The work tuples looke like this:
+# Processing in canto is not simple. The ProcessManager class forks a process
+# with two pipes, one directed to the process and another directed from the
+# process (the typical pipe setup). The interface process puts a work object in
+# the pipe, the worker process does the work and puts the result in the outgoing
+# pipe. The work tuples looke like this:
 #
 #       (action, arguments...)
 #
-# There are a number of actions:
-#   (PROC_UPDATE, URL, old items)
-#      performs on disk update only, this is used early in init when we're
-#      trying to rectify tags from ondisk content
+# There are a number of actions: (PROC_UPDATE, URL, old items) performs on disk
+# update only, this is used early in init when we're trying to rectify tags from
+# ondisk content
 #
-#   (PROC_GETTAGS, )
-#      requests that the process return the rectified tags (i.e. collisions
-#      resolved)
+#   (PROC_GETTAGS, ) requests that the process return the rectified tags (i.e.
+#       collisions resolved)
 #
 #   (PROC_FILTER / PROCESS_BOTH , URL, old items, global filter index,
-#    [tag_info], refilter)
-#      performs the filtering/sorting (in addition to update for BOTH) this is
-#      the most common full update. PROC_FILTER is only used after PROC_UPDATE
-#      early on. [tag_info] is a list of one tuple per tag containing:
+#       [tag_info], refilter) performs the filtering/sorting (in addition to
+#       update for BOTH) this is the most common full update. PROC_FILTER is
+#       only used after PROC_UPDATE early on. [tag_info] is a list of one tuple
+#       per tag containing:
 #
 #         (tag string, tag filter index, tag sort index)
 #
-#   (PROC_FLUSH, )
-#      This essentially serves as a marker in the pipe that's returned verbatim
-#      when the worker thread receives it. In practice, the ProcessHandler's
-#      flush() call puts it into the pipe and discards any output until it gets
-#      it back. This is used when the items in the pipe are no longer accurate
-#      (i.e. the filter/sort/tag settings have changed.
+#   (PROC_FLUSH, ) This essentially serves as a marker in the pipe that's
+#       returned verbatim when the worker thread receives it. In practice, the
+#       ProcessHandler's flush() call puts it into the pipe and discards any
+#       output until it gets it back. This is used when the items in the pipe
+#       are no longer accurate (i.e. the filter/sort/tag settings have changed.
 #
-#   (PROC_SYNC, URL, old items)
-#      This syncs the state to disk. Typically the state is saved on update, but
-#      on exiting the program, it needs to be explicitly synced to disk so that
-#      any state changes made between the last disk update are saved.
+#   (PROC_SYNC, URL, old items) This syncs the state to disk. Typically the
+#       state is saved on update, but on exiting the program, it needs to be
+#       explicitly synced to disk so that any state changes made between the
+#       last disk update are saved.
 #
-#   (PROC_KILL, )
-#      Kills the process. In implementation, it's just PROC_FLUSH with an added
-#      clause so it terminates after returning the same tuple. After that tuple
-#      if received back, it's guaranteed that the process was safely exited and
-#      it can be assumed that the pipes are no longer active.
+#   (PROC_KILL, ) Kills the process. In implementation, it's just PROC_FLUSH
+#       with an added clause so it terminates after returning the same tuple.
+#       After that tuple if received back, it's guaranteed that the process was
+#       safely exited and it can be assumed that the pipes are no longer active.
 
 # Most of the return tuples are self-explanatory. The most common return from
 # PROC_BOTH looks like this:
