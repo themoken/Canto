@@ -186,11 +186,14 @@ class Main():
         self.cfg.log("Populating feeds...")
         for f in self.cfg.feeds:
             self.ph.send((PROC_UPDATE, f.URL, []))
+        for f in self.cfg.feeds:
             f.merge(self.ph.recv()[1])
+
         self.ph.send((PROC_GETTAGS, ))
         fixedtags = self.ph.recv()
-        
+
         self.ph.kill_process()
+
         for i, f in enumerate(self.cfg.feeds):
             self.cfg.feeds[i].tags = fixedtags[i]
 
@@ -383,7 +386,7 @@ class Main():
 
                     # Make sure we don't pin the CPU, so if there's no input and
                     # no waiting updates, sleep for awhile.
-                    if not self.ph.process:
+                    if not self.ph.pid:
                         time.sleep(0.01)
                         continue
 
@@ -503,16 +506,6 @@ class Main():
         self.ph.flush()
         self.ph.sync()
         self.cfg.log("Flushed to disk.")
-
-        # This is a shitty workaround. The processing module for 2.5
-        # insists on occasionally writing an exception to
-        # stderr which is harmless but messy. To avoid, pipe
-        # stderr to /dev/null. I hope that this has been resolved in
-        # 2.6's builtin multiprocessing module, because it's really poor
-        # form for a library to output to stdout/stderr.
-
-        fd = os.open("/dev/null", os.O_RDWR)
-        os.dup2(fd, sys.stderr.fileno())
 
         self.ph.kill_process()
 

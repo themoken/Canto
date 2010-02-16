@@ -106,20 +106,69 @@
 
 from const import *
 
+from threading import Thread, Lock
+from cPickle import dumps, loads
+import select
 import signal
 import time
 import sys
 import os
 
-try:
-    from multiprocessing import Process, Queue
-except Exception, e:
-    try:
-        from processing import Process, Queue
-    except:
-        print "Canto 0.7.x requires the python-processing module"+\
-              " to run on Python 2.5"
-        sys.exit(-1)
+class Queue():
+    def __init__(self):
+        self.recvpipe, self.sendpipe = os.pipe()
+
+        self.poll = select.poll()
+        self.poll.register(self.recvpipe, select.POLLIN)
+
+        self.objlist = []
+        self.objlock = Lock()
+
+        self.thread = None
+        self.alive = True
+
+    def get(self, block=True, timeout=None):
+        ready = self.poll.poll(timeout)
+        for fd, event in ready:
+            l = os.read(self.recvpipe, 1)
+            while l[-1] != " ":
+                l += os.read(self.recvpipe, 1)
+            l = int(l)
+
+            s = os.read(self.recvpipe, l)
+            return loads(s)
+        raise Exception
+
+    def feed_pipe(self):
+        while self.alive:
+            if not len(self.objlist):
+                time.sleep(0.1)
+                continue
+            self.objlock.acquire()
+            obj = self.objlist[0]
+            self.objlist = self.objlist[1:]
+            self.objlock.release()
+
+            s = dumps(obj)
+            l = len(s)
+            os.write(self.sendpipe, "%d %s" % (l, s))
+
+    def put(self, obj):
+        if not self.thread:
+            self.thread = Thread(target = self.feed_pipe)
+            self.thread.start()
+        self.objlock.acquire()
+        self.objlist.append(obj)
+        self.objlock.release()
+
+    def close(self):
+        if self.thread:
+            while len(self.objlist): pass
+            self.alive = False
+            self.thread.join()
+
+        os.close(self.recvpipe)
+        os.close(self.sendpipe)
 
 class ProcessHandler():
     def __init__(self, cfg):
@@ -131,17 +180,11 @@ class ProcessHandler():
         self.persist = persist
         self.updated = Queue()
         self.update = Queue()
-        self.process = \
-                Process(target = self.run,
-                        args = (self.update, self.updated,
-                            cfg.all_filters, cfg.all_sorts, cfg.feeds))
-
-        try:
-            self.process.start()
-        except Exception, e:
-            self.cfg.log("FAILED TO START process: %s" % e)
-            return False
-        return True
+        self.pid = os.fork()
+        if not self.pid:
+            self.run(self.update, self.updated, cfg.all_filters,
+                    cfg.all_sorts, cfg.feeds)
+        return self.pid
 
     def run(self, update, updated, all_filters, all_sorts, feeds):
         def scan_tags(feeds):
@@ -318,7 +361,7 @@ class ProcessHandler():
                 del feed[:]
 
     def send(self, obj):
-        if not self.process:
+        if not self.pid:
             self.start_process(self.cfg)
         return self.update.put(obj)
 
@@ -362,35 +405,18 @@ class ProcessHandler():
             f.qd = False
 
     def kill_process(self):
-        # Fuck around with the signals because multiprocessing
-        # chokes unless SIGCHLD == SIG_DFL.
-
-        # This seems dangerous, but it relies on the fact that kill_process
-        # should only be called in a context in which Canto's not waiting for a
-        # text based forked process (see self.chld in Main for more).
-
-        sig = signal.getsignal(signal.SIGCHLD)
-        signal.signal(signal.SIGCHLD, signal.SIG_DFL)
-
-        self.send_and_wait(PROC_KILL)
-        self.update.close()
-        self.updated.close()
-
-        # OSX seems to not like the process join.
-        # We shouldn't care, since it should be dead
-        # by now anyway.
-        try:
-            self.process.join()
-        except:
-            pass
-
-        signal.signal(signal.SIGCHLD, sig)
-        self.process = None
+        if self.pid:
+            self.send_and_wait(PROC_KILL)
+            self.update.close()
+            self.updated.close()
+            self.pid = 0
 
     def flush(self):
-        self.send_and_wait(PROC_FLUSH)
+        if self.pid:
+            self.send_and_wait(PROC_FLUSH)
 
     def sync(self):
         for f in self.cfg.feeds:
             self.send((PROC_SYNC, f.URL, f[:]))
+        for f in self.cfg.feeds:
             self.recv_raw()
