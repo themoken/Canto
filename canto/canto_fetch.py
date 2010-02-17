@@ -154,9 +154,8 @@ def run(cfg, verbose=False, force=False):
         cfg.log(x)
 
     def imdone():
-        if threads != []:
-            for thread in threads:
-                thread.join()
+        for thread in threads:
+            thread.join()
         socket.setdefaulttimeout(None)
         log_func("Gracefully exiting Canto-fetch.")
         return 1
@@ -171,7 +170,6 @@ def run(cfg, verbose=False, force=False):
         fpath = cfg.feed_dir + fd.URL.replace("/", " ")
         spath = cfg.script_dir
         threads.append(FetchThread(cfg, fd, fpath, spath, force, log_func))
-        threads[-1].daemon = True
         threads[-1].start()
 
     imdone()
