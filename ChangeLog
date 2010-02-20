@@ -1,3 +1,16 @@
+Canto 0.7.6 ChangeLog
+* Fix non-consecutive sorts
+* Fix multi-tag sorts
+* Fix change_feed
+* Fix possible get_text exception
+* Replace multiprocessing functionality
+* Worker process initiated on demand
+* Add "restart" keybind (|)
+* Add wget_link reader_key
+* Add highlight_word drawing hook
+* Add "setup.py uninstall" command
+* Minor c-f cleanup
+
 Canto 0.7.5 ChangeLog
 * Fix some reader inconsistencies with reader keys moving selections
 * Wrap some harmless, rare curses exceptions
