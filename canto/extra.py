@@ -303,6 +303,25 @@ def wget_link(path):
 
     return do_wget
 
+# Highlights a word in the reader or main views
+#
+# Usage :
+#   r = get_default_renderer()
+#   add_hook_pre_reader(r, highlight_word("NASA"))
+#   add_hook_pre_story(r, highlight_word("never"))
+#
+#   Highlights the word "never" in the main view, and
+#   "NASA" in the reader. Extra arguments include flags
+#   to pass to the regex (defaults to re.I for ignorecase)
+#   and content, which defines the content in the item to be
+#   parsed.
+
+def highlight_word(word, flags=re.I, content="content"):
+    reg = re.compile(r"\b(" + re.escape(word) + r")\b", flags)
+    def hword(dict):
+        dict[content] = reg.sub(r"%R\1%r", dict[content])
+    return hword
+
 # Note: the following two hacks are for xterm and compatible
 # terminal emulators ([u]rxvt, eterm, aterm, etc.). These should
 # not be run in screen or standard linux terms because they'll
