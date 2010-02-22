@@ -335,7 +335,7 @@ static PyMethodDef MvWMethods[] = {
 };
 
 PyMODINIT_FUNC
-initwidecurse()
+initwidecurse(void)
 {
     Py_InitModule("widecurse", MvWMethods);
 }
