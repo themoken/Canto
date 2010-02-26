@@ -631,6 +631,11 @@ in the examples below.
 <td>Quit Canto.</td>
 </tr>
 <tr>
+<td><pre>\</pre></td>
+<td><pre>restart</pre></td>
+<td>Restart canto (0.7.6+)</td>
+</tr>
+<tr>
 <td><pre>]</pre></td>
 <td><pre>next_filter</pre></td>
 <td>Apply next global filter.</td>
@@ -846,6 +851,21 @@ chat, a browser, etc.) can be used
 Debian based distros it's the `xclip` package, but on some it might be included
 with a generic X11 application meta-package. If in doubt, do `which xclip` from
 your shell.
+
+#### Downloading Content
+
+New in version 0.7.6 is the capability to `wget` content out of links. This
+essentially amounts to a custom `link_handler`/`image_handler`.
+
+    :::python
+    reader_keys['w'] = wget_link("/path/to/downloads")
+
+The above will make 'w' in the reader prompt you for a link number and will
+download that link into the path specified.
+
+> **NOTE**: wget_link requires `wget` to be installed and visible in your
+> `PATH`. On most distros this is already installed or is available in a `wget`
+> package.
 
 #### Saving
 
@@ -1314,6 +1334,27 @@ Using the add_info function, we can add the content as follows:
 
 > **NOTE**: The first argument to `add_info` corresponds to the content in the
 [brackets], but isn't case sensitive.
+
+### Highlighting ###
+
+New in 0.7.6 is the ability to statically highlight words in the reader or main
+views.
+
+    :::python
+    r = get_default_renderer()
+    add_hook_pre_reader(r, highlight_word("NASA"))
+    add_hook_pre_story(r, highlight_word("never"))
+
+This will, for example, highlight the word "NASA" in the reader and "never" in
+the main view. These are *not* case sensitive by default. Those familiar with
+Python regex can specify a `flags` arg but if all you need is case sensitivity
+you can set it to `None`
+
+    :::python
+    r = get_default_renderer()
+    add_hook_pre_reader(r, highlight_word("NASA", None))
+
+A case sensitive version of the reader highlight above.
 
 </div>
 
