@@ -1,3 +1,955 @@
-This is currently a stub for when I have time to explain the internals.
+This is a section on configuration that requires a little more programming
+knowledge and knowledge of Canto's internal data structures.
 
 [TOC]
+
+# Canto Objects
+
+<div class="section">
+
+## The `cfg` object
+
+The `cfg` object includes just about every ounce of configuration in Canto. You
+can use this object to get to any tag, sort, filter, story or feed that could be
+used. Here's a subset of useful content.
+
+### Attributes ###
+
+<table>
+<tr>
+<td><code>[cfg.feeds]</code></td>
+<td>A list of all feed objects Canto is aware of.</td>
+</tr>
+<tr>
+<td><code>[cfg.tags]</code></td>
+<td>A list of all tag objects Canto is aware of.</td>
+</tr>
+<tr>
+<td><code>[cfg.tag_sorts]</code></td>
+<td>A list of all tag sorts Canto is aware of.</td>
+</tr>
+<tr>
+<td><code>[cfg.tag_filters]</code></td>
+<td>A list of all tag filters Canto is aware of.</td>
+</tr>
+<tr>
+<td><code>[cfg.filters]</code></td>
+<td>A list of all overall filters Canto is aware of.</td>
+</tr>
+<tr>
+<td><code>[cfg.sorts]</code></td>
+<td>A list of all overall sorts Canto is aware of.</td>
+</tr>
+<tr>
+<td><code>cfg.*_hook</code></td>
+<td>Any set hooks, where * is one of: new, resize, select, unselect,
+state_change, start, and end.</td>
+</tr>
+<tr>
+<td><code>cfg.log_file</code></td>
+<td>Path to log file.</td>
+</tr>
+<tr>
+<td><code>cfg.path</code></td>
+<td>Path to configuration file.</td>
+</tr>
+<tr>
+<td><code>cfg.feed_dir</code></td>
+<td>Path to feed directory.</td>
+</tr>
+<tr>
+<td><code>cfg.script_dir</code></td>
+<td>Path to script directory.</td>
+</tr>
+<tr>
+<td><code>cfg.gui</code></td>
+<td>Link to the gui object.</td>
+</tr>
+
+</table>
+
+### Methods ###
+
+In addition to all of the methods available to the configuration (not listed
+here as they really shouldn't be used outside of the configuration which is
+already covered [here](../config/)). The `cfg` object
+includes `cfg.log("message")` that writes a message to the log file on disk and
+(if the curses UI is up) will print to the status bar.
+
+## The `gui` object
+
+The gui object is primarily used in hooks and keybinds, but represents a running
+instance of the main interface.
+
+### Attributes ###
+
+<table>
+<tr>
+<td><code>gui.sel["item"]</code></td>
+<td>The currently selected story object (could be None)</td>
+</tr>
+<tr>
+<td><code>gui.sel["tag"]</code></td>
+<td>The currently selected tag object (could be None)</td>
+</tr>
+<tr>
+<td><code>gui.keys</code></td>
+<td>A dict mapping keybinds to gui attributes</td>
+</tr>
+<tr>
+<td><code>[gui.window_list]</code></td>
+<td>A list of ncurses windows (one per column)</td>
+</tr
+<tr>
+<td><code>gui.reader</code></td>
+<td>Link to the reader object (could be None)</td>
+</tr>
+</table>
+
+### Methods ###
+
+The methods of the `gui` object meant for direct use are mostly
+[keybinds](../config/#keybinds). The "name" of the keybind is a method of the
+class that takes no arguments. For example, the default binding for the down
+arrow is "next_item", so hitting the down arrow is equivalent to running
+`gui.next_item()`.
+
+</table>
+
+## The `reader` object
+
+The reader object controls an open instance of the article reader.
+
+### Attributes ###
+
+<table>
+<tr>
+<td><code>reader.story</code></td>
+<td>Link to the story object open in reader.</td>
+</tr>
+<tr>
+<td><code>reader.tag</code></td>
+<td>Link to the tag object story is in.</td>
+</tr>
+<tr>
+<td><code>reader.width</code></td>
+<td>Width of the reader.</td>
+</tr>
+<tr>
+<td><code>reader.height</code></td>
+<td>Height of the reader.</td>
+</tr>
+<tr>
+<td><code>reader.keys</code></td>
+<td>Dict mapping keys to reader attributes</td>
+</tr>
+<tr>
+<td><code>reader.cfg</code></td>
+<td>Link to the cfg object.</td>
+</tr>
+</table>
+
+### Methods ###
+
+<table>
+<tr>
+<td><code>reader.page_down()</code></td>
+<td>Scroll the reader down.</td>
+</tr>
+<tr>
+<td><code>reader.page_up()</code></td>
+<td>Scroll the reader up.</td>
+</tr>
+<tr>
+<td><code>reader.goto()</code></td>
+<td>Prompts user for a link to go to.</td>
+</tr>
+<tr>
+<td><code>reader.dogoto(n)</code></td>
+<td>Go to link n, no prompt.</td>
+</tr>
+<tr>
+<td><code>reader.destroy()</code></td>
+<td>Kill the reader.</td>
+</tr>
+</table>
+
+## The `tag` object
+
+A tag is similar to a feed in that it's a list of stories at it's base. The
+important difference though is that tags aren't tied to a single Atom/RSS feed.
+If a user defines no custom tags, one tag per feed is generated automatically.
+However, if two feeds share a main tag, there will still be two feed objects,
+but only one tag.
+
+Tags are represented as blocks of stories in the interface.
+
+### Attributes ###
+
+<table>
+<tr>
+<td><code>[tag.filters]</code></td>
+<td>This tag's filters, cycled through with {/} by default.</td>
+</tr>
+<tr>
+<td><code>[tag.sorts]</code></td>
+<td>This tag's sorts, cycled through with -/= by default.</td>
+</tr>
+<tr>
+<td><code>tag.unread</code></td>
+<td>The number of unread stories in this tag.</td>
+</tr>
+<tr>
+<td><code>tag.read</code></td>
+<td>The number of read items in this tag.</td>
+</tr>
+<tr>
+<td><code>tag.collapsed</code></td>
+<td>Whether this tag is collapsed.</td>
+</tr>
+<tr>
+<td><code>tag.tag</code></td>
+<td>This tag's string representation.</td>
+</tr>
+<tr>
+<td><code>tag.cfg</code></td>
+<td>Link to the `cfg` object.</td>
+</tr>
+</table>
+
+### Methods ###
+
+The tag object includes some helpful functions typically accessible via
+keybinds.
+
+<table>
+<tr>
+<td><code>tag.all_read()</code></td>
+<td>Set all items read.</td>
+</tr>
+<tr>
+<td><code>tag.all_unread()</code></td>
+<td>Set all items unread.</td>
+</tr>
+<tr>
+<td><code>tag.search_stories(story)</code></td>
+<td>Returns the index of an story object in the tag, or -1.</td>
+</tr>
+<tr>
+<td><code>tag.set_read(story)</code></td>
+<td>Sets a story object as read and updates tag attributes.</td>
+</tr>
+<tr>
+<td><code>tag.set_unread(story)</code></td>
+<td>Sets a story object as unread and updates tag attributes.</td>
+</tr>
+</table>
+
+## The `feed` object
+
+The feed object in canto encompasses a single Atom/RSS feed. At it's core it's a
+list of story objects, each of which (surprise!) contains the content of a
+single Atom/RSS item. As such, you can iterate over it:
+
+    :::python
+    for story in feed:
+        print story["title"]
+
+### Attributes ###
+
+<table>
+<tr>
+<td><code>[feed.tags]</code></td>
+<td>The tags this feed falls under. `.tags[0]` is the user or feed specified name
+of the feed. This is a list of strings. 
+</tr>
+<tr>
+<td><code>feed.URL</code></td>
+<td>The URL of the RSS/Atom this feed represents.</td>
+</tr>
+<tr>
+<td><code>feed.path</code></td>
+<td>The full path to the feed's info on disk</td>
+</tr>
+<tr>
+<td><code>feed.rate</code></td>
+<td>The rate (in minutes) of how often canto-fetch will update this feed.</td>
+</tr>
+<tr>
+<td><code>feed.keep</code></td>
+<td>The number of items canto-fetch will store for this feed</td>
+</tr>
+<tr>
+<td><code>feed.username</code></td>
+<td>The username for basic/digest canto-fetch will use.</td>
+</tr>
+<tr>
+<td><code>feed.password</code></td>
+<td>The password for basic/digest canto-fetch will use.</td>
+</tr>
+<tr>
+<td><code>feed.cfg</code></td>
+<td>Link to the cfg object.</td>
+</tr>
+</table>
+
+The feed object has a number of methods, but they shouldn't ever be used from
+keybinds or hooks because the feed objects available to the interface may or may
+not be active in the worker process. The feed as a boolean attribute `feed.qd`
+that specifies whether the feed is queued to be run through the worker process,
+but generally feed methods shouldn't be used. If you really want to anyway, read
+the source and figure it out =).
+
+## The `story` object
+
+The story object encompasses a single item from an RSS/Atom feed. It functions
+like a Python dict object.
+
+### Attributes ###
+
+<table>
+<tr>
+<td><code>story["title"]</code></td>
+<td>The title of the item.</td>
+</tr>
+<tr>
+<td><code>story["link"]</code></td>
+<td>The main link of the item.</td>
+</tr>
+<tr>
+<td><code>story["canto_state"]</code></td>
+<td>The on-disk state of the item</td>
+</tr>
+</table>
+
+That's a *very* sparse set of attributes, but those are the only two that you
+can usually count on. The story object actually contains *all* information given
+in the item. To see what items are included, you should use `canto-inspect` as
+described [here](http://codezen.org/canto/config/#less-common-content).
+
+> **NOTE**: Story objects are extremely flexible and try to be as lightweight
+> (in terms of memory) as possible. As such, only commonly used items are kept
+> in memory, but attempting to fetch items that aren't already in memory will
+> automatically attempt to lookup the content from it's feed content. If it
+> attempts to look something up that isn't there, it will return "", but not
+> throw an error.
+
+> So, if you want to write a sort / hook that deals with content that isn't
+> common between all your feeds you can still reference `story["uncommon"]`
+> without checking for the attribute. **However**, be aware that failing to find
+> an item is going to get a shared lock and hit the disk anyway so if you are
+> using uncommon content that's tied to a particular feed, you might want to
+> check that `story.ufp_path` is set to the path of the feed with the content.
+
+### Methods ###
+
+<table>
+<tr>
+<td><code>story.was(key)</code></td>
+<td>This returns whether key is in the item's on-disk state.</td>
+</tr>
+<tr>
+<td><code>story.set(key)</code></td>
+<td>Add a key to the item's on-disk state.</td>
+</tr>
+<tr>
+<td><code>story.unset(key)</code></td>
+<td>Remove a key from the item's on-disk state.</td>
+</tr>
+<tr>
+<td><code>story.selected()</code></td>
+<td>Return wether this item is currently selected.</td>
+</tr>
+<tr>
+<td><code>story.select()</code></td>
+<td>Set this item as selected.</td>
+</tr>
+<tr>
+<td><code>story.unselect()</code></td>
+<td>Set this item as unselected.</td>
+</tr>
+<tr>
+<td><code>story.get_text()</code></td>
+<td>Get an item's main content. This will either return the "description" field
+of the item in Atom/RSS or any text sub-content. Use this instead of
+<code>story["description"]</code></td>
+</tr>
+</table>
+
+At this point, the on-disk state of a given story can include these keys: "read"
+and "marked". Previously, a "new" tag was possible, but this has been phased
+out due to the fact that `new_hook` is handled promptly by canto-fetch, not
+canto. However, the state is just a list of strings, if you wanted to add
+persistent state information to an item, you could add an arbitrary string and
+it would be remembered.
+
+>**NOTE**: Always use the helper functions for messing with item state. It's
+>important that changing the state sets the item as "changed" so that canto
+>knows it needs to be queued up to write to disk.
+
+>**ALSO NOTE**: The "state" of whether an item is selected is handled separately
+>because the selected status of an item doesn't persist between runs (yet).
+
+</div>
+
+# Writing Draw Hooks #
+
+<div class="section">
+
+Draw hooks are one of the most useful aspects of hardcore Canto customization,
+they allow you to change the content displayed arbitrarily. Before you spend too
+much time though, please make sure you check out this [configuration
+section](http://codezen.org/canto/config/#adding-content).
+
+## Drawing Format Codes ##
+
+The style of particular text is set inline inside the string, so making things
+bold or underlined is very easy using escapes.
+
+<table>
+<tr>
+<td><code>%B / %b</code></td>
+<td>Turn bold attribute on / off</td>
+</tr>
+<tr>
+<td><code>%U / %u</code></td>
+<td>Turn underline attribute on / off</td>
+</tr>
+<tr>
+<td><code>%S / %s</code></td>
+<td>Turn standout attribute on / off</td>
+</tr>
+<tr>
+<td><code>%R / %r</code></td>
+<td>Turn reverse video attribute on / off</td>
+</tr>
+<tr>
+<td><code>%D / %d</code></td>
+<td>Turn dim attribute on / off</td>
+</tr>
+<tr>
+<td><code>%N / %n</code></td>
+<td>Turn off all attribute temporarily (%n restores previous attributes)</td>
+</tr>
+<tr>
+<td><code>%C</code></td>
+<td>Turn all attributes off permanently</tr>
+</tr>
+<tr>
+<td><code>%1 - %8</code></td>
+<td>Turn color pair 0 - 7 off (<strong>NOTE</strong> %# starts at 1, not 0)</tr>
+</tr>
+<tr>
+<td><code>%0</code></td>
+<td>Return to previous color.</td>
+</tr>
+</table>
+
+So, a couple of working example using the color/style escapes:
+
+    "%B This is bold! %b This is not."
+    "%B This is bold! %R This is bold and reversed. %b Just reversed. %r"
+    "%1 Color one %2 Color two %0%0 Whatever color was on before."
+
+Something to note is that style attributes remember how many times they've been
+activated and deactivated. For example:
+
+    "%B%B This is bold! %b This is still bold! %b This is not."
+
+Also, Canto relies on you to **keep your changes self contained**. A BAD
+EXAMPLE:
+
+    "%B This is my bold text."
+
+This will cause *everything* after it until a "%C" call to be bolded and that's
+not what you want. A BETTER EXAMPLE:
+
+    "%B This is my bold text.%b"
+
+Similarly, with colors, you should use %0 for each color you start, like in the
+first color example. This allows colors to be properly embedded.
+
+> **NOTE**: Support for colors and attributes is entirely up to your terminal.
+> Some terminals support `%U` (underline) and some don't (like the raw Linux
+> terminal). Most terminals support `%B` (bold), and `%R` (reverse). I've never
+> seen a terminal that did `%D` (dim) right, but it's a valid curses option so
+> it's included.
+
+> **ALSO NOTE**: The memory for `%0` is only 8 colors. The default interface
+> only uses up to a depth of 3 in the case of a link inside a quote. I think
+> this limit is more than enough to easily accomplish whatever you want.
+
+## Basic format ##
+
+A draw_hook typically looks like this:
+
+    :::python
+    def myhook(dict):
+        ## Do something
+
+Where `dict` is a dict with the following keys:
+
+<table>
+<tr>
+<td><code>dict["content"]</code></td>
+<td>The content to be printed.</td>
+</tr>
+<tr>
+<td><code>dict["story"]</code></td>
+<td>The story object being used.</td>
+</tr>
+<tr>
+<td><code>dict["cfg"]</code></td>
+<td>The overall configuration object.</td>
+</tr>
+<tr>
+<td><code>dict["tag"]</code></td>
+<td>The relevant tag object</td>
+</tr>
+<tr>
+<td><code>dict["width"]</code></td>
+<td>Width of the reader or width of column the story is in.</td>
+</tr>
+<tr>
+<td><code>dict["height"]</code></td>
+<td>Height of the reader (READER ONLY)</td>
+</tr>
+<tr>
+<td><code>dict["show_links"]</code></td>
+<td>Whether the use wants to see internal links (READER ONLY)</td>
+</tr>
+</table>
+
+These are available by default to any hook. However, **any content** added to the
+`dict` will be made available to the next hook called. So, for example, if you
+hook is called after the `reader_add_enc_links` (the hook that parses the
+content and grabs the links out), you'd also have access to `dict["links"]` More
+on that later.
+
+## Example: highlight words ##
+
+So let's make a basic, hard-coded draw_hook to highlight a word:
+
+    :::python
+    def hword(dict):
+        import re
+        reg = re.compile(r"\b(" + re.escape("MYWORD") + r")\b", re.I)
+        dict["content"] = reg.sub(r"%R\1%r", dict["content"])
+
+You import Python's regex library, compile a regex that matches on MYWORD
+(escaped for safety's sake, more important later) and captures the content as
+`\1`. Then, you apply the regex to `dict["content"]` to surround the word with
+`%R` and `%r` (the reverse video hints).
+
+But this is horribly inefficient, you're compiling the regex each time and
+that's unnecessary. The advantage of the above is that's it's entirely self
+contained and a friend could past it straight into their config and it would
+work. So, using Python's scoping we can make it more efficient:
+
+    :::python
+    import re
+    reg = re.compile(r"\b(" + re.escape("MYWORD") + r")\b", re.I)
+    
+    def hword(dict):
+        dict["content"] = reg.sub(r"%R\1%r", dict["content"])
+
+There. Adding this to your config will import the regex library and copile the
+regex once, and just apply it every time you need to. Now, we can take advantage
+of this scoping and make this a whole lot more useful by being generic. This is
+the code of `highlight_word` that's been in `canto.extra` since 0.7.6:
+
+    :::python
+    def highlight_word(word, flags=re.I, content="content"):
+        import re
+        reg = re.compile(r"\b(" + re.escape(word) + r")\b", flags)
+
+        def hword(dict):
+            dict[content] = reg.sub(r"%R\1%r", dict[content])
+        return hword
+
+So now we have a helper function that takes an argument of the word we want to
+highlight. We import the regex library (this is a bit different from
+`canto.extra` that imports it once at the top, but again this is drop-in-able
+code). We compile the regex (same as before but instead of MYWORD we're using
+the `word` argument). And then we define a hook that uses that regex and return
+it. Thanks to Python, that regex that we compiled once will follow that function
+around. This is called a "closure" and they're very useful.
+
+With this helper function, we can generate arbitrary highlighting hooks that
+work efficiently. Now, how do we use them?
+
+## Using Custom Draw Hooks ##
+
+Adding a hook to the renderer is pretty easy.
+
+    :::python
+    r = get_default_renderer()
+    add_hook_pre_reader(r, my_hook)
+    add_hook_pre_story(r, my_hook)
+
+First you get the Canto renderer, then you add the hook before the render
+(that's the "pre" part of the `add_hook_pre_*` functions).
+
+Or, using a helper like the one we created above:
+
+    :::python
+    r = get_default_renderer()
+    add_hook_pre_reader(r, highlight_word("something"))
+
+## Draw Hook Order ##
+
+Sometimes the stage where your draw hook is executed is important. For example,
+if you want to access the raw item content (i.e. before an HTML processing),
+your hook needs to be run before the html conversion hook. Or, if you want your
+hook to have access to the enclosure links, it needs to be run after the hook
+that extracts those.
+
+### Default Draw Hooks ###
+
+Pre reader render:
+
+<table>
+<tr>
+<td><code>reader_convert_html</code></td>
+<td>Takes the item content and renders any HTML into pure text. Sets
+`dict["links"]` as well.</td>
+</tr>
+<tr>
+<td><code>reader_highlight_quotes</code></td>
+<td>Highlight's quotes in color 5.</td>
+</tr>
+<tr>
+<td><code>reader_add_main_link</code></td>
+<td>Sets link 0 as main link to `dict["links"]`</td>
+</tr>
+<tr>
+<td><code>reader_add_enc_links</code></td>
+<td>Adds any enclosure links to `dict["links"]`</td>
+</tr>
+<tr>
+<td><code>reader_render_links</code></td>
+<td>Adds the link readout, if `dict["show_links"]`.</td>
+</tr>
+</table>
+
+
+
+Pre story render:
+
+<table>
+<tr>
+<td><code>story_strip_entities</code></td>
+<td>Converts HTML entities from story titles (for reader hooks this is handled
+in the HTML conversion step)</td>
+</tr>
+</table>
+
+### Specifying Order ###
+
+If you want to add your draw hook in a particular place, you merely have to
+specify the `before` or `after` keyword arguments to the add_hook_pre_* call.
+For example, to add a reader hook before the HTML is converted, you would do
+this:
+
+    :::python
+    r = get_default_renderer()
+    add_hook_pre_reader(myhook, before="reader_convert_html")
+
+If you have another custom hook you want to be before or after, you can also
+pass a function that's already been added as a hook instead of a string.
+Following from the above example, you could do this:
+
+    :::python
+    add_hook_pre_reader(anotherhook, after=myhook)
+
+</div>
+
+# Writing Filters
+
+<div class="section">
+
+Filters are easy to write and use. As of 0.7.0, filters are classes. A quick
+example is the `show_unread` filter:
+
+    :::python
+    from canto.cfg.filter import Filter
+
+    class show_unread(Filter):
+        def __str__(self):
+            return "Show unread"
+
+        def __call__(self, tag, item):
+            return not item.was("read")
+
+As you can see, there are two components to a filter class. The Python `__str__`
+or `__unicode__` functions return the string representation of a class. This is
+used to display the status message when switching to this filter. In this case
+"Filter: Show unread" is shown.
+
+The Python `__call__` function is what's run when Canto tries to filter some
+items with your filter. This simply returns a boolean whether this item should
+be shown or not ( `True` = show this item, `False` = do not show). Python will
+let you use `0/None/""` for `False` and anything else will be interpreted as
+`True`. By default, Python functions return `None`, so if your sort has no
+return value it will filter *everything*.
+
+the `__call__` function is provided with a tag and a story object in order to
+make your determination.
+
+Custom defined filters can be used like any other filters in the config:
+
+    :::python
+    filters = [show_unread, my_new_filter, None]
+
+Canto doesn't care whether you class is instantiated or not, if it isn't it will
+be instantiated after the config is parsed.
+
+</div>
+
+# Writing Sorts
+
+<div class="section">
+
+Sorts, like filters are simple to use custom classes as of 0.7.0. Sorts can be
+tricky though in that for them to work *consistently* `sort(a,b)` has to return
+the exact opposite of `sort(b,a)`. Also, sorts *must* return integers. Let's
+take a look at a toy example: sorting by length of title.
+
+    :::python
+    from canto.cfg.sorts import Sort
+
+    class by_len(Sort):
+        def __str__(self):
+            return "By Length"
+
+        def __call__(self, x, y):
+            return len(x["title"]) - len(y["title"])
+
+Similar to filters, the sort has a Python `__str__` function that's used when
+switching to this sort. In this case it will say "Sort: By Length" in the status
+bar when you switch to this sort.
+
+Also similar to filters, the sort has a `__call__` that does the actual work. A
+sort's `__call__` receives two story objects (x and y) that it can use to
+determine whether one item comes before the other. Based on these two objects,
+you return one of three cases:
+
+<table>
+<tr>
+<td><code>sort(x, y) < 0</code></td>
+<td>x should be before y</td>
+</tr>
+<tr>
+<td><code>sort(x, y) == 0</code></td>
+<td>x and y sort the same</td>
+</tr>
+<tr>
+<td><code>sort(x, y) > 0</code></td>
+<td>y should be before x</td>
+</tr>
+</table>
+
+>**NOTE**: Python's sorts are "stable" meaning that if sort(x, y) == 0 then
+>whatever order x and y were in before the sort will be the same order they're
+>in after the sort.
+
+Like custom filters, custom sorts can be used like any other sorts
+
+    :::python
+    sorts = [ None, my_sort ]
+
+Canto doesn't care whether you instantiate my_sort or not, it will be
+instantiated after the config is parsed.
+
+</div>
+
+# Filter and Sort Notes
+
+<div class="section">
+
+You should be wary, writing custom filters and sorts because they are called
+*very* often when they are used from the interface. As such, it's not a good
+idea to do anything too intensive inside of the `__call__` function.
+
+## One time work
+
+For both custom sorts and filters you can set an `__init__` function to be
+called once. However, it's important that you call the parent class' `__init__`
+as well. Like so:
+
+    :::python
+    class myfilter(Filter):
+        def __init__(self):
+            Filter.__init__(self)           # Call default init.
+            import re
+            self.regex = re.compile("...")  # Do something intensive
+
+        def __str__(self):
+            return "My Filter"
+
+        def __call__(self, tag, story):
+            return self.regex.match(story["title"])
+
+In this case, the regex is compiled *once*, keeping the filter as low intensity
+as possible.
+
+You can also define an `__init__` that takes arguments but if you do that **you
+must instantiate the class in the configuration**, Canto does not pass any
+arguments when automatically instantiating the class. For example:
+
+    ::python::
+    # Partial filter taking two arguments
+    class myfilter(Filter):
+        def __init__(self, arg1, arg2):
+            Filter.__init__(self)
+            self.arg1 = arg1
+            self.arg1 = arg2
+    
+    ...
+
+    # Instantiate with arguments
+    filters = [ myfilter(arg1, arg2), None ]
+
+## Work with uncommon items (precaching) ##
+
+As mentioned in the [story object
+docs](http://codezen.org/canto/advconfig/#the-story-object) section, the story
+object attempts to be efficient by only keeping common content (the title, link,
+state, etc.) in memory. Using items that aren't "common" requires the story
+object to attempt to fetch them from the disk which is *expensive*.
+
+In order to keep these items in memory, you can add them to the `precache` list
+as part of your filter or sort. Like so:
+
+    :::python
+    def mysort(Sort):
+        def __init__(self):
+            Sort.__init__(self)     # Call default __init__
+            self.precache = ["uncommon_item", "uncommon_item2"]
+    ...
+
+Canto will honor this after the config is parsed and items will them
+automatically keep "uncommon_item" and "uncommon_item2" in memory.
+
+</div>
+
+# General Hooks 
+
+<div class="section">
+
+General hooks are hooks that are called whenever a certain criterion is met.
+Currently, they're all passed different arguments, but they might be
+standardized in the next major release (0.8.0).
+
+A general hook looks like:
+
+    :::python
+    def my_hook(...args..):
+
+Where args are dependent on which hook you're defining.
+
+<table>
+<tr>
+<td><code>start_hook(gui)</code></td>
+<td>Called once on interface bringup.</td>
+</tr>
+<tr>
+<td><code>update_hook(gui)</code></td>
+<td>Called when the interface updates.</td>
+</tr>
+<tr>
+<td><code>unselect_hook(tag, story)</code></td>
+<td>Called when an item is unselected.</td>
+</tr>
+<tr>
+<td><code>select_hook(tag, story)</code></td>
+<td>Called when an item is selected.</td>
+</tr>
+<tr>
+<td><code>state_change_hook(feed, story, added_key, removed_keys)</code></td>
+<td>Called when an item's state has changed and is being written to disk.</td>
+</tr>
+<tr>
+<td><code>resize_hook(cfg)</code></td>
+<td>Called whenever the window geometry could have changed.</td>
+</tr>
+<tr>
+<td><code>end_hook(gui)</code></td>
+<td>Called when the interface is being torn down.</td>
+</tr>
+<tr>
+<td><code>new_hook(feed, item, last)</code></td>
+<td>Called once for each new item.</td>
+</tr>
+</table>
+
+>**NOTE**: new_hook is the only one of these hooks that doesn't require canto to
+>be running to execute. It is handled by canto-fetch. New_hook is primarily
+>meant for notification purposes.
+
+Using a user defined hook is just like any other hook. Either you can define the
+hook directly:
+
+    :::python
+    def resize_hook(cfg):
+        # Do whatever
+
+Or you can define separate hooks, like `canto.extra` and set them:
+
+    :::python
+    def my_resize_hook(cfg):
+        # Do whatever
+
+    resize_hook = my_resize_hook
+</div>
+
+# Writing Custom Keybinds #
+
+<div class="section">
+
+Writing custom keybinds (more complex than just chaining multiple key presses
+together, which can be accomplished with [macros](../config/#macros)), can be a
+useful way to automate Canto or share information with other programs.
+
+A keybind is merely a function that takes a gui or reader object argument and
+can optionally return a constant to get Canto to refresh, retag, update etc. For
+example, let's make a reader keybind that automatically goes to a link number
+instead of prompting.
+
+    :::python
+    def goto_6(reader):
+        reader.dogoto(6)
+
+    reader_keys['6'] = goto_6
+
+Or, more generically, we could make a goto_n wrapper, so that we can loop and
+set a whole bunch of binds automatically:
+
+    :::python
+    def goto_n(n)
+        def goto(reader):
+            reader.dogoto(n)
+        return goto
+
+    for i in xrange(6):
+        reader_keys["%s" % i] = goto_n(i)
+
+Another example is a simple save function:
+
+    :::python
+    import locale
+    enc = locale.getpreferredencoding()
+
+    def save(gui):
+        f = open("mylog", "a")
+        f.write(gui.sel["item"]["title"].encode(enc, "ignore"))
+        f.close()
+
+    keys['s'] = save
+
+>**NOTE**: Notice the encoding that has to be done on file I/O you can thank
+>Python for that little oddity. You have to explicitly convert otherwise you'll
+>get UnicodeEncode exceptions if you try to write a Unicode character that has
+>no equivalent in your system locale.
+
+</div>
