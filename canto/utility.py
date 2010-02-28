@@ -11,6 +11,7 @@ import tempfile
 import urllib2
 import signal 
 import curses
+import locale
 import sys
 import re
 import os
@@ -55,6 +56,9 @@ class Cycle():
         return self.over or self.list[self.idx]
 
 def silentfork(path, href, text, fetch):
+
+    enc = locale.getpreferredencoding()
+    href = href.encode(enc, "ignore")
 
     pid = os.fork()
     if not pid :
