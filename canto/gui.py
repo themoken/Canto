@@ -311,7 +311,7 @@ class Gui(BaseGui) :
         return r
 
     def __check_scroll(self) :
-        adj = self.cfg.height / 2
+        adj = self.cfg.gui_height / 2
 
         # If our current item is offscreen up, ret 1
         if self.sel["row"] < self.offset + adj and self.offset > 0:
