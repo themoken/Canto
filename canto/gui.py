@@ -110,7 +110,6 @@ def change_filter(fn):
             self.cfg.log("Filter: %s" % f)
             for t in self.tags:
                 t.clear()
-            self.sel = None
             self.items = 0
             return REFILTER
     return dec
@@ -356,23 +355,65 @@ class Gui(BaseGui) :
                             self.tags[i].extend(l)
 
         # Remap since we may have added or removed items
+        # Keep the old map for closest item search.
+
+        oldmap = self.map
         self.__map_items() 
 
         # At this point, the items have successfully been integrated into the
         # running tags, so now we just attempt to maintain our current selection
         # status.
 
+        def search_map(map, sel):
+            for (i, item) in enumerate(map):
+                if item["item"] == sel["item"] and\
+                   item["tag"] == sel["tag"]:
+                       return i
+            return -1
+
+        def nearest_in_tag(newmap, oldmap, sel):
+            i = search_map(oldmap, sel)
+            if i < 0:
+                return -1
+
+            olen = len(oldmap)
+            distance = 1
+
+            while True:
+                still_in_tag = 0
+                if i - distance > 0 and\
+                        oldmap[i - distance]["tag"] == sel["tag"]:
+                    still_in_tag = 1
+                    match = search_map(newmap, oldmap[i - distance])
+                    if match > 0:
+                        return match
+                if i + distance < olen and\
+                        oldmap[i + distance]["tag"] == sel["tag"]:
+                    still_in_tag = 1
+                    match = search_map(newmap, oldmap[i + distance])
+                    if match > 0:
+                        return match
+
+                if not still_in_tag:
+                    return -1
+
+                distance += 1
+
         if self.items:
             if self.sel:
-                for item in self.map:
-                    if item["item"] == self.sel["item"] and\
-                       item["tag"] == self.sel["tag"]:
-                        # Item is in map, no problem.
-                        self.sel = item
-                        break
+                i = search_map(self.map, self.sel)
+                # Item in new map still, maintain selection
+                if i > -1:
+                    self.sel = self.map[i]
                 else:
-                    # Not in the map, try to move to the top of the tag
-                    self.__select_topoftag()
+                    # Item's not in map, try to select the nearest
+                    i = nearest_in_tag(self.map, oldmap, self.sel)
+                    if i > -1:
+                        self.sel = self.map[i]
+                    else:
+                        # Not in the map, no other tag items in map,
+                        # go ahead and select the top of the new items.
+                        self.__select_topoftag()
             else:
                 # No selection made, select the first item possible. This is the
                 # initial case and the case after a tag change or refilter.
