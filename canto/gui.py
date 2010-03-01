@@ -311,14 +311,16 @@ class Gui(BaseGui) :
         return r
 
     def __check_scroll(self) :
+        adj = self.cfg.height / 2
+
         # If our current item is offscreen up, ret 1
-        if self.sel["row"] < self.offset :
-            self.offset = self.sel["row"]
+        if self.sel["row"] < self.offset + adj and self.offset > 0:
+            self.offset = max(self.sel["row"] - adj, 0)
             return 1
 
         # If our current item is offscreen down, ret 1
-        if self.sel["row"] + self.sel["lines"] > self.lines + self.offset :
-            self.offset = self.sel["row"] + self.sel["lines"] - self.lines
+        if self.sel["row"] > (self.offset + adj) and self.offset < self.max_offset:
+            self.offset = min(self.sel["row"] - adj, self.max_offset)
             return 1
         return 0
 
