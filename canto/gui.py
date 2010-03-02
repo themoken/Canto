@@ -385,13 +385,13 @@ class Gui(BaseGui) :
                         oldmap[i - distance]["tag"] == sel["tag"]:
                     still_in_tag = 1
                     match = search_map(newmap, oldmap[i - distance])
-                    if match > 0:
+                    if match >= 0:
                         return match
                 if i + distance < olen and\
                         oldmap[i + distance]["tag"] == sel["tag"]:
                     still_in_tag = 1
                     match = search_map(newmap, oldmap[i + distance])
-                    if match > 0:
+                    if match >= 0:
                         return match
 
                 if not still_in_tag:
