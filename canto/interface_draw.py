@@ -395,6 +395,8 @@ class Renderer(BaseRenderer):
     def reader_add_enc_links(self, dict):
         if "enclosures" in dict["story"]:
             for e in dict["story"]["enclosures"]:
+                if "type" not in e:
+                    e["type"] = "unknown"
                 dict["links"].append((u"[%s]" % e["type"],
                         e["href"], "link"))
 
