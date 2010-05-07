@@ -309,8 +309,40 @@ class Gui(BaseGui) :
 
         return r
 
+    def __edge_check_scroll(self):
+        if self.sel["row"] < self.offset:
+            self.offset = self.sel["row"]
+            return 1
+
+        if self.sel["row"] + self.sel["lines"] > self.lines + self.offset:
+            self.offset = self.sel["row"] + self.sel["lines"] - self.lines
+            return 1
+
+        return 0
+
+    def __page_check_scroll(self):
+        if self.sel["row"] < self.offset:
+            self.offset = max(self.offset - self.lines, 0)
+            return 1
+
+        if self.sel["row"] + self.sel["lines"] > self.lines + self.offset:
+            self.offset = min(self.offset + self.lines, self.max_offset)
+            return 1
+
+        return 0
+
     def __check_scroll(self) :
-        adj = self.cfg.gui_height / 2
+        if self.cfg.cursor_type in ["edge", "old"]:
+            return self.__edge_check_scroll()
+        if self.cfg.cursor_type == "page":
+            return self.__page_check_scroll()
+
+        if self.cfg.cursor_type == "middle":
+            adj = self.cfg.gui_height / 2
+        elif self.cfg.cursor_type == "top":
+            adj = 0
+        elif self.cfg.cursor_type == "bottom":
+            adj = self.cfg.gui_height - self.sel["lines"]
 
         # If our current item is offscreen up, ret 1
         if self.sel["row"] < self.offset + adj and self.offset > 0:

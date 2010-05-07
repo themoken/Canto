@@ -20,6 +20,8 @@ def register(c):
     c.reader_lines = 0
     c.reader_orientation = None
 
+    c.cursor_type = "middle"
+
     c.gui_top = 0
     c.gui_right = 0
     c.gui_height = 0
@@ -34,7 +36,8 @@ def register(c):
         "columns" : c.columns})
 
 def post_parse(c):
-    for attr in ["columns", "reader_orientation","reader_lines", "status"]:
+    for attr in ["columns", "reader_orientation",
+            "reader_lines", "status", "cursor_type"]:
         setattr(c, attr, c.locals[attr])
 
 def validate(c):
