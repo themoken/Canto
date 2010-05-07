@@ -30,6 +30,7 @@ def register(c):
     c.status = default_status
 
     c.locals.update({
+        "cursor_type" : c.cursor_type,
         "status" : c.status,
         "reader_orientation" : c.reader_orientation,
         "reader_lines" : c.reader_lines,
@@ -41,7 +42,26 @@ def post_parse(c):
         setattr(c, attr, c.locals[attr])
 
 def validate(c):
-    pass
+    if c.cursor_type not in ["page","old","edge","top","middle","bottom"]:
+        raise Exception, """cursor_type must be "page", "old", "edge",""" +\
+            """ "top", "middle", or "bottom". Not "%s".""" % c.cursor_type
+
+    if c.reader_orientation not in ["top","bottom","left","right",None]:
+        raise Exception, """reader_orientation must be "top", "bottom",""" +\
+            """ "left", "right", or None. Not "%s".""" % c.reader_orientation
+
+    if type(c.reader_lines) != int:
+        raise Exception, "reader_lines must be an >= 0 integer."
+
+    if c.reader_lines < 0:
+        raise Exception, "reader_lines must be >= 0, not %d" % c.reader_lines
+
+    if type(c.columns) != int:
+        raise Exception, "columns must be an >= 0 integer."
+
+    if c.columns < 0:
+        raise Exception, "columns must be an >= 0 integer, not %d" % \
+                c.columns
 
 def test(c):
     pass
