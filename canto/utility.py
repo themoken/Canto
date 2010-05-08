@@ -25,6 +25,7 @@ import os
 
 class Cycle():
     def __init__(self, list, idx = 0):
+        self.overridden = False
         self.over = None
         self.list = list
         if 0 <= idx < len(self.list):
@@ -33,27 +34,30 @@ class Cycle():
             self.idx = 0
 
     def next(self):
-        self.over = None
+        self.overridden = False
         if self.idx >= len(self.list) - 1:
             return 0
         self.idx += 1
         return 1
 
     def prev(self):
-        self.over = None
+        self.overridden = False
         if self.idx <= 0:
             return 0
         self.idx -= 1
         return 1
 
     def override(self, cur):
-        if self.over != cur:
+        if not self.overridden or self.over != cur:
+            self.overridden = True
             self.over = cur
             return 1
         return 0
 
     def cur(self):
-        return self.over or self.list[self.idx]
+        if self.overridden:
+            return self.over
+        return self.list[self.idx]
 
 def silentfork(path, href, text, fetch):
 

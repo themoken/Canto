@@ -106,35 +106,41 @@ def change_selected(fn):
 def change_filter(fn):
     def dec(self, *args):
         r,f = fn(self, *args)
-        if r:
-            self.cfg.log("Filter: %s" % f)
-            for t in self.tags:
-                t.clear()
-            self.items = 0
-            return REFILTER
+        if not r:
+            return
+
+        self.cfg.log("Filter: %s" % f)
+        for t in self.tags:
+            t.clear()
+        self.items = 0
+        return REFILTER
     return dec
 
 def change_tag_filter(fn):
     def dec(self, *args):
         r,f = fn(self, *args)
-        if r:
-            self.cfg.log("Tag Filter: %s" % f)
-            return TFILTER
+        if not r:
+            return
+
+        self.cfg.log("Tag Filter: %s" % f)
+        return TFILTER
     return dec
 
 def change_sorts(fn):
     def dec(self, *args):
         r,s = fn(self, *args)
-        if r:
-            self.cfg.log("Sort: %s" % s)
+        if not r:
+            return
 
-            # Because sorts, unlike filters, don't change the items that are
-            # present in the tag, we can do these ASAP, whereas the filters have
-            # to be moved through the work thread.
+        self.cfg.log("Sort: %s" % s)
 
-            self.sel["tag"].sort(s)
-            self.sel["tag"].enum()
-            return UPDATE
+        # Because sorts, unlike filters, don't change the items that are
+        # present in the tag, we can do these ASAP, whereas the filters have
+        # to be moved through the work thread.
+
+        self.sel["tag"].sort(s)
+        self.sel["tag"].enum()
+        return UPDATE
     return dec
 
 def change_tags(fn):
