@@ -315,38 +315,37 @@ class Gui(BaseGui) :
 
         return r
 
-    def __single_scroll_up(self):
-        if self.cfg.cursor_type == "bottom":
-            self.offset = max((self.sel["row"] + self.sel["lines"]) -
-                    self.lines, 0)
+    def __single_scroll_up(self, adj):
+        if adj != None:
+            self.offset = max(self.sel["row"] - adj, 0)
             return
         self.offset = max(self.offset - self.sel["lines"], 0)
 
-    def __single_scroll_down(self):
-        if self.cfg.cursor_type == "top":
-            self.offset = min(self.sel["row"], self.max_offset)
+    def __single_scroll_down(self, adj):
+        if adj != None:
+            self.offset = min(self.sel["row"] - adj, self.max_offset)
             return
         self.offset = min(self.offset + self.sel["lines"], self.max_offset)
 
-    def __page_scroll_up(self):
+    def __page_scroll_up(self, adj):
         self.offset = max((self.offset -
             (self.lines - 2 * self.cfg.cursor_edge), 0))
 
-    def __page_scroll_down(self):
+    def __page_scroll_down(self, adj):
         self.offset = min(self.offset +
                 (self.lines - 2 * self.cfg.cursor_edge), self.max_offset)
 
-    def __scroll_up(self):
+    def __scroll_up(self, adj=None):
         if self.cfg.cursor_scroll == "page":
-            self.__page_scroll_up()
+            self.__page_scroll_up(adj)
         elif self.cfg.cursor_scroll == "scroll":
-            self.__single_scroll_up()
+            self.__single_scroll_up(adj)
 
-    def __scroll_down(self):
+    def __scroll_down(self, adj=None):
         if self.cfg.cursor_scroll == "page":
-            self.__page_scroll_down()
+            self.__page_scroll_down(adj)
         elif self.cfg.cursor_scroll == "scroll":
-            self.__single_scroll_down()
+            self.__single_scroll_down(adj)
 
     def __edge_check_scroll(self):
         fuzz = self.cfg.cursor_edge
@@ -373,13 +372,13 @@ class Gui(BaseGui) :
         # If our current item is offscreen up, ret 1
         if self.sel["row"] < self.offset + adj and \
                 self.offset > 0:
-            self.__scroll_up()
+            self.__scroll_up(adj)
             return 1
 
         # If our current item is offscreen down, ret 1
         if self.sel["row"] > (self.offset + adj) and\
                 self.offset < self.max_offset:
-            self.__scroll_down()
+            self.__scroll_down(adj)
             return 1
         return 0
 
@@ -520,11 +519,7 @@ class Gui(BaseGui) :
             if curtag != self.sel["tag"]:
                 break
             self.next_item()
-
-        # Next_tag should try to keep the top of the tag at
-        # the top of the screen (as prev_tag does inherently)
-        # so that the user's eye isn't lost.
-        self.offset = min(self.sel["row"], max(0, self.max_offset))
+            self.__check_scroll()
 
     @noitem_unsafe
     @change_selected
@@ -539,6 +534,7 @@ class Gui(BaseGui) :
                     self.sel["item"] == self.sel["tag"][0]:
                 break
             self.prev_item()
+            self.__check_scroll()
 
     # Goto_tag goes to an absolute #'d tag. So the third
     # tag defined in your configuration will always be '3'
