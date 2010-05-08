@@ -316,16 +316,17 @@ class Gui(BaseGui) :
         return r
 
     def __single_scroll_up(self, adj):
-        if adj != None:
-            self.offset = max(self.sel["row"] - adj, 0)
+        if adj == None:
+            self.offset = max(self.sel["row"] - self.cfg.cursor_edge, 0)
             return
-        self.offset = max(self.offset - self.sel["lines"], 0)
+        self.offset = max(self.sel["row"] - adj, 0)
 
     def __single_scroll_down(self, adj):
-        if adj != None:
-            self.offset = min(self.sel["row"] - adj, self.max_offset)
+        if adj == None:
+            self.offset = min((self.sel["row"] + self.sel["lines"]) -\
+                    (self.lines - self.cfg.cursor_edge), self.max_offset)
             return
-        self.offset = min(self.offset + self.sel["lines"], self.max_offset)
+        self.offset = min(self.sel["row"] - adj, self.max_offset)
 
     def __page_scroll_up(self, adj):
         self.offset = max((self.offset -
@@ -519,7 +520,6 @@ class Gui(BaseGui) :
             if curtag != self.sel["tag"]:
                 break
             self.next_item()
-            self.__check_scroll()
 
     @noitem_unsafe
     @change_selected
@@ -534,7 +534,6 @@ class Gui(BaseGui) :
                     self.sel["item"] == self.sel["tag"][0]:
                 break
             self.prev_item()
-            self.__check_scroll()
 
     # Goto_tag goes to an absolute #'d tag. So the third
     # tag defined in your configuration will always be '3'
