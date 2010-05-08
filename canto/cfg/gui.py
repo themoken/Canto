@@ -20,7 +20,9 @@ def register(c):
     c.reader_lines = 0
     c.reader_orientation = None
 
-    c.cursor_type = "middle"
+    c.cursor_type = "edge"
+    c.cursor_scroll = "scroll"
+    c.cursor_edge = 5
 
     c.gui_top = 0
     c.gui_right = 0
@@ -38,13 +40,29 @@ def register(c):
 
 def post_parse(c):
     for attr in ["columns", "reader_orientation",
-            "reader_lines", "status", "cursor_type"]:
+            "reader_lines", "status", "cursor_type", "cursor_scroll",
+            "cursor_edge"]:
         setattr(c, attr, c.locals[attr])
 
 def validate(c):
-    if c.cursor_type not in ["page","old","edge","top","middle","bottom"]:
-        raise Exception, """cursor_type must be "page", "old", "edge",""" +\
+    if c.cursor_type not in ["edge","top","middle","bottom"]:
+        raise Exception, """cursor_type must be "edge",""" +\
             """ "top", "middle", or "bottom". Not "%s".""" % c.cursor_type
+
+    if c.cursor_scroll not in ["page", "scroll"]:
+        raise Exception, """cursor_scroll must be "page" or "scroll"."""
+
+    if c.cursor_type != "edge" and c.cursor_scroll == "page":
+        print "Page scrolling is incompatible with non-edge cursor type"
+        print "Defaulting back to scroll"
+        c.cursor_scroll = "scroll"
+
+    if c.cursor_type == "edge":
+        if type(c.cursor_edge) != int:
+            raise Exception, """cursor_edge must be >= 0 integer."""
+        if c.cursor_edge < 0:
+            raise Exception, """cursor_edge must be >= 0, not %d.""" %\
+                    c.cursor_edge
 
     if c.reader_orientation not in ["top","bottom","left","right",None]:
         raise Exception, """reader_orientation must be "top", "bottom",""" +\

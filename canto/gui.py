@@ -309,34 +309,54 @@ class Gui(BaseGui) :
 
         return r
 
+    def __single_scroll_up(self):
+        if self.cfg.cursor_type == "bottom":
+            self.offset = max((self.sel["row"] + self.sel["lines"]) -
+                    self.lines, 0)
+            return
+        self.offset = max(self.offset - self.sel["lines"], 0)
+
+    def __single_scroll_down(self):
+        if self.cfg.cursor_type == "top":
+            self.offset = min(self.sel["row"], self.max_offset)
+            return
+        self.offset = min(self.offset + self.sel["lines"], self.max_offset)
+
+    def __page_scroll_up(self):
+        self.offset = max((self.offset -
+            (self.lines - 2 * self.cfg.cursor_edge), 0))
+
+    def __page_scroll_down(self):
+        self.offset = min(self.offset +
+                (self.lines - 2 * self.cfg.cursor_edge), self.max_offset)
+
+    def __scroll_up(self):
+        if self.cfg.cursor_scroll == "page":
+            self.__page_scroll_up()
+        elif self.cfg.cursor_scroll == "scroll":
+            self.__single_scroll_up()
+
+    def __scroll_down(self):
+        if self.cfg.cursor_scroll == "page":
+            self.__page_scroll_down()
+        elif self.cfg.cursor_scroll == "scroll":
+            self.__single_scroll_down()
+
     def __edge_check_scroll(self):
-        if self.sel["row"] < self.offset:
-            self.offset = self.sel["row"]
+        fuzz = self.cfg.cursor_edge
+
+        if max(self.sel["row"] - fuzz, 0) < self.offset:
+            self.__scroll_up()
             return 1
 
-        if self.sel["row"] + self.sel["lines"] > self.lines + self.offset:
-            self.offset = self.sel["row"] + self.sel["lines"] - self.lines
-            return 1
-
-        return 0
-
-    def __page_check_scroll(self):
-        if self.sel["row"] < self.offset:
-            self.offset = max(self.offset - self.lines, 0)
-            return 1
-
-        if self.sel["row"] + self.sel["lines"] > self.lines + self.offset:
-            self.offset = min(self.offset + self.lines, self.max_offset)
+        if self.sel["row"] + self.sel["lines"] + fuzz > \
+                self.lines + self.offset:
+            self.__scroll_down()
             return 1
 
         return 0
 
-    def __check_scroll(self) :
-        if self.cfg.cursor_type in ["edge", "old"]:
-            return self.__edge_check_scroll()
-        if self.cfg.cursor_type == "page":
-            return self.__page_check_scroll()
-
+    def __pin_check_scroll(self):
         if self.cfg.cursor_type == "middle":
             adj = self.cfg.gui_height / 2
         elif self.cfg.cursor_type == "top":
@@ -345,15 +365,22 @@ class Gui(BaseGui) :
             adj = self.cfg.gui_height - self.sel["lines"]
 
         # If our current item is offscreen up, ret 1
-        if self.sel["row"] < self.offset + adj and self.offset > 0:
-            self.offset = max(self.sel["row"] - adj, 0)
+        if self.sel["row"] < self.offset + adj and \
+                self.offset > 0:
+            self.__scroll_up()
             return 1
 
         # If our current item is offscreen down, ret 1
-        if self.sel["row"] > (self.offset + adj) and self.offset < self.max_offset:
-            self.offset = min(self.sel["row"] - adj, self.max_offset)
+        if self.sel["row"] > (self.offset + adj) and\
+                self.offset < self.max_offset:
+            self.__scroll_down()
             return 1
         return 0
+
+    def __check_scroll(self) :
+        if self.cfg.cursor_type in ["edge", "old"]:
+            return self.__edge_check_scroll()
+        return self.__pin_check_scroll()
 
     @change_selected
     def alarm(self, new=[], old=[]):
