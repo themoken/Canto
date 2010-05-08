@@ -317,15 +317,20 @@ class Gui(BaseGui) :
 
     def __single_scroll_up(self, adj):
         if adj == None:
-            self.offset = max(self.sel["row"] - self.cfg.cursor_edge, 0)
-            return
+            adj = self.cfg.cursor_edge
         self.offset = max(self.sel["row"] - adj, 0)
 
     def __single_scroll_down(self, adj):
         if adj == None:
-            self.offset = min((self.sel["row"] + self.sel["lines"]) -\
-                    (self.lines - self.cfg.cursor_edge), self.max_offset)
+            if self.sel["lines"] > self.cfg.cursor_edge:
+                fuzz = self.sel["lines"]
+            else:
+                fuzz = self.cfg.cursor_edge
+
+            self.offset = min(self.sel["row"] - (self.lines - fuzz),\
+                    self.max_offset)
             return
+
         self.offset = min(self.sel["row"] - adj, self.max_offset)
 
     def __page_scroll_up(self, adj):
