@@ -33,6 +33,8 @@ def register(c):
 
     c.locals.update({
         "cursor_type" : c.cursor_type,
+        "cursor_edge" : c.cursor_edge,
+        "cursor_scroll" : c.cursor_scroll,
         "status" : c.status,
         "reader_orientation" : c.reader_orientation,
         "reader_lines" : c.reader_lines,
