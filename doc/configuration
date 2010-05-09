@@ -266,7 +266,7 @@ This hook will make a reader area that takes half of the screen to the left, no
 matter how the window is resized and set the number of columns in the main list.
 
     :::python
-    def resize_hook (cfg):
+    def resize_hook(cfg):
         cfg.reader_orientation = "left"
         cfg.reader_lines = cfg.width / 2
         cfg.columns = (cfg.width / 2) / 65
@@ -641,7 +641,7 @@ in the examples below.
 <td>Apply next global filter.</td>
 </tr>
 <tr>
-<td><pre>]</pre></td>
+<td><pre>[</pre></td>
 <td><pre>prev_filter</pre></td>
 <td>Apply previous global filter</td>
 </tr>
@@ -951,7 +951,7 @@ can add the `None` filter to the list:
     filters=[show_unread, None]
 
 With this filter in place, you can switch between `show_unread` and `None` using
-`[` and `]`to cycle through the list.
+`[` and `]` to cycle through the list.
 
 If you're more comfortable using a keybind to choose your global filters,
 then you can use `set_filter`. This allows you to set the global filter
@@ -1517,7 +1517,7 @@ starting point for any new users.
         image_handler("feh \"%u\"", fetch=True)
 
     # Max column width of 65 characters
-    def resize_hook (cfg):
+    def resize_hook(cfg):
         cfg.columns = cfg.width / 65
 
     # Never discard items I haven't seen
