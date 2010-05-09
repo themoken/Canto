@@ -316,21 +316,9 @@ class Gui(BaseGui) :
         return r
 
     def __single_scroll_up(self, adj):
-        if adj == None:
-            adj = self.cfg.cursor_edge
         self.offset = max(self.sel["row"] - adj, 0)
 
     def __single_scroll_down(self, adj):
-        if adj == None:
-            if self.sel["lines"] > self.cfg.cursor_edge:
-                fuzz = self.sel["lines"]
-            else:
-                fuzz = self.cfg.cursor_edge
-
-            self.offset = min(self.sel["row"] - (self.lines - fuzz),\
-                    self.max_offset)
-            return
-
         self.offset = min(self.sel["row"] - adj, self.max_offset)
 
     def __page_scroll_up(self, adj):
@@ -354,15 +342,19 @@ class Gui(BaseGui) :
             self.__single_scroll_down(adj)
 
     def __edge_check_scroll(self):
-        fuzz = self.cfg.cursor_edge
+        if self.sel["lines"] > self.cfg.cursor_edge:
+            fuzz = self.sel["lines"]
+        else:
+            fuzz = self.cfg.cursor_edge
 
-        if max(self.sel["row"] - fuzz, 0) < self.offset:
-            self.__scroll_up()
+        # Scroll up always uses cursor_edge
+        if max(self.sel["row"] - self.cfg.cursor_edge, 0) < self.offset:
+            self.__scroll_up(self.cfg.cursor_edge)
             return 1
 
-        if self.sel["row"] + self.sel["lines"] + fuzz > \
-                self.lines + self.offset:
-            self.__scroll_down()
+        # Scroll down uses fuzz to take the item's lines into account.
+        if self.sel["row"] + fuzz > self.lines + self.offset:
+            self.__scroll_down(self.lines - fuzz)
             return 1
 
         return 0
