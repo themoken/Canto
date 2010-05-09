@@ -56,6 +56,14 @@ Yes. As long as your terminal and its font can support it, then Canto can output
 
 </div>
 
+# The interface is full of ????s, WTF man?
+
+<div class="section">
+
+Your locale isn't UTF-8 compatible. You should probably change that if you expect your terminal apps to do anything smart with non-ASCII characters (like the ones used to draw the interface). More info [here](http://codezen.org/canto/start/#locale-or-wtf-are-these-lines) and [here](http://wiki.archlinux.org/index.php/Locale).
+
+</div>
+
 # What does Canto require?
 
 <div class="section">
