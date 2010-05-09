@@ -1,6 +1,11 @@
 This is where you learn the details of `~/.canto/conf.py`. For the impatient,
 you can skip to the [example config](#example-config).
 
+If you're interested in more programmer-centric customization and aren't afraid
+of getting your hands dirty with some Python, then you may also be interested in
+[advanced configuration](http://codezen.org/canto/advconfig).
+
+
 [TOC]
 
 # Configuration
