@@ -55,7 +55,33 @@ to your startup scripts (.xinitrc, etc.), this will make canto-fetch into a daem
 
 <div class="section">
 
-This covers some less obvious niceties of using the Canto interface that aren't really covered by [keybinds](../config/#default-binds).
+This covers some less obvious niceties of using the Canto interface that aren't really covered by [keybinds](../config/#default-binds) or anywhere else.
+
+## Locale or "WTF are these ???? lines?"
+
+If you're having trouble with the interface showing question marks all over the place instead of the nice lines shown in the screenshots, then you've got a locale problem, specifically you're running in a non-UTF-8 locale.
+
+My first suggestion in this case is to switch your system locale to a UTF-8 compatible one. This affects a lot of things, like other terminal applications. For example:
+
+* [This](http://codezen.org/static/good_elinks.png) is a screenshot of `elinks` running in a proper UTF-8 locale. Nice, real characters. Thetas look like thetas. Omegas look like omegas.
+* [This](http://codezen.org/static/bad_elinks.png) is a screenshot of `elinks` running in iso-8859-1 which is a typical non-Unicode locale. Everything looks funny. Thetas are THs and omega is W*? 
+
+So I don't mean to suggest that everyone's running around reading Greek in their terminal apps, but this is an illustration using the same program, with the same input ([wikipedia](http://en.wikipedia.org/wiki/List_of_unicode_characters)), but one looks much better than the other. And it's not just non-Latin languages either. Lots of RSS generating blogs use fancy symbols (some as basic as double-quote marks) that don't render correctly in non-UTF-8 locales.
+
+### To use a proper locale
+
+1. Run `locale -a` which will show you the installed locales on your system. If you see an appropriate UTF-8 line, skip to 4.
+
+2. Edit `/etc/locale.gen` (or use `sudo dpkg-reconfigure locales` on Debian based systems) to add/uncomment your locale. It should be a line in the form of `language_territory.UTF-8 UTF-8` where language and country are abbreviations. For example: `en_US.UTF-8 UTF-8` for American English or `de_DE.UTF-8 UTF-8` for German.
+
+3. Run `sudo locale-gen` to actually generate the locale data based in `/etc/locale.gen` .
+
+4.  * TO CHANGE ALL PROGRAMS: Add `export LC_ALL=xx_XX.UTF-8` to your shell configuration (`~/.bashrc` for example) and restart your terminal/shell.
+    * TO JUST RUN CANTO: Invoke Canto like this: `LC_ALL=xx_XX.UTF-8 canto`
+
+Some alternate (and mostly distro agnostic) help from the Arch Wiki [here](http://wiki.archlinux.org/index.php/Locale)
+
+That should make Canto, and all of your other terminal apps display nicely. Also note though that even with a UTF-8 locale actually displaying the right characters is still dependent on using a good font in your terminal. So, if you plan on reading any feeds in Arabic or Chinese or even Math, you may be interested in setting up your terminal with a font like [unifont](http://packages.debian.org/sid/unifont).
 
 ## Input Boxes
 
