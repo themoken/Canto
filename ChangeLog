@@ -1,3 +1,15 @@
+Canto 0.7.7 ChangeLog
+* Fix harmless widecurse.c warning
+* Fix going to locale incompatible URLs
+* Fix Python 2.6.5 weirdness
+* Fix enclosure parsing/display exception
+* Fix set_{filter,tag_filter,sort}(None)
+* Improved config validation for gui options
+* Work harder to maintain selections through updates
+* Make cursor behavior more flexible
+* Change default cursor behavior
+* Documentation tweaks (thanks acoolon)
+
 Canto 0.7.6 ChangeLog
 * Fix non-consecutive sorts
 * Fix multi-tag sorts

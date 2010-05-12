@@ -170,6 +170,81 @@ articles you'll accumulate.
 
 </div>
 
+## Cursor Behavior (0.7.7+)
+
+<div class="section">
+
+As of 0.7.7 Canto supports multiple types of cursor behavior.
+
+### Edge Scrolling
+
+The default behavior since the beginning of Canto has been scrolling by one when
+the cursor attempts to go past an edge. Edge is the simplest type of scrolling,
+but Canto now supports the user defining how far from the actual end of the
+screen that edge should be.
+
+Also in 0.7.7 the ability to keep the cursor in one spot was added.
+
+This cursor behavior is changed with three different variables:
+
+<table>
+<tr>
+<td>Name</td>
+<td>Valid Settings</td>
+<td>Meaning</td>
+</tr>
+<tr>
+<td><pre>cursor_type</pre></td>
+<td><pre>"edge","top","middle","bottom"</pre></td>
+<td>Which cursor behavior to use</td>
+</tr>
+<tr>
+<td><pre>cursor_scroll</pre></td>
+<td><pre>"scroll","page"</pre></td>
+<td>How the interface should scroll (only valid with "edge" cursor_type)</td>
+</tr>
+<tr>
+<td><pre>cursor_edge</pre></td>
+<td><pre>integer</pre></td>
+<td>How far the cursor is from the end of the screen before it scrolls</td>
+</tr>
+</table>
+
+Before 0.7.7 the default scroll behavior was:
+
+    :::python
+    cursor_type = "edge"
+    cursor_scroll = "scroll"
+    cursor_edge = 0
+
+In 0.7.7 the new default is the same, but with a wider margin set with
+cursor_edge.
+
+    :::python
+    cursor_type = "edge"
+    cursor_scroll = "scroll"
+    cursor_edge = 5
+
+Other common scrolling effects can be achieved with these variables. For
+example, paging like `mutt`:
+
+    :::python
+    cursor_type = "edge"
+    cursor_scroll = "page"
+    cursor_edge = 0
+
+With `cursor_scroll = "page"` the `cursor_edge` value is respected, but it's
+highly recommended to keep the number low (0,1,2) to keep just enough context
+around the item. Higher edges are generally very disorienting.
+
+Or to keep the cursor in the middle of the page (at least when it doesn't screen
+real estate):
+
+    :::python
+    cursor_type = "middle"
+
+</div>
+
 ## Browsing
 
 <div class="section">
