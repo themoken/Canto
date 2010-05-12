@@ -347,6 +347,9 @@ class Gui(BaseGui) :
         else:
             fuzz = self.cfg.cursor_edge
 
+        if fuzz >= (self.lines / 2):
+            fuzz = (self.lines / 2) - 1
+
         # Scroll up always uses cursor_edge
         if max(self.sel["row"] - self.cfg.cursor_edge, 0) < self.offset:
             self.__scroll_up(self.cfg.cursor_edge)
