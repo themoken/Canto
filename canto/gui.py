@@ -322,12 +322,12 @@ class Gui(BaseGui) :
         self.offset = min(self.sel["row"] - adj, self.max_offset)
 
     def __page_scroll_up(self, adj):
-        self.offset = max((self.offset -
-            (self.lines - 2 * self.cfg.cursor_edge), 0))
+        self.offset = max(self.sel["row"] -\
+                (self.lines - self.cfg.cursor_edge), 0)
 
     def __page_scroll_down(self, adj):
-        self.offset = min(self.offset +
-                (self.lines - 2 * self.cfg.cursor_edge), self.max_offset)
+        self.offset = min(self.sel["row"] - self.cfg.cursor_edge,
+                self.max_offset)
 
     def __scroll_up(self, adj=None):
         if self.cfg.cursor_scroll == "page":
