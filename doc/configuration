@@ -176,8 +176,6 @@ articles you'll accumulate.
 
 As of 0.7.7 Canto supports multiple types of cursor behavior.
 
-### Edge Scrolling
-
 The default behavior since the beginning of Canto has been scrolling by one when
 the cursor attempts to go past an edge. Edge is the simplest type of scrolling,
 but Canto now supports the user defining how far from the actual end of the
