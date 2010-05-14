@@ -316,7 +316,7 @@ class FetchThread(Thread):
 
             enc = locale.getpreferredencoding()
             self.log_func("Exception trying to get feed %s : %s" % \
-                    (self.fd.tags[0].encode(enc), sys.exc_info()[1]))
+                    (self.fd.URL.encode(enc, "ignore"), sys.exc_info()[1]))
 
             return
 
