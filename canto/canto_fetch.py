@@ -23,7 +23,6 @@ import utility
 import args
 
 from threading import Thread
-import feedparser
 import traceback
 import commands
 import urlparse
@@ -40,8 +39,8 @@ import os
 def main(enc):
     conf_dir, log_file, conf_file, feed_dir, script_dir, optlist =\
         args.parse_common_args(enc,
-            "hvVfdbi:", ["help","version","verbose","force","daemon",\
-                    "background", "interval="], "canto-fetch")
+            "hvVfdbi:s", ["help","version","verbose","force","daemon",\
+                    "background", "interval=", "sysfp"], "canto-fetch")
 
     try :
         cfg = get_cfg(conf_file, log_file, feed_dir, script_dir)
@@ -85,10 +84,18 @@ def main(enc):
                 cfg.log("%s isn't a valid interval" % arg)
             else:
                 cfg.log("interval = %d seconds" % updateInterval)
+        if opt in ["-s","--sysfp"]:
+            log_func("Using system feedparser")
+            import feedparser
         if opt in ["-V","--verbose"]:
             verbose = True
         elif opt in ["-f","--force"]:
             force = True
+
+    if "feedparser" not in locals():
+        log_func("Using built-in feedparser")
+        import feedparser_builtin as feedparser
+    globals()["feedparser"] = feedparser
 
     # Remove any crap out of the directory. This is mostly for
     # cleaning up when the user has removed a feed from the configuration.
