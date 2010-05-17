@@ -136,6 +136,13 @@ class Story():
 
         return self["description"]
 
+    def get_type(self):
+        if "content" in self:
+            for c in self["content"]:
+                if "type" in c and "text" in c["type"]:
+                    return c["type"]
+        return "text/html"
+
     # Free makes the Story() forget all of the uncommon items. Should be called
     # after anything that could cause Story() to fetch items (ie. in the
     # Renderer hooks).

@@ -383,10 +383,14 @@ class Renderer(BaseRenderer):
 
     def reader_base(self, dict):
         dict["content"] = dict["story"].get_text()
+        dict["type"] = dict["story"].get_type()
 
     def reader_convert_html(self, dict):
-        dict["content"], dict["links"] = \
-                self.htmlrenderer.convert(dict["content"])
+        if "html" in dict["type"]:
+            dict["content"], dict["links"] = \
+                    self.htmlrenderer.convert(dict["content"])
+        else:
+            dict["links"] = []
 
     def reader_add_main_link(self, dict):
         dict["links"] = [(u"main link", dict["story"]["link"], "link")]\
