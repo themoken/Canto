@@ -133,6 +133,9 @@ class Feed(list):
             else:
                 nentry["title"] = entry["title"]
 
+            if "title_detail" in entry:
+                nentry["title_detail"] = entry["title_detail"]
+
             for pc in self.cfg.precache:
                 if pc in entry:
                     nentry[pc] = entry[pc]

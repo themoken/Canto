@@ -352,9 +352,11 @@ class Renderer(BaseRenderer):
             dict["content"] = dict["story"]["title"]
         else:
             dict["content"] = "%B%b"
+        dict["type"] = dict["story"].get_title_type()
 
     def story_strip_entities(self, dict):
-        dict["content"] = self.do_regex(dict["content"], self.story_rgx)
+        if "html" in dict["type"]:
+            dict["content"] = self.do_regex(dict["content"], self.story_rgx)
         dict["content"] = dict["content"].lstrip().rstrip()
 
     @draw_hooks
