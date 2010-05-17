@@ -112,6 +112,7 @@ def change_filter(fn):
         self.cfg.log("Filter: %s" % f)
         for t in self.tags:
             t.clear()
+        self.sel = None
         self.items = 0
         return REFILTER
     return dec
