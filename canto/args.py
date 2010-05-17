@@ -45,6 +45,7 @@ def print_fetch_usage():
     print "--daemon     -d       Run as a daemon."
     print "--background -b       Background (implies -d)"
     print "--interval   -i       Update interval when run as a daemon"
+    print "--sysfp      -s       Use system feedparser instead of builtin."
     print ""
     print_common_usage()
 
