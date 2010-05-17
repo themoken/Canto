@@ -141,6 +141,8 @@ class Story():
             for c in self["content"]:
                 if "type" in c and "text" in c["type"]:
                     return c["type"]
+        if "summary_detail" in self and "type" in self["summary_detail"]:
+            return self["summary_detail"]["type"]
         return "text/html"
 
     # Free makes the Story() forget all of the uncommon items. Should be called
