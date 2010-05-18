@@ -507,23 +507,28 @@ class Main():
     # wait_for_pid is set and, in this case the main loop is paused anyway.
 
     def chld(self, a=None, b=None):
-        # I'm not sure why, but SIGCHLD gets called and occasionally, os.wait()
-        # then complains about there being no waiting processes.
+        # I'm not sure why, but SIGCHLD gets called and occasionally waitpid
+        # then throws an exception about no waiting processes therefore this is
+        # wrapped in meaningless try...except
+
         try:
-            pid,none = os.wait()
+            while True:
+                pid, status = os.waitpid(0, os.WNOHANG)
+                if pid == 0:
+                    break
+
+                # If the interface is waiting on this pid to be done, reset the
+                # signal and simulate a resize to make sure the window
+                # information is still fresh.
+
+                if self.cfg.wait_for_pid == pid:
+                    self.cfg.wait_for_pid = 0
+                    signal.signal(signal.SIGALRM, self.alarm)
+                    signal.signal(signal.SIGWINCH, self.winch)
+                    self.alarmed = 1
+                    self.resize = 1
         except:
-            return
-
-        # If the interface is waiting on this pid to be done,
-        # reset the signal and simulate a resize to make sure the window
-        # information is still fresh.
-
-        if self.cfg.wait_for_pid == pid:
-            self.cfg.wait_for_pid = 0
-            signal.signal(signal.SIGALRM, self.alarm)
-            signal.signal(signal.SIGWINCH, self.winch)
-            self.alarmed = 1
-            self.resize = 1
+            pass
 
     # Back to better practices. =)
 
