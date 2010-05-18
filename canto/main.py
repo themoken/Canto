@@ -268,10 +268,6 @@ class Main():
         for f in self.cfg.feeds:
             del f[:]
 
-        if not self.ph.start_process(self.cfg):
-            print "Unable to start secondary process. Bailing"
-            sys.exit(-1)
-
         signal.signal(signal.SIGCHLD, self.chld)
         self.update(1, self.cfg.feeds, PROC_BOTH)
 
