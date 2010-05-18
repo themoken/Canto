@@ -405,6 +405,7 @@ class ProcessHandler():
             self.send_and_wait(PROC_KILL)
             self.update.close()
             self.updated.close()
+            os.waitpid(self.pid, 0)
             self.pid = 0
 
     def flush(self):
