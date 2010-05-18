@@ -87,7 +87,8 @@ def silentfork(path, href, text, fetch):
         else:
             path = path.replace("%u", href)
 
-        os.system(path)
+        shell = os.getenv("SHELL")
+        os.execv(shell, [shell, "-c", path])
         sys.exit(0)
 
     if text:
