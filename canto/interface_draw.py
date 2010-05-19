@@ -134,10 +134,13 @@ class Renderer(BaseRenderer):
         self.htmlrenderer = canto_html.CantoHTML()
         self.prefcode = locale.getpreferredencoding()
 
+        self.html_rgx = [
+            # Eliminate extraneous HTML
+            (re.compile(u"<.*?>"), u"")
+            ]
+
         # These are used by the story pre_hook "strip_entities"
         self.story_rgx = [
-            # Eliminate extraneous HTML
-            (re.compile(u"<.*?>"), u""),
             (re.compile(u"&(\w{1,8});"), self.htmlrenderer.ent_wrapper),
             (re.compile(u"&#([xX]?[0-9a-fA-F]+)[^0-9a-fA-F]"),
                 self.htmlrenderer.char_wrapper)
@@ -356,7 +359,8 @@ class Renderer(BaseRenderer):
 
     def story_strip_entities(self, dict):
         if "html" in dict["type"]:
-            dict["content"] = self.do_regex(dict["content"], self.story_rgx)
+            dict["content"] = self.do_regex(dict["content"], self.html_rgx)
+        dict["content"] = self.do_regex(dict["content"], self.story_rgx)
         dict["content"] = dict["content"].lstrip().rstrip()
 
     @draw_hooks
