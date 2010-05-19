@@ -209,7 +209,11 @@ class Renderer(BaseRenderer):
         return [(u"%1%B└", u"─", u"┘%C%0")]
 
     def reader_head(self, dict):
-        title = self.do_regex(dict["story"]["title"], self.story_rgx)
+        if "html" in dict["story"].get_title_type():
+            title = self.do_regex(dict["story"]["title"], self.html_rgx)
+        else:
+            title = dict["story"]["title"]
+        title = self.do_regex(title, self.story_rgx)
         return [(u"%1%B" + title, u" ", u" "),(u"%1┌",u"─",u"┐%C")]
 
     def reader_foot(self, dict):
@@ -396,6 +400,7 @@ class Renderer(BaseRenderer):
             dict["content"], dict["links"] = \
                     self.htmlrenderer.convert(dict["content"])
         else:
+            dict["content"] = self.do_regex(dict["content"], self.story_rgx)
             dict["links"] = []
 
     def reader_add_main_link(self, dict):
