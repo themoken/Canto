@@ -1,3 +1,10 @@
+Canto 0.7.8 ChangeLog
+* Fix feed exception encoding problem.
+* Fix occasional zombies / extra pids floating around.
+* Import feedparser into source tree.
+* Add -s/--sysfp flag to canto-fetch to fall back on system feedparser
+* Render improvements by honoring declared content types
+
 Canto 0.7.7 ChangeLog
 * Fix harmless widecurse.c warning
 * Fix going to locale incompatible URLs
