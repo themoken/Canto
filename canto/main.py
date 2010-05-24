@@ -27,8 +27,6 @@
 #            if input, pass to Gui and interpret return
 #                if return implies update, queue up work for thread
 
-import feedparser_builtin as feedparser
-
 from process import ProcessHandler
 from utility import Cycle
 from cfg.base import get_cfg

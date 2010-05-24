@@ -17,6 +17,10 @@
 # main is only used when canto-fetch is called from the command line.
 # run is used internally by canto when it needs to invoke an update.
 
+import feedparser_builtin
+
+feedparser = feedparser_builtin
+
 from const import VERSION_TUPLE, GIT_SHA
 from cfg.base import get_cfg
 import utility
@@ -86,16 +90,16 @@ def main(enc):
                 cfg.log("interval = %d seconds" % updateInterval)
         if opt in ["-s","--sysfp"]:
             log_func("Using system feedparser")
-            import feedparser
+            global feedparser
+            try:
+                import feedparser as feedparser_system
+                feedparser = feedparser_system
+            except:
+                log_func("Import failed. Falling back on builtin.")
         if opt in ["-V","--verbose"]:
             verbose = True
         elif opt in ["-f","--force"]:
             force = True
-
-    if "feedparser" not in locals():
-        log_func("Using built-in feedparser")
-        import feedparser_builtin as feedparser
-    globals()["feedparser"] = feedparser
 
     # Remove any crap out of the directory. This is mostly for
     # cleaning up when the user has removed a feed from the configuration.
