@@ -37,7 +37,7 @@
 # anyone cares to do it, it would be dead simple to code a option to use the
 # default pprint.
 
-import feedparser
+import feedparser_builtin as feedparser
 import codecs
 import time
 import sys
