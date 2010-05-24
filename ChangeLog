@@ -1,3 +1,7 @@
+Canto 0.7.9 ChangeLog
+* Fix fresh install sans system feedparser
+* Make canto-inspect use builtin feedparser
+
 Canto 0.7.8 ChangeLog
 * Fix feed exception encoding problem.
 * Fix occasional zombies / extra pids floating around.
