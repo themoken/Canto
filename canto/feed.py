@@ -70,6 +70,20 @@ class Feed(list):
             try:
                 fcntl.flock(f.fileno(), lockflags)
                 ufp = cPickle.load(f)
+            except ImportError:
+                try:
+
+                    # Fortunately, I don't think forcing the cpickle
+                    # to use feedparser_builtin is harmful, since they're
+                    # basically the same class, feedparser_builtin is just the
+                    # only way to properly look up the toplevel module now.
+
+                    f.seek(0)
+                    data = f.read()
+                    data = data.replace("feedparser\n","feedparser_builtin\n",1)
+                    ufp = cPickle.loads(data)
+                except:
+                    return 0
             except:
                 return 0
             finally:
