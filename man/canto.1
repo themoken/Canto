@@ -10,70 +10,70 @@ Canto is the client, separate from the fetcher Canto-fetch. In order to update y
 
 * * * * * canto-fetch
 
-If you're not a fan of cron, then you can add `canto-fetch -b` to your startup
+If you're not a fan of cron, then you can add `canto-fetch \-b` to your startup
 scripts to have canto-fetch run as a daemon on its own.
 
 After you have your configuration file generated, just run `canto` and it will update for you, if canto-fetch hasn't been run already.
 
 .SH COMMAND LINE USAGE
 .TP
--h/--help
+\-h/--help
 Simple help
 
 .TP
--v/--version
+\-v/--version
 Print version
 
 .TP
--u/--update
+\-u/--update
 Update feeds before launching client.
 
 .TP
--l/--list
+\-l/--list
 List all configured feeds
 
 .TP
--a/--checkall
+\-a/--checkall
 Print number of new items.
 
 .TP
--n/--checknew [feed]
+\-n/--checknew [feed]
 Print number of new items in feed.
 
 .TP
--o/--opml
+\-o/--opml
 Print feeds to stdout as OPML file.
 
 .TP
--i/--import [path]
+\-i/--import [path]
 Import feeds from OPML file to your configuration.
 
 .TP
--r/--url [URL]
+\-r/--url [URL]
 Add feed at URL to your configuration.
 
 .TP
--t/--tag [tag]
-Set tag for feed added with -r
+\-t/--tag [tag]
+Set tag for feed added with \-r
 
 .TP
--D/--dir [path]
+\-D/--dir [path]
 Set the configuration directory (default: ~/.canto/)
 
 .TP
--C/--conf [path]
+\-C/--conf [path]
 Set the configuration file (default: ~/.canto/conf)
 
 .TP
--L/--log [path]
+\-L/--log [path]
 Set the log file (default: ~/.canto/log)
 
 .TP
--F/--fdir [path]
+\-F/--fdir [path]
 Set the feed directory (default: ~/.canto/feeds)
 
 .TP
--S /--sdir [PATH]
+\-S /--sdir [PATH]
 Set the path to execurl scripts (default ~/.canto/scripts/)
 
 .SH INTERNAL USAGE
@@ -102,7 +102,7 @@ Cycle through defined filters (prev_filter) (next_filter)
 Cycle through defined tag filters (prev_feed_filter) (next_feed_filter)
 
 .TP
-- / =
+\- / =
 Cycle through defined tag sorts (prev_tag_sort) (next_tag_sort)
 
 .TP

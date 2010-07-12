@@ -13,54 +13,54 @@ Canto-fetch is meant to be used through a cron, adding this line to your crontab
 Alternatively, if you're unable/uncomfortable using cron, canto-fetch has a
 background daemon mode so you can invoke it in your X session scripts. Just use
 
-canto-fetch -b
+canto-fetch \-b
 
 .SH USAGE
 These options correspond to options to the canto client.
 
 .TP
--h / --help
+\-h / \--help
 Print usage and quit.
 
 .TP
--v / --version
+\-v / \--version
 Print version and quit.
 
 .TP
--V / --verbose
+\-V / \--verbose
 Output status while updating.
 
 .TP
--d / --daemon
-Continue to check for updates every minute. Mostly for debugging with -V, users
-probably want -b to background.
+\-d / \--daemon
+Continue to check for updates every minute. Mostly for debugging with \-V, users
+probably want \-b to background.
 
 .TP
--b / --background
-Detach from the terminal (implies -d)
+\-b / \--background
+Detach from the terminal (implies \-d)
 
 .TP
--f / --force
+\-f / \--force
 Force updates on all feeds, ignoring timestamps.
 
 .TP
--s / --sysfp
+\-s / \--sysfp
 Use feedparser on system instead of builtin copy.
 
 .TP
--C / --conf [PATH]
+\-C / \--conf [PATH]
 Set path to configuration file (default: ~/.canto/conf)
 
 .TP
--F / --fdir [PATH]
+\-F / \--fdir [PATH]
 Set path to feed directory (default: ~/.canto/feeds/)
 
 .TP
--L / --log [PATH]
+\-L / \--log [PATH]
 Set path to log (default: ~/.canto/fetchlog)
 
 .TP
--S / --sdir [PATH]
+\-S / \--sdir [PATH]
 Set the path to execurl scripts (default ~/.canto/scripts/)
 
 .SH FILES
