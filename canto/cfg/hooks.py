@@ -40,7 +40,7 @@ def validate(c):
         if not hk:
             continue
         if not hasattr(hk, "__call__"):
-            raise "All hooks must be callable. (%s)" % hk
+            raise TypeError("All hooks must be callable. (%s)" % hk)
         setattr(c, h, hook_dec(c, hk))
 
 def test(c):
