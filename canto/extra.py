@@ -276,8 +276,9 @@ def yank(gui):
     try:
         xclip.stdin.write(gui.sel["item"]["link"])
         xclip.stdin.close()
-        assert xclip.wait() == 0
-    except (IOError, AssertionError):
+        if xclip.wait() != 0:
+            raise IOError
+    except IOError:
         gui.cfg.log("xclip must be installed for yank to work!")
     else:
         gui.cfg.log("Yanked: %s" % gui.sel["item"]["title"])
