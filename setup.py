@@ -27,7 +27,7 @@ class Canto_install_data(distutils.command.install_data.install_data):
                 f.seek(0)
                 f.write(d)
 
-        for manpage in ["canto.1","canto-fetch.1"]:
+        for manpage in ["canto.1","canto-fetch.1","canto-inspect.1"]:
             with open(mandir + manpage, "r+") as f:
                 d = f.read().replace("MAN_VERSION", ".".join(version))
                 d = d.replace("MAN_DATE", man_date)
@@ -50,7 +50,8 @@ distutils.core.setup(name='Canto',
                 sources = ['canto/widecurse.c'], libraries = ['ncursesw'],
                 library_dirs=["/usr/local/lib", "/opt/local/lib"],
                 include_dirs=["/usr/local/include", "/opt/local/include"])],
-        data_files = [("share/man/man1/", ["man/canto.1", "man/canto-fetch.1"])],
+        data_files = [("share/man/man1/",\
+                ["man/canto.1", "man/canto-fetch.1", "man/canto-inspect.1"])],
         cmdclass={
 		'install_data': Canto_install_data,
 		'install': uninstall.install, 'uninstall': uninstall.uninstall
