@@ -4,8 +4,8 @@ import commands
 import distutils.core
 import distutils.command.install_data
 import uninstall
-version = ['0','7','9']
-man_date = "24 May 2010"
+version = ['0','7','10']
+man_date = "27 July 2010"
 git_commit = commands.getoutput("git show --pretty=oneline\
         --abbrev-commit").split()[0]
 
