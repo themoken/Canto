@@ -106,6 +106,7 @@ from threading import Thread, Lock
 from cPickle import dumps, loads
 import select
 import signal
+import errno
 import time
 import sys
 import os
@@ -122,17 +123,41 @@ class Queue():
 
         self.thread = None
         self.alive = True
+        self.frag = ""
+
+    def _try_parse(self):
+        if "\0" in self.frag:
+            idx = self.frag.index("\0")
+            s, self.frag = self.frag[:idx], self.frag[idx+1:]
+            return loads(s)
+        return None
 
     def get(self, block=True, timeout=None):
-        ready = self.poll.poll(timeout)
-        for fd, event in ready:
-            l = os.read(self.recvpipe, 1)
-            while l[-1] != " ":
-                l += os.read(self.recvpipe, 1)
-            l = int(l)
 
-            s = os.read(self.recvpipe, l)
-            return loads(s)
+        # Parse a message out of the remaining fragment.
+        r = self._try_parse()
+        if r:
+            return r
+
+        ready = self.poll.poll(timeout)
+        if not ready:
+            raise Exception
+
+        while True:
+            try:
+                self.frag += os.read(self.recvpipe, 1024)
+                r = self._try_parse()
+                if r:
+                    return r
+            except OSError, e:
+                if e.errno == errno.EINTR:
+                    continue
+                raise
+
+            if block and timeout == None:
+                continue
+            break
+
         raise Exception
 
     def feed_pipe(self):
@@ -145,9 +170,14 @@ class Queue():
             self.objlist = self.objlist[1:]
             self.objlock.release()
 
-            s = dumps(obj)
-            l = len(s)
-            os.write(self.sendpipe, "%d %s" % (l, s))
+            s = dumps(obj) + "\0"
+            while s:
+                try:
+                    written = os.write(self.sendpipe, s)
+                    s = s[written:]
+                except OSError, e:
+                    if e.errno != errno.EINTR:
+                        raise
 
     def put(self, obj):
         if not self.thread:
