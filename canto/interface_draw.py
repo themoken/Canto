@@ -56,6 +56,7 @@
 
 from widecurse import core, tlen
 import canto_html
+import utility
 
 import locale
 import re
@@ -429,7 +430,7 @@ class Renderer(BaseRenderer):
                 color = u"%8"
 
             dict["content"] += color + u"[" + unicode(idx) + u"] " + \
-                    link[0] + u"%1 - " + link[1] + "\n"
+                    link[0] + u"%1 - " + utility.stripchars(link[1]) + "\n"
 
     def reader_highlight_quotes(self, dict):
         dict["content"] = self.highlight_quote_rgx.sub(u"%5\"\\1\"%0",\

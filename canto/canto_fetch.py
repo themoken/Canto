@@ -391,15 +391,13 @@ class FetchThread(Thread):
         newfeed["canto_version"] = VERSION_TUPLE
 
         # For all content that we would usually use, we escape all of the
-        # slashes and other potential escapes.
-
-        def escape(s):
-            s = s.replace("\\","\\\\")
-            return s.replace("%", "\\%")
+        # slashes and other potential escapes, except for the link item,
+        # which is escaped in the reader when it is displayed. This is to
+        # prevent sending garbeled links to the exteranl browser.
 
         for key in newfeed["feed"]:
             if type(newfeed["feed"][key]) in [unicode,str]:
-                newfeed["feed"][key] = escape(newfeed["feed"][key])
+                newfeed["feed"][key] = utility.stripchars(newfeed["feed"][key])
 
         for entry in newfeed["entries"]:
             for subitem in ["content","enclosures"]:
@@ -407,11 +405,11 @@ class FetchThread(Thread):
                     for e in entry[subitem]:
                         for k in e.keys():
                             if type(e[k]) in [unicode,str]:
-                                e[k] = escape(e[k])
+                                e[k] = utility.stripchars(e[k])
 
             for key in entry.keys():
-                if type(entry[key]) in [unicode,str]:
-                    entry[key] = escape(entry[key])
+                if type(entry[key]) in [unicode,str] and key != "link":
+                    entry[key] = utility.stripchars(entry[key])
 
         for entry in newfeed["entries"]:
             # If the item didn't come with a GUID, then
